@@ -1,8 +1,8 @@
+import "./styles/tailwind.css";
+import type {PagesPublicState} from "@halo-dev/console-shared";
 import {definePlugin} from "@halo-dev/console-shared";
-import DefaultView from "./views/DefaultView.vue";
-import {IconGrid} from "@halo-dev/components";
-import "./styles/index.css";
-import {markRaw} from "vue";
+import PhotoList from "@/views/PhotoList.vue";
+import type {Ref} from "vue";
 
 export default definePlugin({
   name: "PluginPhotos",
@@ -10,33 +10,24 @@ export default definePlugin({
   routes: [
     {
       parentName: "Root",
-      route:
-        {
-          path: "/hello-world",
-          children: [
-            {
-              path: "",
-              name: "HelloWorld",
-              component: DefaultView,
-              meta: {
-                permissions: ["plugin:apples:view"],
-                title: "HelloWorld",
-                searchable: true,
-                menu: {
-                  name: "迁移",
-                  group: "From PluginStarter",
-                  icon: markRaw(IconGrid),
-                  priority: 0,
-                },
-              },
-            },
-          ],
+      route: {
+        path: "/pages/functional/photos",
+        name: "Photos",
+        component: PhotoList,
+        meta: {
+          permissions: ["plugin:photos:view"],
         },
-    }
+      },
+    },
   ],
-  extensionPoints: {},
-  activated() {
-  },
-  deactivated() {
+  extensionPoints: {
+    PAGES: (state: Ref<PagesPublicState>) => {
+      state.value.functionalPages.push({
+        name: "相册",
+        url: "/photos",
+        path: "/pages/functional/photos",
+        permissions: ["plugin:photos:view"],
+      });
+    },
   },
 });

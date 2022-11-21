@@ -2,7 +2,6 @@ package run.halo.photos;
 
 import org.pf4j.PluginWrapper;
 import org.springframework.stereotype.Component;
-import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
 import run.halo.app.plugin.BasePlugin;
 
@@ -21,12 +20,13 @@ public class PhotoPlugin extends BasePlugin {
 
     @Override
     public void start() {
-        // schemeManager.register(Apple.class);
+        schemeManager.register(Photo.class);
+        schemeManager.register(PhotoGroup.class);
     }
 
     @Override
     public void stop() {
-        // Scheme scheme = schemeManager.get(Apple.class);
-        // schemeManager.unregister(scheme);
+        schemeManager.unregister(schemeManager.get(Photo.class));
+        schemeManager.unregister(schemeManager.get(PhotoGroup.class));
     }
 }

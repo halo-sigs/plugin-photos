@@ -9,7 +9,7 @@ spec:
   author: halo-dev
   logo: https://halo.run/logo
   homepage: https://github.com/halo-sigs/plugin-photos
-  displayName: "插件快速开始模板"
-  description: "这是一个插件快速开始模板"
+  displayName: "图库管理"
+  description: "图库管理模块"
   license:
     - name: "MIT"
