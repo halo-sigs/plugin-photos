@@ -5,7 +5,7 @@ import "./styles/index.css";
 import {markRaw} from "vue";
 
 export default definePlugin({
-  name: "PluginStarter",
+  name: "PluginPhotos",
   components: [],
   routes: [
     {
