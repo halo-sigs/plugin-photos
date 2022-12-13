@@ -13,7 +13,7 @@ import java.time.Instant;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@GVK(group = "core.halo.run", version = "v1alpha1", kind = "Photo", plural = "Photos", singular = "photo")
+@GVK(group = "core.halo.run", version = "v1alpha1", kind = "Photo", plural = "photos", singular = "photo")
 public class Photo extends AbstractExtension {
 
     private PhotoSpec spec;
