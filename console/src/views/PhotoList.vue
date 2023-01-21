@@ -11,6 +11,7 @@ import {
   IconAddCircle,
   VLoading,
   IconCheckboxFill,
+  Toast,
 } from "@halo-dev/components";
 import GroupList from "../components/GroupList.vue";
 import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
@@ -19,6 +20,8 @@ import apiClient from "@/utils/api-client";
 import type { Photo, PhotoGroup, PhotoList } from "@/types";
 import cloneDeep from "lodash.clonedeep";
 import Fuse from "fuse.js";
+import RiImage2Line from "~icons/ri/image-2-line";
+import type { AttachmentLike } from "@halo-dev/console-shared";
 
 const drag = ref(false);
 const photos = ref<Photo[]>([] as Photo[]);
@@ -95,7 +98,7 @@ const handleSelectNext = () => {
   }
 };
 
-const handleOpenCreateModal = (photo: Photo) => {
+const handleOpenEditingModal = (photo?: Photo) => {
   selectedPhoto.value = photo;
   editingModal.value = true;
 };
@@ -242,6 +245,77 @@ const searchResults = computed({
     photos.value = value;
   },
 });
+
+// create by attachments
+const attachmentModal = ref(false);
+
+const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
+  const photos: { url: string; cover?: string; displayName?: string }[] =
+    attachments
+      .map((attachment) => {
+        if (typeof attachment === "string") {
+          return {
+            url: attachment,
+            cover: attachment,
+          };
+        }
+        if ("url" in attachment) {
+          return {
+            url: attachment.url,
+            cover: attachment.url,
+          };
+        }
+        if ("spec" in attachment) {
+          return {
+            url: attachment.status?.permalink,
+            cover: attachment.status?.permalink,
+            displayName: attachment.spec.displayName,
+          };
+        }
+      })
+      .filter(Boolean) as {
+      url: string;
+      cover?: string;
+      displayName?: string;
+    }[];
+
+  const createRequests = photos.map((photo) => {
+    return apiClient.post<Photo>("/apis/core.halo.run/v1alpha1/photos", {
+      metadata: {
+        name: "",
+        generateName: "photo-",
+      },
+      spec: photo,
+      kind: "Photo",
+      apiVersion: "core.halo.run/v1alpha1",
+    });
+  });
+
+  const responses = await Promise.all(createRequests);
+
+  // update current group
+
+  const groupToUpdate = cloneDeep(selectedGroup.value);
+
+  if (groupToUpdate) {
+    groupToUpdate.spec.photos = [
+      ...groupToUpdate.spec.photos,
+      ...responses.map((response) => {
+        return response.data.metadata.name;
+      }),
+    ];
+
+    await apiClient.put(
+      `/apis/core.halo.run/v1alpha1/photogroups/${groupToUpdate.metadata.name}`,
+      groupToUpdate
+    );
+  }
+
+  Toast.success(`新建成功，一共创建了 ${photos.length} 张图片。`);
+
+  await groupListRef.value.handleFetchGroups();
+  handleFetchPhotos();
+};
 </script>
 <template>
   <PhotoEditingModal
@@ -259,10 +333,18 @@ const searchResults = computed({
       </span>
     </template>
   </PhotoEditingModal>
-  <VPageHeader title="图片"> </VPageHeader>
+  <AttachmentSelectorModal
+    v-model:visible="attachmentModal"
+    @select="onAttachmentsSelect"
+  />
+  <VPageHeader title="图库">
+    <template #icon>
+      <RiImage2Line class="photos-mr-2 photos-self-center" />
+    </template>
+  </VPageHeader>
   <div class="photos-p-4">
-    <div class="photos-flex photos-flex-row photos-gap-2">
-      <div class="photos-w-96">
+    <div class="photos-flex photos-flex-col photos-gap-2 sm:photos-flex-row">
+      <div class="photos-w-full sm:photos-w-80">
         <GroupList
           ref="groupListRef"
           v-model:selected-group="selectedGroup"
@@ -307,9 +389,31 @@ const searchResults = computed({
                   v-permission="['plugin:photos:manage']"
                   class="photos-mt-4 photos-flex sm:photos-mt-0"
                 >
-                  <VButton size="xs" @click="editingModal = true">
-                    新增
-                  </VButton>
+                  <FloatingDropdown>
+                    <VButton size="xs"> 新增 </VButton>
+                    <template #popper>
+                      <div class="w-48 p-2">
+                        <VSpace class="w-full" direction="column">
+                          <VButton
+                            v-close-popper
+                            type="default"
+                            block
+                            @click="handleOpenEditingModal()"
+                          >
+                            新增
+                          </VButton>
+                          <VButton
+                            v-close-popper
+                            type="default"
+                            block
+                            @click="attachmentModal = true"
+                          >
+                            从附件库选择
+                          </VButton>
+                        </VSpace>
+                      </div>
+                    </template>
+                  </FloatingDropdown>
                 </div>
               </div>
             </div>
@@ -336,7 +440,7 @@ const searchResults = computed({
           </Transition>
           <Transition v-else appear name="fade">
             <div
-              class="photos-mt-2 photos-grid photos-grid-cols-3 photos-gap-x-2 photos-gap-y-3 sm:photos-grid-cols-3 md:photos-grid-cols-6 xl:photos-grid-cols-8"
+              class="photos-mt-2 photos-grid photos-grid-cols-3 photos-gap-x-2 photos-gap-y-3 sm:photos-grid-cols-3 md:photos-grid-cols-4 lg:photos-grid-cols-6"
               role="list"
             >
               <VCard
@@ -344,10 +448,12 @@ const searchResults = computed({
                 :key="index"
                 :body-class="['!p-0']"
                 :class="{
-                  'ring-1 ring-primary': isChecked(photo),
-                  'ring-1 ring-red-600': photo.metadata.deletionTimestamp,
+                  'photos-ring-primary photos-ring-1': isChecked(photo),
+                  'photos-ring-1 photos-ring-red-600':
+                    photo.metadata.deletionTimestamp,
                 }"
-                class="hover:shadow"
+                class="hover:photos-shadow"
+                @click="handleOpenEditingModal(photo)"
               >
                 <div class="photos-group photos-relative photos-bg-white">
                   <div
@@ -428,4 +534,3 @@ const searchResults = computed({
     </div>
   </div>
 </template>
-<style lang="scss" scoped></style>

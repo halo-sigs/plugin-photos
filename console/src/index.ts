@@ -1,31 +1,26 @@
 import "./styles/tailwind.css";
 import { definePlugin } from "@halo-dev/console-shared";
 import PhotoList from "@/views/PhotoList.vue";
+import { markRaw } from "vue";
+import RiImage2Line from "~icons/ri/image-2-line";
 
 export default definePlugin({
   routes: [
     {
       parentName: "Root",
       route: {
-        path: "/pages/functional/photos",
+        path: "/photos",
         name: "Photos",
         component: PhotoList,
         meta: {
           permissions: ["plugin:photos:view"],
+          menu: {
+            name: "图库",
+            group: "content",
+            icon: markRaw(RiImage2Line),
+          },
         },
       },
     },
   ],
-  extensionPoints: {
-    "page:functional:create": () => {
-      return [
-        {
-          name: "相册",
-          url: "/photos",
-          path: "/pages/functional/photos",
-          permissions: ["plugin:photos:view"],
-        },
-      ];
-    },
-  },
 });

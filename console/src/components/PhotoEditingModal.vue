@@ -144,6 +144,7 @@ const handleSavePhoto = async () => {
       id="photo-form"
       v-model="formState.spec"
       :actions="false"
+      :config="{ validationVisibility: 'submit' }"
       type="form"
       @submit="handleSavePhoto"
     >

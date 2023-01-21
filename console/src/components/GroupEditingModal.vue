@@ -103,6 +103,7 @@ watch(props, (newVal) => {
       id="photo-group-form"
       :classes="{ form: 'w-full' }"
       type="form"
+      :config="{ validationVisibility: 'submit' }"
       @submit="handleCreateGroup"
     >
       <FormKit
