@@ -5,6 +5,7 @@ import apiClient from "@/utils/api-client";
 import cloneDeep from "lodash.clonedeep";
 import { useMagicKeys } from "@vueuse/core";
 import type { PhotoGroup } from "@/types";
+import { submitForm } from "@formkit/core";
 
 const props = withDefaults(
   defineProps<{
@@ -32,7 +33,9 @@ const initialFormState: PhotoGroup = {
   spec: {
     displayName: "",
     priority: 0,
-    photos: [],
+  },
+  status: {
+    photoCount: 0,
   },
 };
 
@@ -42,6 +45,7 @@ const saving = ref(false);
 const isUpdateMode = computed(() => {
   return !!formState.value.metadata.creationTimestamp;
 });
+const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
 
 const handleCreateGroup = async () => {
   try {
@@ -72,24 +76,28 @@ const onVisibleChange = (visible: boolean) => {
   }
 };
 
-watch(props, (newVal) => {
-  const { Command_Enter } = useMagicKeys();
-  let keyboardWatcher;
-  if (newVal.visible) {
-    keyboardWatcher = watch(Command_Enter, (v) => {
-      if (v) {
-        // TODO
-      }
-    });
-  } else {
-    keyboardWatcher?.unwatch();
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible && props.group) {
+      formState.value = cloneDeep(props.group);
+    }
+    formState.value = cloneDeep(initialFormState);
   }
+);
 
-  if (newVal.visible && props.group) {
-    formState.value = cloneDeep(props.group);
-    return;
+const { ControlLeft_Enter, Meta_Enter } = useMagicKeys();
+
+watch(ControlLeft_Enter, (v) => {
+  if (v && !isMac) {
+    submitForm("photo-group-form");
   }
-  formState.value = cloneDeep(initialFormState);
+});
+
+watch(Meta_Enter, (v) => {
+  if (v && isMac) {
+    submitForm("photo-group-form");
+  }
 });
 </script>
 <template>
@@ -117,7 +125,7 @@ watch(props, (newVal) => {
     <template #footer>
       <VSpace>
         <VButton type="secondary" @click="$formkit.submit('photo-group-form')">
-          提交 ⌘ + ↵
+          提交 {{ `${isMac ? "⌘" : "Ctrl"} + ↵` }}
         </VButton>
         <VButton @click="onVisibleChange(false)">取消 Esc</VButton>
       </VSpace>

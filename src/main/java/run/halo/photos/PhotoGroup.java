@@ -1,13 +1,11 @@
 package run.halo.photos;
 
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import run.halo.app.extension.AbstractExtension;
 import run.halo.app.extension.GVK;
-
-import java.util.LinkedHashSet;
 
 /**
  * @author ryanwang
@@ -16,18 +14,29 @@ import java.util.LinkedHashSet;
 @EqualsAndHashCode(callSuper = true)
 @GVK(group = "core.halo.run", version = "v1alpha1", kind = "PhotoGroup", plural = "photogroups", singular = "photogroup")
 public class PhotoGroup extends AbstractExtension {
-
-    private PhotoGroupSpec spec;
-
+    
+    @Schema(required = true) private PhotoGroupSpec spec;
+    
+    @Schema private PostGroupStatus status;
+    
     @Data
     public static class PhotoGroupSpec {
-        @Schema(required = true)
-        private String displayName;
-
+        @Schema(required = true) private String displayName;
+        
         private Integer priority;
-
-        @Schema(description = "Names of photos below this group.")
-        @ArraySchema(arraySchema = @Schema(description = "Photos of this group."), schema = @Schema(description = "Name of photo."))
-        private LinkedHashSet<String> photos;
+    }
+    
+    @JsonIgnore
+    public PostGroupStatus getStatusOrDefault() {
+        if (this.status == null) {
+            this.status = new PostGroupStatus();
+        }
+        return this.status;
+    }
+    
+    @Data
+    public static class PostGroupStatus {
+        
+        public Integer photoCount;
     }
 }

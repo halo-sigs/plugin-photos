@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import {
   VButton,
   VCard,
@@ -12,63 +12,76 @@ import {
   VLoading,
   IconCheckboxFill,
   Toast,
+  IconArrowLeft,
+  IconArrowRight,
+  VDropdown,
+  VDropdownItem,
 } from "@halo-dev/components";
 import GroupList from "../components/GroupList.vue";
 import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
 import LazyImage from "@/components/LazyImage.vue";
 import apiClient from "@/utils/api-client";
-import type { Photo, PhotoGroup, PhotoList } from "@/types";
-import cloneDeep from "lodash.clonedeep";
+import type { Photo, PhotoList } from "@/types";
 import Fuse from "fuse.js";
 import RiImage2Line from "~icons/ri/image-2-line";
 import type { AttachmentLike } from "@halo-dev/console-shared";
+import { useQuery } from "@tanstack/vue-query";
 
-const drag = ref(false);
-const photos = ref<Photo[]>([] as Photo[]);
-const loading = ref(false);
 const selectedPhoto = ref<Photo | undefined>();
 const selectedPhotos = ref<Set<Photo>>(new Set<Photo>());
-const selectedGroup = ref<PhotoGroup>();
+const selectedGroup = ref<string>();
 const editingModal = ref(false);
 const checkedAll = ref(false);
 const groupListRef = ref();
 
-const handleFetchPhotos = async (options?: { mute?: boolean }) => {
-  try {
-    if (!options?.mute) {
-      loading.value = true;
-    }
+const page = ref(1);
+const size = ref(20);
+const total = ref(0);
+const searchText = ref("");
+const keyword = ref("");
 
-    if (!selectedGroup.value?.spec?.photos) {
-      return;
+const {
+  data: photos,
+  isLoading,
+  refetch,
+} = useQuery<Photo[]>({
+  queryKey: [page, size, keyword, selectedGroup],
+  queryFn: async () => {
+    if (!selectedGroup.value) {
+      return [];
     }
-
     const { data } = await apiClient.get<PhotoList>(
-      "/apis/core.halo.run/v1alpha1/photos",
+      "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginPhotos/photos",
       {
         params: {
-          fieldSelector: `name=(${selectedGroup.value.spec.photos.join(",")})`,
+          page: page.value,
+          size: size.value,
+          keyword: keyword.value,
+          group: selectedGroup.value,
         },
       }
     );
-
-    // sort by priority
-    photos.value = data.items
-      .map((photo) => {
-        if (photo.spec) {
-          photo.spec.priority = photo.spec.priority || 0;
+    total.value = data.total;
+    return data.items
+      .map((group) => {
+        if (group.spec) {
+          group.spec.priority = group.spec.priority || 0;
         }
-        return photo;
+        return group;
       })
       .sort((a, b) => {
         return (a.spec?.priority || 0) - (b.spec?.priority || 0);
       });
-  } catch (e) {
-    console.error("Failed to fetch photos", e);
-  } finally {
-    loading.value = false;
-  }
-};
+  },
+  refetchInterval(data: Photo[]) {
+    const deletingGroups = data?.filter(
+      (group) => !!group.metadata.deletionTimestamp
+    );
+
+    return deletingGroups?.length ? 1000 : false;
+  },
+  refetchOnWindowFocus: false,
+});
 
 const handleSelectPrevious = () => {
   const currentIndex = photos.value.findIndex(
@@ -103,62 +116,6 @@ const handleOpenEditingModal = (photo?: Photo) => {
   editingModal.value = true;
 };
 
-const handleSaveInBatch = async () => {
-  try {
-    const promises = photos.value?.map((photo: Photo, index) => {
-      if (photo.spec) {
-        photo.spec.priority = index;
-      }
-      return apiClient.put(
-        `/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`,
-        photo
-      );
-    });
-    if (promises) {
-      await Promise.all(promises);
-    }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await handleFetchPhotos({ mute: true });
-  }
-};
-
-const onPhotoSaved = async (photo: Photo) => {
-  const groupToUpdate = cloneDeep(selectedGroup.value);
-
-  if (groupToUpdate) {
-    groupToUpdate.spec.photos.push(photo.metadata.name);
-
-    await apiClient.put(
-      `/apis/core.halo.run/v1alpha1/photogroups/${groupToUpdate.metadata.name}`,
-      groupToUpdate
-    );
-  }
-
-  await groupListRef.value.handleFetchGroups();
-  await handleFetchPhotos();
-};
-
-const handleDelete = (photo: Photo) => {
-  Dialog.warning({
-    title: "是否确认删除当前的图片？",
-    description: "删除之后将无法恢复。",
-    confirmType: "danger",
-    onConfirm: async () => {
-      try {
-        apiClient.delete(
-          `/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`
-        );
-      } catch (e) {
-        console.error(e);
-      } finally {
-        handleFetchPhotos();
-      }
-    },
-  });
-};
-
 const handleDeleteInBatch = () => {
   Dialog.warning({
     title: "是否确认删除所选的图片？",
@@ -168,16 +125,14 @@ const handleDeleteInBatch = () => {
       try {
         const promises = Array.from(selectedPhotos.value).map((photo) => {
           return apiClient.delete(
-            `/apis/core.halo.run/v1alpha1/photos/${photo}`
+            `/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`
           );
         });
-        if (promises) {
-          await Promise.all(promises);
-        }
+        await Promise.all(promises);
       } catch (e) {
         console.error(e);
       } finally {
-        await handleFetchPhotos();
+        pageRefetch();
       }
     },
   });
@@ -215,7 +170,6 @@ watch(
 );
 
 // search
-const keyword = ref("");
 let fuse: Fuse<Photo> | undefined = undefined;
 
 watch(
@@ -250,34 +204,67 @@ const searchResults = computed({
 const attachmentModal = ref(false);
 
 const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
-  const photos: { url: string; cover?: string; displayName?: string }[] =
-    attachments
-      .map((attachment) => {
-        if (typeof attachment === "string") {
-          return {
-            url: attachment,
-            cover: attachment,
-          };
-        }
-        if ("url" in attachment) {
-          return {
-            url: attachment.url,
-            cover: attachment.url,
-          };
-        }
-        if ("spec" in attachment) {
-          return {
-            url: attachment.status?.permalink,
-            cover: attachment.status?.permalink,
-            displayName: attachment.spec.displayName,
-          };
-        }
-      })
-      .filter(Boolean) as {
-      url: string;
-      cover?: string;
-      displayName?: string;
-    }[];
+  const photos: {
+    url: string;
+    cover?: string;
+    displayName?: string;
+    type?: string;
+  }[] = attachments
+    .map((attachment) => {
+      const post = {
+        groupName: selectedGroup.value || "",
+      };
+
+      if (typeof attachment === "string") {
+        return {
+          ...post,
+          url: attachment,
+          cover: attachment,
+        };
+      }
+      if ("url" in attachment) {
+        return {
+          ...post,
+          url: attachment.url,
+          cover: attachment.url,
+        };
+      }
+      if ("spec" in attachment) {
+        return {
+          ...post,
+          url: attachment.status?.permalink,
+          cover: attachment.status?.permalink,
+          displayName: attachment.spec.displayName,
+          type: attachment.spec.mediaType,
+        };
+      }
+    })
+    .filter(Boolean) as {
+    url: string;
+    cover?: string;
+    displayName?: string;
+    type?: string;
+  }[];
+
+  for (const photo of photos) {
+    const type = photo.type;
+    if (!type) {
+      Toast.error("只支持选择图片");
+      nextTick(() => {
+        attachmentModal.value = true;
+      });
+
+      return;
+    }
+    const fileType = type.split("/")[0];
+    if (fileType !== "image") {
+      Toast.error("只支持选择图片");
+      nextTick(() => {
+        attachmentModal.value = true;
+      });
+      return;
+    }
+  }
 
   const createRequests = photos.map((photo) => {
     return apiClient.post<Photo>("/apis/core.halo.run/v1alpha1/photos", {
@@ -291,38 +278,29 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
     });
   });
 
-  const responses = await Promise.all(createRequests);
-
-  // update current group
-
-  const groupToUpdate = cloneDeep(selectedGroup.value);
-
-  if (groupToUpdate) {
-    groupToUpdate.spec.photos = [
-      ...groupToUpdate.spec.photos,
-      ...responses.map((response) => {
-        return response.data.metadata.name;
-      }),
-    ];
-
-    await apiClient.put(
-      `/apis/core.halo.run/v1alpha1/photogroups/${groupToUpdate.metadata.name}`,
-      groupToUpdate
-    );
-  }
+  await Promise.all(createRequests);
 
   Toast.success(`新建成功，一共创建了 ${photos.length} 张图片。`);
+  pageRefetch();
+};
 
-  await groupListRef.value.handleFetchGroups();
-  handleFetchPhotos();
+const groupSelectHandle = (group?: string) => {
+  selectedGroup.value = group;
+};
+
+const pageRefetch = async () => {
+  await groupListRef.value.refetch();
+  await refetch();
+  selectedPhotos.value = new Set<Photo>();
 };
 </script>
 <template>
   <PhotoEditingModal
     v-model:visible="editingModal"
     :photo="selectedPhoto"
-    @close="handleFetchPhotos({ mute: true })"
-    @saved="onPhotoSaved"
+    :group="selectedGroup"
+    @close="refetch()"
+    @saved="pageRefetch"
   >
     <template #append-actions>
       <span @click="handleSelectPrevious">
@@ -345,11 +323,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
   <div class="photos-p-4">
     <div class="photos-flex photos-flex-col photos-gap-2 sm:photos-flex-row">
       <div class="photos-w-full sm:photos-w-80">
-        <GroupList
-          ref="groupListRef"
-          v-model:selected-group="selectedGroup"
-          @select="handleFetchPhotos()"
-        />
+        <GroupList ref="groupListRef" @select="groupSelectHandle" />
       </div>
       <div class="photos-flex-1">
         <VCard>
@@ -375,9 +349,10 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
                 >
                   <FormKit
                     v-if="!selectedPhotos.size"
-                    v-model="keyword"
+                    v-model="searchText"
                     placeholder="输入关键词搜索"
                     type="text"
+                    @keyup.enter="keyword = searchText"
                   ></FormKit>
                   <VSpace v-else>
                     <VButton type="danger" @click="handleDeleteInBatch">
@@ -389,41 +364,27 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
                   v-permission="['plugin:photos:manage']"
                   class="photos-mt-4 photos-flex sm:photos-mt-0"
                 >
-                  <FloatingDropdown>
+                  <VDropdown>
                     <VButton size="xs"> 新增 </VButton>
                     <template #popper>
-                      <div class="w-48 p-2">
-                        <VSpace class="w-full" direction="column">
-                          <VButton
-                            v-close-popper
-                            type="default"
-                            block
-                            @click="handleOpenEditingModal()"
-                          >
-                            新增
-                          </VButton>
-                          <VButton
-                            v-close-popper
-                            type="default"
-                            block
-                            @click="attachmentModal = true"
-                          >
-                            从附件库选择
-                          </VButton>
-                        </VSpace>
-                      </div>
+                      <VDropdownItem @click="handleOpenEditingModal()">
+                        新增
+                      </VDropdownItem>
+                      <VDropdownItem @click="attachmentModal = true">
+                        从附件库选择
+                      </VDropdownItem>
                     </template>
-                  </FloatingDropdown>
+                  </VDropdown>
                 </div>
               </div>
             </div>
           </template>
-          <VLoading v-if="loading" />
+          <VLoading v-if="isLoading" />
           <Transition v-else-if="!searchResults.length" appear name="fade">
             <VEmpty message="你可以尝试刷新或者新建图片" title="当前没有图片">
               <template #actions>
                 <VSpace>
-                  <VButton @click="handleFetchPhotos"> 刷新</VButton>
+                  <VButton @click="refetch"> 刷新</VButton>
                   <VButton
                     v-permission="['plugin:photos:manage']"
                     type="primary"
@@ -440,12 +401,12 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
           </Transition>
           <Transition v-else appear name="fade">
             <div
-              class="photos-mt-2 photos-grid photos-grid-cols-3 photos-gap-x-2 photos-gap-y-3 sm:photos-grid-cols-3 md:photos-grid-cols-4 lg:photos-grid-cols-6"
+              class="photos-mt-2 photos-grid photos-grid-cols-1 photos-gap-x-2 photos-gap-y-3 sm:photos-grid-cols-2 md:photos-grid-cols-3 lg:photos-grid-cols-4"
               role="list"
             >
               <VCard
-                v-for="(photo, index) in photos"
-                :key="index"
+                v-for="photo in photos"
+                :key="photo.metadata.name"
                 :body-class="['!p-0']"
                 :class="{
                   'photos-ring-primary photos-ring-1': isChecked(photo),
@@ -463,7 +424,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
                       :src="photo.spec.cover || photo.spec.url"
-                      classes="photos-pointer-events-none photos-object-cover group-hover:photos-opacity-75"
+                      classes="photos-w-full photos-h-40 photos-pointer-events-none photos-object-cover group-hover:photos-opacity-75"
                     >
                       <template #loading>
                         <div
@@ -505,6 +466,11 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
                     v-permission="['plugin:photos:manage']"
                     :class="{ '!flex': selectedPhotos.has(photo) }"
                     class="photos-absolute photos-top-0 photos-left-0 photos-hidden photos-h-1/3 photos-w-full photos-cursor-pointer photos-justify-end photos-bg-gradient-to-b photos-from-gray-300 photos-to-transparent photos-ease-in-out group-hover:photos-flex"
+                    @click.stop="
+                      selectedPhotos.has(photo)
+                        ? selectedPhotos.delete(photo)
+                        : selectedPhotos.add(photo)
+                    "
                   >
                     <IconCheckboxFill
                       :class="{
@@ -525,7 +491,12 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
               <div
                 class="photos-flex photos-flex-1 photos-items-center photos-justify-end"
               >
-                <VPagination :page="1" :size="10" :total="20" />
+                <VPagination
+                  v-model:page="page"
+                  v-model:size="size"
+                  :total="total"
+                  :size-options="[20, 30, 50, 100]"
+                />
               </div>
             </div>
           </template>

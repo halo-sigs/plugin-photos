@@ -2,11 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   '@formkit/core': 1.0.0-beta.12
-  '@halo-dev/components': ^1.0.0
+  '@halo-dev/components': 1.2.0
   '@halo-dev/console-shared': ^2.1.0
   '@iconify/json': ^2.2.9
   '@rushstack/eslint-patch': ^1.2.0
   '@tailwindcss/aspect-ratio': ^0.4.2
+  '@tanstack/vue-query': ^4.26.1
   '@types/jsdom': ^20.0.1
   '@types/lodash.clonedeep': ^4.5.7
   '@types/node': ^16.18.11
@@ -40,8 +41,9 @@ specifiers:
 
 dependencies:
   '@formkit/core': 1.0.0-beta.12
-  '@halo-dev/components': 1.0.0_vue@3.2.45
+  '@halo-dev/components': 1.2.0_vue@3.2.45
   '@halo-dev/console-shared': 2.1.0_vue@3.2.45
+  '@tanstack/vue-query': 4.26.1_vue@3.2.45
   '@vueuse/core': 9.11.1_vue@3.2.45
   '@vueuse/router': 9.11.1_vue@3.2.45
   axios: 1.2.3
@@ -467,8 +469,8 @@ packages:
     resolution: {integrity: sha512-L2P221teC+58Y1A4TZpJsLt/Y+WErLxbBt4hH6XhokssVX7mYR56YWienY9StN5jmiGVWtcK1+riXCb0n1aMOA==}
     dev: false
 
-  /@halo-dev/components/1.0.0_vue@3.2.45:
-    resolution: {integrity: sha512-VKwY9F8lm3JY6F4tbcAxkXY6YGRLh137fzJGUD3dgLvV3Fcsx87mxHhYzRQTiSPYwRt0cZ8u4FrxU/S8lqC7cw==}
+  /@halo-dev/components/1.2.0_vue@3.2.45:
+    resolution: {integrity: sha512-GoQvGVnpYvaJxoZrSavVYaz+rvKQ+xmT8UHM2P9urau1xF7CZqn79lMGn/7Mv5nl1ieezOFG4zFF6LC78vHH5g==}
     peerDependencies:
       vue: ^3.2.37
       vue-router: ^4.0.16
@@ -616,6 +618,33 @@ packages:
     dependencies:
       tailwindcss: 3.2.4_postcss@8.4.21
     dev: true
+
+  /@tanstack/match-sorter-utils/8.7.6:
+    resolution: {integrity: sha512-2AMpRiA6QivHOUiBpQAVxjiHAA68Ei23ZUMNaRJrN6omWiSFLoYrxGcT6BXtuzp0Jw4h6HZCmGGIM/gbwebO2A==}
+    engines: {node: '>=12'}
+    dependencies:
+      remove-accents: 0.4.2
+    dev: false
+
+  /@tanstack/query-core/4.26.1:
+    resolution: {integrity: sha512-Zrx2pVQUP4ndnsu6+K/m8zerXSVY8QM+YSbxA1/jbBY21GeCd5oKfYl92oXPK0hPEUtoNuunIdiq0ZMqLos+Zg==}
+    dev: false
+
+  /@tanstack/vue-query/4.26.1_vue@3.2.45:
+    resolution: {integrity: sha512-o42vdAkcD/1DWhf9j+AC0J8N9BCJSGBJeZpkOjx4aOzUdeeWKwoPfENGYID1wmQ4AVDOr9INNku9mHPRI0e4IQ==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.2
+      vue: ^2.5.0 || ^3.0.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      '@tanstack/match-sorter-utils': 8.7.6
+      '@tanstack/query-core': 4.26.1
+      '@vue/devtools-api': 6.5.0
+      vue: 3.2.45
+      vue-demi: 0.13.11_vue@3.2.45
+    dev: false
 
   /@tootallnate/once/2.0.0:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -875,6 +904,10 @@ packages:
     dependencies:
       '@vue/compiler-dom': 3.2.45
       '@vue/shared': 3.2.45
+
+  /@vue/devtools-api/6.5.0:
+    resolution: {integrity: sha512-o9KfBeaBmCKl10usN4crU53fYtC1r7jJwdGKjPT24t348rHxgfpZ0xL3Xm/gLUYnc0oTp8LAmrxOeLyu6tbk2Q==}
+    dev: false
 
   /@vue/eslint-config-prettier/7.0.0_3vccgihvamfrdnqonsut5ihh4a:
     resolution: {integrity: sha512-/CTc6ML3Wta1tCe1gUeO0EYnVXfo3nJXsIhZ8WJr3sov+cGASr6yuiibJTL6lmIBm7GobopToOuB3B6AWyV0Iw==}
@@ -3029,6 +3062,10 @@ packages:
     resolution: {integrity: sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==}
     engines: {node: '>=8'}
     dev: true
+
+  /remove-accents/0.4.2:
+    resolution: {integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==}
+    dev: false
 
   /resolve-from/4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}

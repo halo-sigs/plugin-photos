@@ -10,10 +10,12 @@ const props = withDefaults(
   defineProps<{
     visible: boolean;
     photo?: Photo;
+    group?: string;
   }>(),
   {
     visible: false,
     photo: undefined,
+    group: undefined,
   }
 );
 
@@ -57,12 +59,14 @@ const initialFormState: Photo = {
     displayName: "",
     url: "",
     cover: "",
+    groupName: props.group || "",
   },
   kind: "Photo",
   apiVersion: "core.halo.run/v1alpha1",
 };
 
 const formState = ref<Photo>(cloneDeep(initialFormState));
+
 const saving = ref<boolean>(false);
 
 const isUpdateMode = computed(() => {
@@ -109,12 +113,14 @@ const handleSavePhoto = async () => {
   try {
     saving.value = true;
     if (isUpdateMode.value) {
-      const { data } = await apiClient.put<Photo>(
+      await apiClient.put<Photo>(
         `/apis/core.halo.run/v1alpha1/photos/${formState.value.metadata.name}`,
         formState.value
       );
-      emit("saved", data);
     } else {
+      if (props.group) {
+        formState.value.spec.groupName = props.group;
+      }
       const { data } = await apiClient.post<Photo>(
         `/apis/core.halo.run/v1alpha1/photos`,
         formState.value

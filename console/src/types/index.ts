@@ -15,7 +15,10 @@ export interface Metadata {
 export interface PhotoGroupSpec {
   displayName: string;
   priority?: number;
-  photos: string[];
+}
+
+export interface PostGroupStatus {
+  photoCount: number;
 }
 
 export interface PhotoSpec {
@@ -24,6 +27,7 @@ export interface PhotoSpec {
   url: string;
   cover?: string;
   priority?: number;
+  groupName: string;
 }
 
 export interface Photo {
@@ -38,12 +42,14 @@ export interface PhotoGroup {
   apiVersion: string;
   kind: string;
   metadata: Metadata;
+  status: PostGroupStatus;
 }
 
 export interface PhotoList {
   page: number;
   size: number;
   total: number;
+  totalPages: number;
   items: Array<Photo>;
   first: boolean;
   last: boolean;

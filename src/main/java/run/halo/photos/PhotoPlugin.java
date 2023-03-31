@@ -12,18 +12,18 @@ import run.halo.app.plugin.BasePlugin;
 @Component
 public class PhotoPlugin extends BasePlugin {
     private final SchemeManager schemeManager;
-
+    
     public PhotoPlugin(PluginWrapper wrapper, SchemeManager schemeManager) {
         super(wrapper);
         this.schemeManager = schemeManager;
     }
-
+    
     @Override
     public void start() {
         schemeManager.register(Photo.class);
         schemeManager.register(PhotoGroup.class);
     }
-
+    
     @Override
     public void stop() {
         schemeManager.unregister(schemeManager.get(Photo.class));

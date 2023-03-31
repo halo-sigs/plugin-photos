@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
+    "dev": "vite build --mode dev --watch",
+    "build": "vite build --mode build",
     "preview": "vite preview --port 4173",
     "test:unit": "vitest --environment jsdom",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
@@ -13,8 +13,9 @@
   },
   "dependencies": {
     "@formkit/core": "1.0.0-beta.12",
-    "@halo-dev/components": "^1.0.0",
+    "@halo-dev/components": "1.2.0",
     "@halo-dev/console-shared": "^2.1.0",
+    "@tanstack/vue-query": "^4.26.1",
     "@vueuse/core": "^9.11.1",
     "@vueuse/router": "^9.11.1",
     "axios": "^1.2.3",

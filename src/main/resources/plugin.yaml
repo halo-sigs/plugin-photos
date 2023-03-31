@@ -5,12 +5,14 @@ metadata:
 spec:
   enabled: true
   version: 1.0.0-SNAPSHOT
-  requires: "*"
+  requires: ">=2.4.0"
   author:
     name: Halo OSS Team
     website: https://github.com/halo-dev
   logo: https://halo.run/logo
   homepage: https://github.com/halo-sigs/plugin-photos
+  configMapName: plugin-photos-configmap
+  settingName: plugin-photos-settings
   displayName: "图库管理"
   description: "图库管理模块"
   license:
