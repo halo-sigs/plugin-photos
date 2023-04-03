@@ -1,4 +1,4 @@
-# plugin-moments
+# plugin-photos
 
 Halo 2.0 的相册管理插件, 支持在 Console 进行管理以及为主题端提供 `/photos` 页面路由。。
 

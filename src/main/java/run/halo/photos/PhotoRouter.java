@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.plugin.SettingFetcher;
-import run.halo.app.theme.router.strategy.ModelConst;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.vo.PhotoGroupVo;
 
