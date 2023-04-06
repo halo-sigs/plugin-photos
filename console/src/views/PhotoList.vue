@@ -361,6 +361,7 @@ const pageRefetch = async () => {
                   </VSpace>
                 </div>
                 <div
+                  v-if="selectedGroup"
                   v-permission="['plugin:photos:manage']"
                   class="photos-mt-4 photos-flex sm:photos-mt-0"
                 >
@@ -380,6 +381,9 @@ const pageRefetch = async () => {
             </div>
           </template>
           <VLoading v-if="isLoading" />
+          <Transition v-else-if="!selectedGroup" appear name="fade">
+            <VEmpty message="请选择或新建分组" title="未选择分组"></VEmpty>
+          </Transition>
           <Transition v-else-if="!searchResults.length" appear name="fade">
             <VEmpty message="你可以尝试刷新或者新建图片" title="当前没有图片">
               <template #actions>

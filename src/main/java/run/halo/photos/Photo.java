@@ -32,12 +32,15 @@ public class Photo extends AbstractExtension {
         
         private Integer priority;
         
-        private String groupName;
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^\\S+$")
+         private String groupName;
     }
-
+    
     @JsonIgnore
     public boolean isDeleted() {
-        return Objects.equals(true, getMetadata().getDeletionTimestamp() != null);
+        return Objects.equals(true,
+            getMetadata().getDeletionTimestamp() != null
+        );
     }
-
+    
 }
