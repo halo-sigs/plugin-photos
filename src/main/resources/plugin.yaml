@@ -16,4 +16,5 @@ spec:
   displayName: "图库管理"
   description: "图库管理模块"
   license:
-    - name: "MIT"
+    - name: "GPL-3.0"
+      url: "https://github.com/halo-sigs/plugin-photos/blob/main/LICENSE"
