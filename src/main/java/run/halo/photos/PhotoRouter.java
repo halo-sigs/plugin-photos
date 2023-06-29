@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import run.halo.app.plugin.SettingFetcher;
+import run.halo.app.plugin.ReactiveSettingFetcher;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.vo.PhotoGroupVo;
 
@@ -27,7 +27,7 @@ public class PhotoRouter {
     
     private PhotoFinder photoFinder;
     
-    private final SettingFetcher settingFetcher;
+    private final ReactiveSettingFetcher settingFetcher;
     
     /**
      * Provides a <code>/photos</code> route for the topic end to handle routing.
@@ -42,10 +42,15 @@ public class PhotoRouter {
     private HandlerFunction<ServerResponse> handlerFunction() {
         return request -> ServerResponse.ok().render("photos",
             Map.of("groups", photoGroups(), ModelConst.TEMPLATE_ID, "photos",
-                "title", Mono.fromCallable(() -> this.settingFetcher.get(
-                    "base").get("title").asText("图库"))
+                "title", getPhotosTitle()
             )
         );
+    }
+    
+    Mono<String> getPhotosTitle() {
+        return this.settingFetcher.get("base").map(
+            setting -> setting.get("title").asText("图库")).defaultIfEmpty(
+            "图库");
     }
     
     private Mono<List<PhotoGroupVo>> photoGroups() {
