@@ -37,6 +37,8 @@ import run.halo.photos.vo.PhotoVo;
 @AllArgsConstructor
 public class PhotoRouter {
     
+    private static final String GROUP_PARAM = "group";
+    
     private PhotoFinder photoFinder;
     
     private final ReactiveSettingFetcher settingFetcher;
@@ -85,7 +87,7 @@ public class PhotoRouter {
     
     private static String appendGroupParam(String path, String group) {
         return UriComponentsBuilder.fromPath(path)
-            .queryParamIfPresent("group", Optional.ofNullable(group))
+            .queryParamIfPresent(GROUP_PARAM, Optional.ofNullable(group))
             .build()
             .toString();
     }
@@ -96,7 +98,7 @@ public class PhotoRouter {
     }
     
     private String groupPathQueryParam(ServerRequest request) {
-        return request.queryParam("group")
+        return request.queryParam(GROUP_PARAM)
             .filter(StringUtils::isNotBlank)
             .orElse(null);
     }
