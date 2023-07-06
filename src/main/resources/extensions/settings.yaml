@@ -12,3 +12,8 @@ spec:
           name: title
           validation: required
           value: "图库"
+        - $formkit: text
+          label: 相册列表显示条数
+          name: pageSize
+          validation: required|Number
+          value: 20

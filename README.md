@@ -65,11 +65,17 @@ halo:
 #### 路由信息
 
 - 模板路径：/templates/photos.html
-- 访问路径：/photos
+- 访问路径：/photos | /photos/page/{page}
+
+#### 路由可选参数
+
+group: 图片分组名称, 对应 [#PhotoGroupVo](#photogroupvo).metadata.name
+
+示例：/photos?group=photo-group-UEcvi | /photos/page/1?group=photo-group-UEcvi
 
 #### 变量
 
-photos
+groups
 
 ##### 变量类型
 
@@ -86,6 +92,33 @@ List<[#PhotoGroupVo](#photogroupvo)>
         </li>
     </ul>
 </th:block>
+```
+
+#### 变量
+
+photos
+
+##### 变量类型
+
+[#UrlContextListResult\<PhotoVo>](#urlcontextlistresult)
+
+##### 示例
+
+```html
+<ul>
+    <li th:each="photo : ${photos.items}">
+        <img th:src="${photo.spec.url}" th:alt="${photo.spec.displayName}" width="280">
+    </li>
+</ul>
+<div th:if="${photos.hasPrevious() || photos.hasNext()}">
+   <a th:href="@{${photos.prevUrl}}">
+      <span>上一页</span>
+   </a>
+   <span th:text="${photos.page}"></span>
+   <a th:href="@{${photos.nextUrl}}">
+      <span>下一页</span>
+   </a>
+</div>
 ```
 
 ### Finder API
@@ -293,3 +326,22 @@ List<[#PhotoVo](#photovo)>
   "totalPages": 0                              // 总页数
 }
 ```
+
+#### UrlContextListResult<PhotoVo>
+
+```json
+{
+  "page": 0,                                   // 当前页码
+  "size": 0,                                   // 每页条数
+  "total": 0,                                  // 总条数
+  "items": "List<#PhotoVo>",                   // 图片列表数据
+  "first": true,                               // 是否为第一页
+  "last": true,                                // 是否为最后一页
+  "hasNext": true,                             // 是否有下一页
+  "hasPrevious": true,                         // 是否有上一页
+  "totalPages": 0,                             // 总页数
+  "prevUrl": "string",                         // 上一页链接
+  "nextUrl": "string"                          // 下一页链接
+}
+```
+
