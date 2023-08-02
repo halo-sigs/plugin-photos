@@ -92,7 +92,7 @@ const handleResetForm = () => {
 watch(
   () => props.visible,
   (visible) => {
-    if (!visible) {
+    if (!visible && !props.photo) {
       handleResetForm();
     }
   }
