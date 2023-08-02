@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { IconSave, VButton, VModal } from "@halo-dev/components";
-import { computed, defineProps, ref, watch } from "vue";
+import { computed, nextTick, defineProps, ref, watch } from "vue";
 import type { Photo } from "@/types";
 import apiClient from "@/utils/api-client";
 import cloneDeep from "lodash.clonedeep";
@@ -108,8 +108,20 @@ watch(
     }
   }
 );
+const annotationsFormRef = ref();
 
 const handleSavePhoto = async () => {
+  annotationsFormRef.value?.handleSubmit();
+  await nextTick();
+  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } =
+    annotationsFormRef.value || {};
+  if (customFormInvalid || specFormInvalid) {
+    return;
+  }
+  formState.value.metadata.annotations = {
+    ...annotations,
+    ...customAnnotations,
+  };
   try {
     saving.value = true;
     if (isUpdateMode.value) {
@@ -149,13 +161,43 @@ const handleSavePhoto = async () => {
     <FormKit
       id="photo-form"
       v-model="formState.spec"
+      name="photo-form"
       :actions="false"
       :config="{ validationVisibility: 'submit' }"
       type="form"
       @submit="handleSavePhoto"
     >
-      <FormKitSchema :schema="formSchema" />
+      <div class="md:grid md:grid-cols-4 md:gap-6">
+        <div class="md:col-span-1">
+          <div class="sticky top-0">
+            <span class="text-base font-medium text-gray-900"> 常规 </span>
+          </div>
+        </div>
+        <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
+          <FormKitSchema :schema="formSchema" />
+        </div>
+      </div>
     </FormKit>
+    <div class="py-5">
+      <div class="border-t border-gray-200"></div>
+    </div>
+    <div class="md:grid md:grid-cols-4 md:gap-6">
+      <div class="md:col-span-1">
+        <div class="sticky top-0">
+          <span class="text-base font-medium text-gray-900"> 元数据 </span>
+        </div>
+      </div>
+      <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
+        <AnnotationsForm
+          v-if="visible"
+          :key="formState.metadata.name"
+          ref="annotationsFormRef"
+          :value="formState.metadata.annotations"
+          kind="Photo"
+          group="core.halo.run"
+        />
+      </div>
+    </div>
     <template #footer>
       <VButton
         :loading="saving"
