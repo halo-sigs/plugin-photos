@@ -351,5 +351,5 @@ List<[#PhotoVo](#photovo)>
 
 | 对应模型   | group            | kind       |
 | ---------- | ---------------- | ---------- |
-| 链接       | core.halo.run | Photo       |
-| 链接分组 | core.halo.run | PhotoGroup |
+| 图库       | core.halo.run | Photo       |
+| 图库分组 | core.halo.run | PhotoGroup |
