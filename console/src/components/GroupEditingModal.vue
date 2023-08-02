@@ -56,7 +56,6 @@ const handleCreateOrUpdateGroup = async () => {
   await nextTick();
   const { customAnnotations, annotations, customFormInvalid, specFormInvalid } =
     annotationsGroupFormRef.value || {};
-  console.log(customFormInvalid, specFormInvalid);
   if (customFormInvalid || specFormInvalid) {
     return;
   }
