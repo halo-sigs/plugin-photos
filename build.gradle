@@ -1,7 +1,7 @@
 plugins {
-    id "com.github.node-gradle.node" version "3.3.0"
-    id "io.freefair.lombok" version "8.0.0-rc2"
-    id "io.github.guqing.plugin-development" version "0.0.6-SNAPSHOT"
+    id "com.github.node-gradle.node" version "5.0.0"
+    id "run.halo.plugin.devtools" version "0.0.5"
+    id "io.freefair.lombok" version "8.0.1"
     id 'java'
 }
 
@@ -11,17 +11,6 @@ sourceCompatibility = JavaVersion.VERSION_17
 repositories {
     mavenCentral()
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
-}
-
-jar {
-    enabled = true
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    manifest.attributes(
-            'Plugin-Version': "${project.version}",
-    )
-    into('lib') {
-        from configurations.runtimeClasspath
-    }
 }
 
 dependencies {
@@ -36,22 +25,20 @@ test {
     useJUnitPlatform()
 }
 
+halo {
+    version = '2.8.0'
+}
+
 node {
+    pnpmVersion = '8'
     nodeProjectDir = file("${project.projectDir}/console")
 }
 
-task buildFrontend(type: NpxTask) {
-    command = 'pnpm@7'
+task buildFrontend(type: PnpmTask) {
     args = ['build']
-}
-
-task pnpmInstall(type: NpxTask) {
-    command = "pnpm@7"
-    args = ["install"]
 }
 
 build {
     // build frontend before build
     tasks.getByName('compileJava').dependsOn('buildFrontend')
-    tasks.getByName("buildFrontend").dependsOn("pnpmInstall")
 }
