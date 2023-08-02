@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import { IconSave, VButton, VModal } from "@halo-dev/components";
-<<<<<<< HEAD
-import { computed, nextTick, defineProps, ref, watch } from "vue";
-=======
-import { computed, ref, watch } from "vue";
->>>>>>> e78c4ef5e2f908a9054649767276670a98defc9c
+import { computed, nextTick, ref, watch } from "vue";
 import type { Photo } from "@/types";
 import apiClient from "@/utils/api-client";
 import cloneDeep from "lodash.clonedeep";
