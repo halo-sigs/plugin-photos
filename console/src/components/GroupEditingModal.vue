@@ -81,6 +81,7 @@ watch(
   (visible) => {
     if (visible && props.group) {
       formState.value = cloneDeep(props.group);
+      return;
     }
     formState.value = cloneDeep(initialFormState);
   }
