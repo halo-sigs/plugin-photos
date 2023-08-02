@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { IconSave, VButton, VModal } from "@halo-dev/components";
-import { computed, defineProps, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import type { Photo } from "@/types";
 import apiClient from "@/utils/api-client";
 import cloneDeep from "lodash.clonedeep";
@@ -63,7 +63,7 @@ const initialFormState: Photo = {
   },
   kind: "Photo",
   apiVersion: "core.halo.run/v1alpha1",
-};
+} as Photo;
 
 const formState = ref<Photo>(cloneDeep(initialFormState));
 

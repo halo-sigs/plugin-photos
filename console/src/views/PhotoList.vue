@@ -73,7 +73,7 @@ const {
         return (a.spec?.priority || 0) - (b.spec?.priority || 0);
       });
   },
-  refetchInterval(data: Photo[]) {
+  refetchInterval(data) {
     const deletingGroups = data?.filter(
       (group) => !!group.metadata.deletionTimestamp
     );
@@ -84,6 +84,10 @@ const {
 });
 
 const handleSelectPrevious = () => {
+  if (!photos.value) {
+    return;
+  }
+
   const currentIndex = photos.value.findIndex(
     (photo) => photo.metadata.name === selectedPhoto.value?.metadata.name
   );
@@ -99,6 +103,10 @@ const handleSelectPrevious = () => {
 };
 
 const handleSelectNext = () => {
+  if (!photos.value) {
+    return;
+  }
+
   if (!selectedPhoto.value) {
     selectedPhoto.value = photos.value[0];
     return;
@@ -145,7 +153,7 @@ const handleCheckAllChange = (e: Event) => {
 
 const handleCheckAll = (checkAll: boolean) => {
   if (checkAll) {
-    photos.value.forEach((photo) => {
+    photos.value?.forEach((photo) => {
       selectedPhotos.value.add(photo);
     });
   } else {
@@ -165,7 +173,7 @@ const isChecked = (photo: Photo) => {
 watch(
   () => selectedPhotos.value.size,
   (newValue) => {
-    checkedAll.value = newValue === photos.value.length;
+    checkedAll.value = newValue === photos.value?.length;
   }
 );
 
@@ -175,6 +183,10 @@ let fuse: Fuse<Photo> | undefined = undefined;
 watch(
   () => photos.value,
   () => {
+    if (!photos.value) {
+      return;
+    }
+
     fuse = new Fuse(photos.value, {
       keys: [
         "spec.displayName",
@@ -190,7 +202,7 @@ watch(
 const searchResults = computed({
   get() {
     if (!fuse || !keyword.value) {
-      return photos.value;
+      return photos.value || [];
     }
 
     return fuse?.search(keyword.value).map((item) => item.item);
@@ -368,7 +380,7 @@ const pageRefetch = async () => {
                   <VDropdown>
                     <VButton size="xs"> 新增 </VButton>
                     <template #popper>
-                      <VDropdownItem @click="handleOpenEditingModal()">
+                      <VDropdownItem @click="handleOpenEditingModal">
                         新增
                       </VDropdownItem>
                       <VDropdownItem @click="attachmentModal = true">
@@ -392,7 +404,7 @@ const pageRefetch = async () => {
                   <VButton
                     v-permission="['plugin:photos:manage']"
                     type="primary"
-                    @click="editingModal = true"
+                    @click="handleOpenEditingModal"
                   >
                     <template #icon>
                       <IconAddCircle class="h-full w-full" />
