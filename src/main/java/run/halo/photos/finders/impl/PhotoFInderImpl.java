@@ -113,7 +113,7 @@ public class PhotoFInderImpl implements PhotoFinder {
             .getCreationTimestamp();
         Function<Photo, String> name = link -> link.getMetadata().getName();
         return Comparator.comparing(priority, Comparators.nullsLow())
-            .thenComparing(createTime)
+            .thenComparing(Comparator.comparing(createTime).reversed())
             .thenComparing(name);
     }
     
