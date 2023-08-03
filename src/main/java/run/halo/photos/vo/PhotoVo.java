@@ -3,6 +3,7 @@ package run.halo.photos.vo;
 import lombok.Builder;
 import lombok.Value;
 import run.halo.app.extension.MetadataOperator;
+import run.halo.app.theme.finders.vo.ExtensionVoOperator;
 import run.halo.photos.Photo;
 
 /**
@@ -10,7 +11,7 @@ import run.halo.photos.Photo;
  */
 @Value
 @Builder
-public class PhotoVo {
+public class PhotoVo implements ExtensionVoOperator {
     
     MetadataOperator metadata;
     

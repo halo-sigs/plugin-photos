@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 import run.halo.app.extension.MetadataOperator;
+import run.halo.app.theme.finders.vo.ExtensionVoOperator;
 import run.halo.photos.PhotoGroup;
 
 /**
@@ -11,7 +12,7 @@ import run.halo.photos.PhotoGroup;
  */
 @Value
 @Builder
-public class PhotoGroupVo {
+public class PhotoGroupVo implements ExtensionVoOperator {
     MetadataOperator metadata;
     
     PhotoGroup.PhotoGroupSpec spec;

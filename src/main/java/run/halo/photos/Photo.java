@@ -13,34 +13,35 @@ import run.halo.app.extension.GVK;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@GVK(group = "core.halo.run", version = "v1alpha1", kind = "Photo", plural = "photos", singular = "photo")
+@GVK(group = "core.halo.run", version = "v1alpha1", kind = "Photo", plural = "photos",
+    singular = "photo")
 public class Photo extends AbstractExtension {
-    
+
     private PhotoSpec spec;
-    
+
     @Data
     public static class PhotoSpec {
         @Schema(required = true)
         private String displayName;
-        
+
         private String description;
-        
+
         @Schema(required = true)
         private String url;
-        
+
         private String cover;
-        
+
         private Integer priority;
-        
+
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^\\S+$")
-         private String groupName;
+        private String groupName;
     }
-    
+
     @JsonIgnore
     public boolean isDeleted() {
         return Objects.equals(true,
             getMetadata().getDeletionTimestamp() != null
         );
     }
-    
+
 }
