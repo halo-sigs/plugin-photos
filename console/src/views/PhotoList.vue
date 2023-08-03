@@ -380,7 +380,7 @@ const pageRefetch = async () => {
                   <VDropdown>
                     <VButton size="xs"> 新增 </VButton>
                     <template #popper>
-                      <VDropdownItem @click="handleOpenEditingModal">
+                      <VDropdownItem @click="handleOpenEditingModal()">
                         新增
                       </VDropdownItem>
                       <VDropdownItem @click="attachmentModal = true">
@@ -404,7 +404,7 @@ const pageRefetch = async () => {
                   <VButton
                     v-permission="['plugin:photos:manage']"
                     type="primary"
-                    @click="handleOpenEditingModal"
+                    @click="handleOpenEditingModal()"
                   >
                     <template #icon>
                       <IconAddCircle class="h-full w-full" />
