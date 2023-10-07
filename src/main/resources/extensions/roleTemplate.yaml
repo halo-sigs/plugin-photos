@@ -25,7 +25,7 @@ metadata:
     halo.run/role-template: "true"
   annotations:
     rbac.authorization.halo.run/dependencies: '["role-template-photos-view"]'
-    rbac.authorization.halo.run/ui-permissions: '["plugin:photos:delete","plugin:photos:update"]'
+    rbac.authorization.halo.run/ui-permissions: '["plugin:photos:manage"]'
     rbac.authorization.halo.run/module: "Photos Management"
     rbac.authorization.halo.run/display-name: "图库管理"
 rules:
