@@ -25,31 +25,6 @@ const emit = defineEmits<{
   (event: "saved", photo: Photo): void;
 }>();
 
-const formSchema = [
-  {
-    $formkit: "text",
-    name: "displayName",
-    label: "名称",
-    validation: "required",
-  },
-  {
-    $formkit: "attachment",
-    name: "url",
-    label: "图片地址",
-    validation: "required",
-  },
-  {
-    $formkit: "attachment",
-    name: "cover",
-    label: "封面",
-  },
-  {
-    $formkit: "textarea",
-    name: "description",
-    label: "描述",
-  },
-];
-
 const initialFormState: Photo = {
   metadata: {
     name: "",
@@ -174,7 +149,26 @@ const handleSavePhoto = async () => {
           </div>
         </div>
         <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
-          <FormKitSchema :schema="formSchema" />
+          <FormKit
+            name="displayName"
+            label="名称"
+            type="text"
+            validation="required"
+          ></FormKit>
+          <FormKit
+            name="url"
+            label="图片地址"
+            type="attachment"
+            :accepts="['image/*']"
+            validation="required"
+          ></FormKit>
+          <FormKit
+            name="cover"
+            label="封面"
+            type="attachment"
+            :accepts="['image/*']"
+          ></FormKit>
+          <FormKit name="description" label="描述" type="textarea"></FormKit>
         </div>
       </div>
     </FormKit>
