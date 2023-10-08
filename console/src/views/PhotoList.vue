@@ -325,6 +325,7 @@ const pageRefetch = async () => {
   </PhotoEditingModal>
   <AttachmentSelectorModal
     v-model:visible="attachmentModal"
+    :accepts="['image/*']"
     @select="onAttachmentsSelect"
   />
   <VPageHeader title="图库">
