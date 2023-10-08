@@ -29,7 +29,7 @@ const groupEditingModal = ref(false);
 
 const updateGroup = ref<PhotoGroup>();
 
-const selectedGroup = useRouteQuery<string>("group");
+const selectedGroup = useRouteQuery<string>("photo-group");
 
 const { data: groups, refetch } = useQuery<PhotoGroup[]>({
   queryKey: [],
