@@ -445,11 +445,9 @@ const pageRefetch = async () => {
                     >
                       <template #loading>
                         <div
-                          class="photos-flex photos-h-full photos-items-center photos-justify-center photos-object-cover"
+                          class="photos-flex photos-h-full photos-justify-center"
                         >
-                          <span class="photos-text-xs photos-text-gray-400"
-                            >加载中...</span
-                          >
+                          <VLoading></VLoading>
                         </div>
                       </template>
                       <template #error>
