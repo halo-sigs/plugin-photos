@@ -10,7 +10,7 @@ metadata:
     rbac.authorization.halo.run/display-name: "图库查看"
 rules:
   - apiGroups: [ "photos.halo.run", "console.api.photo.halo.run"]
-    resources: [ "photos" ]
+    resources: [ "photos", "photogroups" ]
     verbs: [ "get", "list" ]
 ---
 apiVersion: v1alpha1
@@ -26,5 +26,5 @@ metadata:
     rbac.authorization.halo.run/display-name: "图库管理"
 rules:
   - apiGroups: [ "photos.halo.run", "console.api.photo.halo.run"]
-    resources: [ "photos" ]
+    resources: [ "photos", "photogroups" ]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
