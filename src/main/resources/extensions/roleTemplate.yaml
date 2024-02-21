@@ -9,7 +9,7 @@ metadata:
     rbac.authorization.halo.run/ui-permissions: '["plugin:photos:view"]'
     rbac.authorization.halo.run/display-name: "图库查看"
 rules:
-  - apiGroups: [ "core.halo.run"]
+  - apiGroups: [ "plugin.halo.run"]
     resources: [ "photos" ]
     verbs: [ "get", "list" ]
   - apiGroups: [ "console.api.photo.halo.run"]
@@ -29,7 +29,7 @@ metadata:
     rbac.authorization.halo.run/module: "Photos Management"
     rbac.authorization.halo.run/display-name: "图库管理"
 rules:
-  - apiGroups: [ "core.halo.run"]
+  - apiGroups: [ "plugin.halo.run"]
     resources: [ "photos" ]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
   - apiGroups: [ "console.api.photo.halo.run"]
