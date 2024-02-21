@@ -51,7 +51,7 @@ const {
       return [];
     }
     const { data } = await apiClient.get<PhotoList>(
-      "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginPhotos/photos",
+      "/apis/console.api.photo.halo.run/v1alpha1/photos",
       {
         params: {
           page: page.value,
@@ -445,11 +445,9 @@ const pageRefetch = async () => {
                     >
                       <template #loading>
                         <div
-                          class="photos-flex photos-h-full photos-items-center photos-justify-center photos-object-cover"
+                          class="photos-flex photos-h-full photos-justify-center"
                         >
-                          <span class="photos-text-xs photos-text-gray-400"
-                            >加载中...</span
-                          >
+                          <VLoading></VLoading>
                         </div>
                       </template>
                       <template #error>

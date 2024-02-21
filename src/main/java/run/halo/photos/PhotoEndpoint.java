@@ -29,8 +29,8 @@ public class PhotoEndpoint implements CustomEndpoint {
     
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        final var tag = "api.plugin.halo.run/v1alpha1/Photo";
-        return SpringdocRouteBuilder.route().GET("plugins/PluginPhotos/photos",
+        final var tag = "console.api.photo.halo.run/v1alpha1/Photo";
+        return SpringdocRouteBuilder.route().GET("photos",
             this::listPhoto, builder -> {
                 builder.operationId("ListPhotos")
                     .description("List photos.")
@@ -46,7 +46,7 @@ public class PhotoEndpoint implements CustomEndpoint {
     
     @Override
     public GroupVersion groupVersion() {
-        return GroupVersion.parseAPIVersion("api.plugin.halo.run/v1alpha1");
+        return GroupVersion.parseAPIVersion("console.api.photo.halo.run/v1alpha1");
     }
     
     private Mono<ServerResponse> listPhoto(ServerRequest serverRequest) {
