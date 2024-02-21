@@ -35,7 +35,7 @@ const { data: groups, refetch } = useQuery<PhotoGroup[]>({
   queryKey: [],
   queryFn: async () => {
     const { data } = await apiClient.get<PhotoGroupList>(
-      "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginPhotos/photogroups"
+      "/apis/console.api.photo.halo.run/v1alpha1/photogroups"
     );
     return data.items
       .map((group) => {
@@ -103,7 +103,7 @@ const handleDelete = async (group: PhotoGroup) => {
     onConfirm: async () => {
       try {
         await apiClient.delete(
-          `/apis/api.plugin.halo.run/v1alpha1/plugins/PluginPhotos/photogroups/${group.metadata.name}`
+          `/apis/console.api.photo.halo.run/v1alpha1/photogroups/${group.metadata.name}`
         );
         refetch();
       } catch (e) {

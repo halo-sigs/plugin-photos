@@ -30,9 +30,9 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
     
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        final var tag = "api.plugin.halo.run/v1alpha1/PhotoGroup";
+        final var tag = "console.api.photo.halo.run/v1alpha1/PhotoGroup";
         return SpringdocRouteBuilder.route().GET(
-            "plugins/PluginPhotos/photogroups", this::listPhotoGroup,
+            "photogroups", this::listPhotoGroup,
             builder -> {
                 builder.operationId("ListPhotoGroups").description(
                     "List photoGroups.").tag(tag).response(
@@ -42,7 +42,7 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
                     QueryListRequest.class
                 );
             }
-        ).DELETE("plugins/PluginPhotos/photogroups/{name}",
+        ).DELETE("photogroups/{name}",
             this::deletePhotoGroup, builder -> builder.operationId(
                     "DeletePhotoGroup")
                 .description("Delete photoGroup.")
@@ -54,7 +54,7 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
     
     @Override
     public GroupVersion groupVersion() {
-        return GroupVersion.parseAPIVersion("api.plugin.halo.run/v1alpha1");
+        return GroupVersion.parseAPIVersion("console.api.photo.halo.run/v1alpha1");
     }
     
     private Mono<ServerResponse> deletePhotoGroup(ServerRequest serverRequest) {
