@@ -2,15 +2,21 @@ apiVersion: plugin.halo.run/v1alpha1
 kind: Plugin
 metadata:
   name: PluginPhotos
+  annotations:
+    # Add supports for Halo App Store
+    # https://www.halo.run/store/apps/app-BmQJW
+    "store.halo.run/app-id": "app-BmQJW"
 spec:
   enabled: true
   version: 1.0.0
   requires: ">=2.8.0"
   author:
-    name: Halo OSS Team
+    name: Halo
     website: https://github.com/halo-dev
   logo: logo.svg
-  homepage: https://github.com/halo-sigs/plugin-photos
+  homepage: https://www.halo.run/store/apps/app-BmQJW
+  repo: https://github.com/halo-sigs/plugin-photos
+  issues: https://github.com/halo-sigs/plugin-photos/issues
   configMapName: plugin-photos-configmap
   settingName: plugin-photos-settings
   displayName: "图库管理"
