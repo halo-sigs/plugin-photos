@@ -6,7 +6,11 @@ plugins {
 }
 
 group 'run.halo.photos'
-sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
@@ -14,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform('run.halo.tools.platform:plugin:2.9.0-SNAPSHOT')
+    implementation platform('run.halo.tools.platform:plugin:2.10.0-SNAPSHOT')
     compileOnly 'run.halo.app:api'
 
     testImplementation 'run.halo.app:api'
