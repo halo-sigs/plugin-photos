@@ -1,19 +1,15 @@
 package run.halo.photos;
 
-import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
-
 import lombok.AllArgsConstructor;
-import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
-import run.halo.app.extension.ListResult;
 import run.halo.app.extension.router.IListRequest.QueryListRequest;
-import run.halo.app.extension.router.QueryParamBuildUtil;
 import run.halo.photos.service.PhotoGroupService;
 
 /**
@@ -25,48 +21,32 @@ import run.halo.photos.service.PhotoGroupService;
 @Component
 @AllArgsConstructor
 public class PhotoGroupEndpoint implements CustomEndpoint {
-    
+
     private final PhotoGroupService photoGroupService;
-    
+
     @Override
     public RouterFunction<ServerResponse> endpoint() {
-        final var tag = "console.api.photo.halo.run/v1alpha1/PhotoGroup";
-        return SpringdocRouteBuilder.route().GET(
-            "photogroups", this::listPhotoGroup,
-            builder -> {
-                builder.operationId("ListPhotoGroups").description(
-                    "List photoGroups.").tag(tag).response(
-                    responseBuilder().implementation(
-                        ListResult.generateGenericClass(PhotoGroup.class)));
-                QueryParamBuildUtil.buildParametersFromType(builder,
-                    QueryListRequest.class
-                );
-            }
-        ).DELETE("photogroups/{name}",
-            this::deletePhotoGroup, builder -> builder.operationId(
-                    "DeletePhotoGroup")
-                .description("Delete photoGroup.")
-                .tag(tag)
-                .response(responseBuilder().implementation(
-                    ListResult.generateGenericClass(PhotoGroup.class)))
-        ).build();
+        return RouterFunctions.route()
+            .GET("photogroups", this::listPhotoGroup)
+            .DELETE("photogroups/{name}", this::deletePhotoGroup)
+            .build();
     }
-    
+
     @Override
     public GroupVersion groupVersion() {
         return GroupVersion.parseAPIVersion("console.api.photo.halo.run/v1alpha1");
     }
-    
+
     private Mono<ServerResponse> deletePhotoGroup(ServerRequest serverRequest) {
         String name = serverRequest.pathVariable("name");
         return photoGroupService.deletePhotoGroup(name).flatMap(
             photoGroup -> ServerResponse.ok().bodyValue(photoGroup));
     }
-    
+
     private Mono<ServerResponse> listPhotoGroup(ServerRequest serverRequest) {
         QueryListRequest request = new PhotoQuery(serverRequest.queryParams());
         return photoGroupService.listPhotoGroup(request).flatMap(
             photoGroups -> ServerResponse.ok().bodyValue(photoGroups));
     }
-    
+
 }
