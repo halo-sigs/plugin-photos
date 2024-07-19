@@ -1,6 +1,5 @@
-import "./styles/tailwind.css";
-import { definePlugin } from "@halo-dev/console-shared";
 import PhotoList from "@/views/PhotoList.vue";
+import { definePlugin } from "@halo-dev/console-shared";
 import { markRaw } from "vue";
 import RiImage2Line from "~icons/ri/image-2-line";
 

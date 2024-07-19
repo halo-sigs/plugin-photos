@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { IconSave, VButton, VModal } from "@halo-dev/components";
-import { computed, nextTick, ref, watch } from "vue";
 import type { Photo } from "@/types";
 import apiClient from "@/utils/api-client";
-import cloneDeep from "lodash.clonedeep";
 import { reset, submitForm } from "@formkit/core";
+import { IconSave, VButton, VModal } from "@halo-dev/components";
+import cloneDeep from "lodash.clonedeep";
+import { computed, nextTick, ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -199,7 +199,7 @@ const handleSavePhoto = async () => {
         @click="submitForm('photo-form')"
       >
         <template #icon>
-          <IconSave class="photos-h-full photos-w-full" />
+          <IconSave class="h-full w-full" />
         </template>
         保存
       </VButton>
