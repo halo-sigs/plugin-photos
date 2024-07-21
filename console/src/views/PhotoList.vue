@@ -37,7 +37,6 @@ const groupListRef = ref();
 const page = ref(1);
 const size = ref(20);
 const total = ref(0);
-const searchText = ref("");
 const keyword = ref("");
 
 const {
@@ -314,31 +313,20 @@ const pageRefetch = async () => {
     </template>
   </VPageHeader>
   <div class="p-4">
-    <div class="flex flex-col gap-2 sm:flex-row">
-      <div class="w-full sm:w-96">
+    <div class="flex flex-col gap-2 lg:flex-row">
+      <div class="w-full flex-none lg:w-96">
         <GroupList ref="groupListRef" @select="groupSelectHandle" />
       </div>
-      <div class="flex-1">
+      <div class="flex-1 shrink min-w-0">
         <VCard>
           <template #header>
             <div class="block w-full bg-gray-50 px-4 py-3">
               <div class="relative flex flex-col items-start sm:flex-row sm:items-center">
                 <div class="mr-4 hidden items-center sm:flex">
-                  <input
-                    v-model="checkedAll"
-                    class="h-4 w-4 rounded border-gray-300 text-indigo-600"
-                    type="checkbox"
-                    @change="handleCheckAllChange"
-                  />
+                  <input v-model="checkedAll" type="checkbox" @change="handleCheckAllChange" />
                 </div>
                 <div class="flex w-full flex-1 sm:w-auto">
-                  <FormKit
-                    v-if="!selectedPhotos.size"
-                    v-model="searchText"
-                    placeholder="输入关键词搜索"
-                    type="text"
-                    @keyup.enter="keyword = searchText"
-                  ></FormKit>
+                  <SearchInput v-if="!selectedPhotos.size" v-model="keyword" />
                   <VSpace v-else>
                     <VButton type="danger" @click="handleDeleteInBatch"> 删除 </VButton>
                   </VSpace>
@@ -366,7 +354,7 @@ const pageRefetch = async () => {
                   <VButton @click="refetch"> 刷新</VButton>
                   <VButton v-permission="['plugin:photos:manage']" type="primary" @click="handleOpenEditingModal()">
                     <template #icon>
-                      <IconAddCircle class="h-full w-full" />
+                      <IconAddCircle class="size-full" />
                     </template>
                     新增图片
                   </VButton>
@@ -375,7 +363,7 @@ const pageRefetch = async () => {
             </VEmpty>
           </Transition>
           <Transition v-else appear name="fade">
-            <div class="mt-2 grid grid-cols-1 gap-x-2 gap-y-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" role="list">
+            <div class="mt-2 grid grid-cols-1 gap-x-2 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" role="list">
               <VCard
                 v-for="photo in photos"
                 :key="photo.metadata.name"
@@ -388,12 +376,12 @@ const pageRefetch = async () => {
                 @click="handleOpenEditingModal(photo)"
               >
                 <div class="group relative bg-white">
-                  <div class="aspect-10/8 block h-full w-full cursor-pointer overflow-hidden bg-gray-100">
+                  <div class="aspect-16/9 block size-full cursor-pointer overflow-hidden bg-gray-100">
                     <LazyImage
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
                       :src="photo.spec.cover || photo.spec.url"
-                      classes="w-full h-40 pointer-events-none object-cover group-hover:opacity-75"
+                      classes="size-full pointer-events-none group-hover:opacity-75"
                     >
                       <template #loading>
                         <div class="flex h-full justify-center">
@@ -439,11 +427,7 @@ const pageRefetch = async () => {
           </Transition>
 
           <template #footer>
-            <div class="flex items-center justify-end bg-white">
-              <div class="flex flex-1 items-center justify-end">
-                <VPagination v-model:page="page" v-model:size="size" :total="total" :size-options="[20, 30, 50, 100]" />
-              </div>
-            </div>
+            <VPagination v-model:page="page" v-model:size="size" :total="total" :size-options="[20, 30, 50, 100]" />
           </template>
         </VCard>
       </div>

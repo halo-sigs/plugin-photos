@@ -54,8 +54,7 @@ const annotationsGroupFormRef = ref();
 const handleCreateOrUpdateGroup = async () => {
   annotationsGroupFormRef.value?.handleSubmit();
   await nextTick();
-  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } =
-    annotationsGroupFormRef.value || {};
+  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } = annotationsGroupFormRef.value || {};
   if (customFormInvalid || specFormInvalid) {
     return;
   }
@@ -66,15 +65,9 @@ const handleCreateOrUpdateGroup = async () => {
   try {
     saving.value = true;
     if (isUpdateMode.value) {
-      await apiClient.put(
-        `/apis/core.halo.run/v1alpha1/photogroups/${formState.value.metadata.name}`,
-        formState.value
-      );
+      await apiClient.put(`/apis/core.halo.run/v1alpha1/photogroups/${formState.value.metadata.name}`, formState.value);
     } else {
-      await apiClient.post(
-        "/apis/core.halo.run/v1alpha1/photogroups",
-        formState.value
-      );
+      await apiClient.post("/apis/core.halo.run/v1alpha1/photogroups", formState.value);
     }
     onVisibleChange(false);
   } catch (e) {
@@ -122,12 +115,7 @@ watch(Meta_Enter, (v) => {
 });
 </script>
 <template>
-  <VModal
-    :visible="visible"
-    :width="600"
-    :title="modalTitle"
-    @update:visible="onVisibleChange"
-  >
+  <VModal :visible="visible" :width="600" :title="modalTitle" @update:visible="onVisibleChange">
     <FormKit
       id="photo-group-form"
       v-model="formState.spec"

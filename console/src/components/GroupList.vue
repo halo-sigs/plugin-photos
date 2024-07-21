@@ -133,7 +133,7 @@ defineExpose({
     <Transition v-else appear name="fade">
       <Draggable
         v-model="groups"
-        class="box-border h-full w-full divide-y divide-gray-100"
+        class="box-border size-full divide-y divide-gray-100"
         group="group"
         handle=".drag-element"
         item-key="metadata.name"
