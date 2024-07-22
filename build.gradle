@@ -1,6 +1,6 @@
 plugins {
     id "com.github.node-gradle.node" version "5.0.0"
-    id "run.halo.plugin.devtools" version "0.0.7"
+    id "run.halo.plugin.devtools" version "0.0.9"
     id "io.freefair.lombok" version "8.0.1"
     id 'java'
 }
@@ -29,12 +29,7 @@ test {
     useJUnitPlatform()
 }
 
-halo {
-    version = '2.10.0'
-}
-
 node {
-    pnpmVersion = '8'
     nodeProjectDir = file("${project.projectDir}/console")
 }
 
@@ -47,6 +42,13 @@ tasks.register('buildFrontend', PnpmTask) {
     dependsOn('installDepsForUI')
 }
 
-tasks.named('build').configure {
-    dependsOn('buildFrontend')
+build {
+    tasks.named('compileJava').configure {
+        dependsOn('buildFrontend')
+    }
+}
+
+halo {
+    version = '2.17.0'
+    debug = true
 }

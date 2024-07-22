@@ -1,24 +1,23 @@
 <script lang="ts" setup>
+import type { PhotoGroup, PhotoGroupList } from "@/types";
+import apiClient from "@/utils/api-client";
 import {
+  Dialog,
+  IconList,
   VButton,
   VCard,
-  VEntity,
-  IconList,
-  VEntityField,
-  VStatusDot,
-  Dialog,
-  VEmpty,
-  VLoading,
   VDropdownItem,
+  VEmpty,
+  VEntity,
+  VEntityField,
+  VLoading,
+  VStatusDot,
 } from "@halo-dev/components";
-import GroupEditingModal from "./GroupEditingModal.vue";
-import type { PhotoGroup } from "@/types";
-import type { PhotoGroupList } from "@/types";
+import { useQuery } from "@tanstack/vue-query";
+import { useRouteQuery } from "@vueuse/router";
 import { ref } from "vue";
 import Draggable from "vuedraggable";
-import apiClient from "@/utils/api-client";
-import { useRouteQuery } from "@vueuse/router";
-import { useQuery } from "@tanstack/vue-query";
+import GroupEditingModal from "./GroupEditingModal.vue";
 
 const emit = defineEmits<{
   (event: "select", group?: string): void;
@@ -34,9 +33,7 @@ const selectedGroup = useRouteQuery<string>("photo-group");
 const { data: groups, refetch } = useQuery<PhotoGroup[]>({
   queryKey: [],
   queryFn: async () => {
-    const { data } = await apiClient.get<PhotoGroupList>(
-      "/apis/console.api.photo.halo.run/v1alpha1/photogroups"
-    );
+    const { data } = await apiClient.get<PhotoGroupList>("/apis/console.api.photo.halo.run/v1alpha1/photogroups");
     return data.items
       .map((group) => {
         if (group.spec) {
@@ -49,9 +46,7 @@ const { data: groups, refetch } = useQuery<PhotoGroup[]>({
       });
   },
   refetchInterval(data) {
-    const deletingGroups = data?.filter(
-      (group) => !!group.metadata.deletionTimestamp
-    );
+    const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
 
     return deletingGroups?.length ? 1000 : false;
   },
@@ -80,10 +75,7 @@ const handleSaveInBatch = async () => {
       if (group.spec) {
         group.spec.priority = index;
       }
-      return apiClient.put(
-        `/apis/core.halo.run/v1alpha1/photogroups/${group.metadata.name}`,
-        group
-      );
+      return apiClient.put(`/apis/core.halo.run/v1alpha1/photogroups/${group.metadata.name}`, group);
     });
     if (promises) {
       await Promise.all(promises);
@@ -102,9 +94,7 @@ const handleDelete = async (group: PhotoGroup) => {
     confirmType: "danger",
     onConfirm: async () => {
       try {
-        await apiClient.delete(
-          `/apis/console.api.photo.halo.run/v1alpha1/photogroups/${group.metadata.name}`
-        );
+        await apiClient.delete(`/apis/console.api.photo.halo.run/v1alpha1/photogroups/${group.metadata.name}`);
         refetch();
       } catch (e) {
         console.error("Failed to delete photo group", e);
@@ -128,11 +118,7 @@ defineExpose({
 });
 </script>
 <template>
-  <GroupEditingModal
-    v-model:visible="groupEditingModal"
-    :group="updateGroup"
-    @close="refetch()"
-  />
+  <GroupEditingModal v-model:visible="groupEditingModal" :group="updateGroup" @close="refetch()" />
   <VCard :body-class="['!p-0']" title="分组">
     <VLoading v-if="loading" />
     <Transition v-else-if="!groups || !groups.length" appear name="fade">
@@ -147,7 +133,7 @@ defineExpose({
     <Transition v-else appear name="fade">
       <Draggable
         v-model="groups"
-        class="photos-box-border photos-h-full photos-w-full photos-divide-y photos-divide-gray-100"
+        class="box-border size-full divide-y divide-gray-100"
         group="group"
         handle=".drag-element"
         item-key="metadata.name"
@@ -156,13 +142,10 @@ defineExpose({
       >
         <template #item="{ element: group }">
           <li @click="handleSelectedClick(group)">
-            <VEntity
-              :is-selected="selectedGroup === group.metadata.name"
-              class="photos-group"
-            >
+            <VEntity :is-selected="selectedGroup === group.metadata.name" class="group">
               <template #prepend>
                 <div
-                  class="drag-element photos-absolute photos-inset-y-0 photos-left-0 photos-hidden photos-w-3.5 photos-cursor-move photos-items-center photos-bg-gray-100 photos-transition-all hover:photos-bg-gray-200 group-hover:photos-flex"
+                  class="drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all hover:bg-gray-200 group-hover:flex"
                 >
                   <IconList class="h-3.5 w-3.5" />
                 </div>
@@ -184,12 +167,8 @@ defineExpose({
               </template>
 
               <template #dropdownItems>
-                <VDropdownItem @click="handleOpenEditingModal(group)">
-                  修改
-                </VDropdownItem>
-                <VDropdownItem type="danger" @click="handleDelete(group)">
-                  删除
-                </VDropdownItem>
+                <VDropdownItem @click="handleOpenEditingModal(group)"> 修改 </VDropdownItem>
+                <VDropdownItem type="danger" @click="handleDelete(group)"> 删除 </VDropdownItem>
               </template>
             </VEntity>
           </li>

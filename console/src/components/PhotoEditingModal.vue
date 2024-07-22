@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { IconSave, VButton, VModal } from "@halo-dev/components";
-import { computed, nextTick, ref, watch } from "vue";
 import type { Photo } from "@/types";
 import apiClient from "@/utils/api-client";
-import cloneDeep from "lodash.clonedeep";
 import { reset, submitForm } from "@formkit/core";
+import { IconSave, VButton, VModal } from "@halo-dev/components";
+import cloneDeep from "lodash.clonedeep";
+import { computed, nextTick, ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -88,8 +88,7 @@ const annotationsFormRef = ref();
 const handleSavePhoto = async () => {
   annotationsFormRef.value?.handleSubmit();
   await nextTick();
-  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } =
-    annotationsFormRef.value || {};
+  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } = annotationsFormRef.value || {};
   if (customFormInvalid || specFormInvalid) {
     return;
   }
@@ -108,10 +107,7 @@ const handleSavePhoto = async () => {
       if (props.group) {
         formState.value.spec.groupName = props.group;
       }
-      const { data } = await apiClient.post<Photo>(
-        `/apis/core.halo.run/v1alpha1/photos`,
-        formState.value
-      );
+      const { data } = await apiClient.post<Photo>(`/apis/core.halo.run/v1alpha1/photos`, formState.value);
       emit("saved", data);
     }
     onVisibleChange(false);
@@ -123,12 +119,7 @@ const handleSavePhoto = async () => {
 };
 </script>
 <template>
-  <VModal
-    :title="modalTitle"
-    :visible="visible"
-    :width="650"
-    @update:visible="onVisibleChange"
-  >
+  <VModal :title="modalTitle" :visible="visible" :width="650" @update:visible="onVisibleChange">
     <template #actions>
       <slot name="append-actions" />
     </template>
@@ -149,25 +140,9 @@ const handleSavePhoto = async () => {
           </div>
         </div>
         <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
-          <FormKit
-            name="displayName"
-            label="名称"
-            type="text"
-            validation="required"
-          ></FormKit>
-          <FormKit
-            name="url"
-            label="图片地址"
-            type="attachment"
-            :accepts="['image/*']"
-            validation="required"
-          ></FormKit>
-          <FormKit
-            name="cover"
-            label="封面"
-            type="attachment"
-            :accepts="['image/*']"
-          ></FormKit>
+          <FormKit name="displayName" label="名称" type="text" validation="required"></FormKit>
+          <FormKit name="url" label="图片地址" type="attachment" :accepts="['image/*']" validation="required"></FormKit>
+          <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']"></FormKit>
           <FormKit name="description" label="描述" type="textarea"></FormKit>
         </div>
       </div>
@@ -193,13 +168,9 @@ const handleSavePhoto = async () => {
       </div>
     </div>
     <template #footer>
-      <VButton
-        :loading="saving"
-        type="secondary"
-        @click="submitForm('photo-form')"
-      >
+      <VButton :loading="saving" type="secondary" @click="submitForm('photo-form')">
         <template #icon>
-          <IconSave class="photos-h-full photos-w-full" />
+          <IconSave class="size-full" />
         </template>
         保存
       </VButton>

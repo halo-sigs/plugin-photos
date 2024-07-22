@@ -1,31 +1,31 @@
 <script lang="ts" setup>
-import { computed, nextTick, ref, watch } from "vue";
+import LazyImage from "@/components/LazyImage.vue";
+import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
+import type { Photo, PhotoList } from "@/types";
+import apiClient from "@/utils/api-client";
 import {
+  Dialog,
+  IconAddCircle,
+  IconArrowLeft,
+  IconArrowRight,
+  IconCheckboxFill,
+  Toast,
   VButton,
   VCard,
+  VDropdown,
+  VDropdownItem,
+  VEmpty,
+  VLoading,
   VPageHeader,
   VPagination,
   VSpace,
-  Dialog,
-  VEmpty,
-  IconAddCircle,
-  VLoading,
-  IconCheckboxFill,
-  Toast,
-  IconArrowLeft,
-  IconArrowRight,
-  VDropdown,
-  VDropdownItem,
 } from "@halo-dev/components";
-import GroupList from "../components/GroupList.vue";
-import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
-import LazyImage from "@/components/LazyImage.vue";
-import apiClient from "@/utils/api-client";
-import type { Photo, PhotoList } from "@/types";
-import Fuse from "fuse.js";
-import RiImage2Line from "~icons/ri/image-2-line";
 import type { AttachmentLike } from "@halo-dev/console-shared";
 import { useQuery } from "@tanstack/vue-query";
+import Fuse from "fuse.js";
+import { computed, nextTick, ref, watch } from "vue";
+import RiImage2Line from "~icons/ri/image-2-line";
+import GroupList from "../components/GroupList.vue";
 
 const selectedPhoto = ref<Photo | undefined>();
 const selectedPhotos = ref<Set<Photo>>(new Set<Photo>());
@@ -37,7 +37,6 @@ const groupListRef = ref();
 const page = ref(1);
 const size = ref(20);
 const total = ref(0);
-const searchText = ref("");
 const keyword = ref("");
 
 const {
@@ -50,17 +49,14 @@ const {
     if (!selectedGroup.value) {
       return [];
     }
-    const { data } = await apiClient.get<PhotoList>(
-      "/apis/console.api.photo.halo.run/v1alpha1/photos",
-      {
-        params: {
-          page: page.value,
-          size: size.value,
-          keyword: keyword.value,
-          group: selectedGroup.value,
-        },
-      }
-    );
+    const { data } = await apiClient.get<PhotoList>("/apis/console.api.photo.halo.run/v1alpha1/photos", {
+      params: {
+        page: page.value,
+        size: size.value,
+        keyword: keyword.value,
+        group: selectedGroup.value,
+      },
+    });
     total.value = data.total;
     return data.items
       .map((group) => {
@@ -74,9 +70,7 @@ const {
       });
   },
   refetchInterval(data) {
-    const deletingGroups = data?.filter(
-      (group) => !!group.metadata.deletionTimestamp
-    );
+    const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
 
     return deletingGroups?.length ? 1000 : false;
   },
@@ -88,9 +82,7 @@ const handleSelectPrevious = () => {
     return;
   }
 
-  const currentIndex = photos.value.findIndex(
-    (photo) => photo.metadata.name === selectedPhoto.value?.metadata.name
-  );
+  const currentIndex = photos.value.findIndex((photo) => photo.metadata.name === selectedPhoto.value?.metadata.name);
 
   if (currentIndex > 0) {
     selectedPhoto.value = photos.value[currentIndex - 1];
@@ -111,9 +103,7 @@ const handleSelectNext = () => {
     selectedPhoto.value = photos.value[0];
     return;
   }
-  const currentIndex = photos.value.findIndex(
-    (photo) => photo.metadata.name === selectedPhoto.value?.metadata.name
-  );
+  const currentIndex = photos.value.findIndex((photo) => photo.metadata.name === selectedPhoto.value?.metadata.name);
   if (currentIndex !== photos.value.length - 1) {
     selectedPhoto.value = photos.value[currentIndex + 1];
   }
@@ -132,9 +122,7 @@ const handleDeleteInBatch = () => {
     onConfirm: async () => {
       try {
         const promises = Array.from(selectedPhotos.value).map((photo) => {
-          return apiClient.delete(
-            `/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`
-          );
+          return apiClient.delete(`/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`);
         });
         await Promise.all(promises);
       } catch (e) {
@@ -188,12 +176,7 @@ watch(
     }
 
     fuse = new Fuse(photos.value, {
-      keys: [
-        "spec.displayName",
-        "metadata.name",
-        "spec.description",
-        "spec.url",
-      ],
+      keys: ["spec.displayName", "metadata.name", "spec.description", "spec.url"],
       useExtendedSearch: true,
     });
   }
@@ -323,70 +306,37 @@ const pageRefetch = async () => {
       </span>
     </template>
   </PhotoEditingModal>
-  <AttachmentSelectorModal
-    v-model:visible="attachmentModal"
-    :accepts="['image/*']"
-    @select="onAttachmentsSelect"
-  />
+  <AttachmentSelectorModal v-model:visible="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
   <VPageHeader title="图库">
     <template #icon>
-      <RiImage2Line class="photos-mr-2 photos-self-center" />
+      <RiImage2Line class="mr-2 self-center" />
     </template>
   </VPageHeader>
-  <div class="photos-p-4">
-    <div class="photos-flex photos-flex-col photos-gap-2 sm:photos-flex-row">
-      <div class="photos-w-full sm:photos-w-80">
+  <div class="p-4">
+    <div class="flex flex-col gap-2 lg:flex-row">
+      <div class="w-full flex-none lg:w-96">
         <GroupList ref="groupListRef" @select="groupSelectHandle" />
       </div>
-      <div class="photos-flex-1">
+      <div class="flex-1 shrink min-w-0">
         <VCard>
           <template #header>
-            <div
-              class="photos-block photos-w-full photos-bg-gray-50 photos-px-4 photos-py-3"
-            >
-              <div
-                class="photos-relative photos-flex photos-flex-col photos-items-start sm:photos-flex-row sm:photos-items-center"
-              >
-                <div
-                  class="photos-mr-4 photos-hidden photos-items-center sm:photos-flex"
-                >
-                  <input
-                    v-model="checkedAll"
-                    class="photos-h-4 photos-w-4 photos-rounded photos-border-gray-300 photos-text-indigo-600"
-                    type="checkbox"
-                    @change="handleCheckAllChange"
-                  />
+            <div class="block w-full bg-gray-50 px-4 py-3">
+              <div class="relative flex flex-col items-start sm:flex-row sm:items-center">
+                <div class="mr-4 hidden items-center sm:flex">
+                  <input v-model="checkedAll" type="checkbox" @change="handleCheckAllChange" />
                 </div>
-                <div
-                  class="photos-flex photos-w-full photos-flex-1 sm:photos-w-auto"
-                >
-                  <FormKit
-                    v-if="!selectedPhotos.size"
-                    v-model="searchText"
-                    placeholder="输入关键词搜索"
-                    type="text"
-                    @keyup.enter="keyword = searchText"
-                  ></FormKit>
+                <div class="flex w-full flex-1 sm:w-auto">
+                  <SearchInput v-if="!selectedPhotos.size" v-model="keyword" />
                   <VSpace v-else>
-                    <VButton type="danger" @click="handleDeleteInBatch">
-                      删除
-                    </VButton>
+                    <VButton type="danger" @click="handleDeleteInBatch"> 删除 </VButton>
                   </VSpace>
                 </div>
-                <div
-                  v-if="selectedGroup"
-                  v-permission="['plugin:photos:manage']"
-                  class="photos-mt-4 photos-flex sm:photos-mt-0"
-                >
+                <div v-if="selectedGroup" v-permission="['plugin:photos:manage']" class="mt-4 flex sm:mt-0">
                   <VDropdown>
                     <VButton size="xs"> 新增 </VButton>
                     <template #popper>
-                      <VDropdownItem @click="handleOpenEditingModal()">
-                        新增
-                      </VDropdownItem>
-                      <VDropdownItem @click="attachmentModal = true">
-                        从附件库选择
-                      </VDropdownItem>
+                      <VDropdownItem @click="handleOpenEditingModal()"> 新增 </VDropdownItem>
+                      <VDropdownItem @click="attachmentModal = true"> 从附件库选择 </VDropdownItem>
                     </template>
                   </VDropdown>
                 </div>
@@ -402,13 +352,9 @@ const pageRefetch = async () => {
               <template #actions>
                 <VSpace>
                   <VButton @click="refetch"> 刷新</VButton>
-                  <VButton
-                    v-permission="['plugin:photos:manage']"
-                    type="primary"
-                    @click="handleOpenEditingModal()"
-                  >
+                  <VButton v-permission="['plugin:photos:manage']" type="primary" @click="handleOpenEditingModal()">
                     <template #icon>
-                      <IconAddCircle class="h-full w-full" />
+                      <IconAddCircle class="size-full" />
                     </template>
                     新增图片
                   </VButton>
@@ -417,46 +363,34 @@ const pageRefetch = async () => {
             </VEmpty>
           </Transition>
           <Transition v-else appear name="fade">
-            <div
-              class="photos-mt-2 photos-grid photos-grid-cols-1 photos-gap-x-2 photos-gap-y-3 sm:photos-grid-cols-2 md:photos-grid-cols-3 lg:photos-grid-cols-4"
-              role="list"
-            >
+            <div class="mt-2 grid grid-cols-1 gap-x-2 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" role="list">
               <VCard
                 v-for="photo in photos"
                 :key="photo.metadata.name"
                 :body-class="['!p-0']"
                 :class="{
-                  'photos-ring-primary photos-ring-1': isChecked(photo),
-                  'photos-ring-1 photos-ring-red-600':
-                    photo.metadata.deletionTimestamp,
+                  'ring-primary ring-1': isChecked(photo),
+                  'ring-1 ring-red-600': photo.metadata.deletionTimestamp,
                 }"
-                class="hover:photos-shadow"
+                class="hover:shadow"
                 @click="handleOpenEditingModal(photo)"
               >
-                <div class="photos-group photos-relative photos-bg-white">
-                  <div
-                    class="photos-aspect-w-10 photos-aspect-h-8 photos-block photos-h-full photos-w-full photos-cursor-pointer photos-overflow-hidden photos-bg-gray-100"
-                  >
+                <div class="group relative bg-white">
+                  <div class="aspect-16/9 block size-full cursor-pointer overflow-hidden bg-gray-100">
                     <LazyImage
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
                       :src="photo.spec.cover || photo.spec.url"
-                      classes="photos-w-full photos-h-40 photos-pointer-events-none photos-object-cover group-hover:photos-opacity-75"
+                      classes="size-full pointer-events-none group-hover:opacity-75"
                     >
                       <template #loading>
-                        <div
-                          class="photos-flex photos-h-full photos-justify-center"
-                        >
+                        <div class="flex h-full justify-center">
                           <VLoading></VLoading>
                         </div>
                       </template>
                       <template #error>
-                        <div
-                          class="photos-flex photos-h-full photos-items-center photos-justify-center photos-object-cover"
-                        >
-                          <span class="photos-text-xs photos-text-red-400">
-                            加载异常
-                          </span>
+                        <div class="flex h-full items-center justify-center object-cover">
+                          <span class="text-xs text-red-400"> 加载异常 </span>
                         </div>
                       </template>
                     </LazyImage>
@@ -464,15 +398,12 @@ const pageRefetch = async () => {
 
                   <p
                     v-tooltip="photo.spec.displayName"
-                    class="photos-block photos-cursor-pointer photos-truncate photos-px-2 photos-py-1 photos-text-center photos-text-xs photos-font-medium photos-text-gray-700"
+                    class="block cursor-pointer truncate px-2 py-1 text-center text-xs font-medium text-gray-700"
                   >
                     {{ photo.spec.displayName }}
                   </p>
 
-                  <div
-                    v-if="photo.metadata.deletionTimestamp"
-                    class="photos-absolute photos-top-1 photos-right-1 photos-text-xs photos-text-red-300"
-                  >
+                  <div v-if="photo.metadata.deletionTimestamp" class="absolute top-1 right-1 text-xs text-red-300">
                     删除中...
                   </div>
 
@@ -480,18 +411,14 @@ const pageRefetch = async () => {
                     v-if="!photo.metadata.deletionTimestamp"
                     v-permission="['plugin:photos:manage']"
                     :class="{ '!flex': selectedPhotos.has(photo) }"
-                    class="photos-absolute photos-top-0 photos-left-0 photos-hidden photos-h-1/3 photos-w-full photos-cursor-pointer photos-justify-end photos-bg-gradient-to-b photos-from-gray-300 photos-to-transparent photos-ease-in-out group-hover:photos-flex"
-                    @click.stop="
-                      selectedPhotos.has(photo)
-                        ? selectedPhotos.delete(photo)
-                        : selectedPhotos.add(photo)
-                    "
+                    class="absolute top-0 left-0 hidden h-1/3 w-full cursor-pointer justify-end bg-gradient-to-b from-gray-300 to-transparent ease-in-out group-hover:flex"
+                    @click.stop="selectedPhotos.has(photo) ? selectedPhotos.delete(photo) : selectedPhotos.add(photo)"
                   >
                     <IconCheckboxFill
                       :class="{
                         '!text-primary': selectedPhotos.has(photo),
                       }"
-                      class="hover:photos-text-primary photos-mt-1 photos-mr-1 photos-h-6 photos-w-6 photos-cursor-pointer photos-text-white photos-transition-all"
+                      class="hover:text-primary mt-1 mr-1 h-6 w-6 cursor-pointer text-white transition-all"
                     />
                   </div>
                 </div>
@@ -500,20 +427,7 @@ const pageRefetch = async () => {
           </Transition>
 
           <template #footer>
-            <div
-              class="photos-flex photos-items-center photos-justify-end photos-bg-white"
-            >
-              <div
-                class="photos-flex photos-flex-1 photos-items-center photos-justify-end"
-              >
-                <VPagination
-                  v-model:page="page"
-                  v-model:size="size"
-                  :total="total"
-                  :size-options="[20, 30, 50, 100]"
-                />
-              </div>
-            </div>
+            <VPagination v-model:page="page" v-model:size="size" :total="total" :size-options="[20, 30, 50, 100]" />
           </template>
         </VCard>
       </div>
