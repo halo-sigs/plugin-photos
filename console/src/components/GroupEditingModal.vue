@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { VButton, VModal, VSpace } from "@halo-dev/components";
-import { computed, nextTick, ref, watch } from "vue";
-import apiClient from "@/utils/api-client";
-import cloneDeep from "lodash.clonedeep";
-import { useMagicKeys } from "@vueuse/core";
 import type { PhotoGroup } from "@/types";
 import { reset, submitForm } from "@formkit/core";
+import { axiosInstance } from "@halo-dev/api-client";
+import { VButton, VModal, VSpace } from "@halo-dev/components";
+import { useMagicKeys } from "@vueuse/core";
+import { cloneDeep } from "lodash-es";
+import { computed, nextTick, ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -65,9 +65,12 @@ const handleCreateOrUpdateGroup = async () => {
   try {
     saving.value = true;
     if (isUpdateMode.value) {
-      await apiClient.put(`/apis/core.halo.run/v1alpha1/photogroups/${formState.value.metadata.name}`, formState.value);
+      await axiosInstance.put(
+        `/apis/core.halo.run/v1alpha1/photogroups/${formState.value.metadata.name}`,
+        formState.value
+      );
     } else {
-      await apiClient.post("/apis/core.halo.run/v1alpha1/photogroups", formState.value);
+      await axiosInstance.post("/apis/core.halo.run/v1alpha1/photogroups", formState.value);
     }
     onVisibleChange(false);
   } catch (e) {

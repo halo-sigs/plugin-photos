@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { PhotoGroup, PhotoGroupList } from "@/types";
-import apiClient from "@/utils/api-client";
+import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
   IconList,
@@ -33,7 +33,7 @@ const selectedGroup = useRouteQuery<string>("photo-group");
 const { data: groups, refetch } = useQuery<PhotoGroup[]>({
   queryKey: [],
   queryFn: async () => {
-    const { data } = await apiClient.get<PhotoGroupList>("/apis/console.api.photo.halo.run/v1alpha1/photogroups");
+    const { data } = await axiosInstance.get<PhotoGroupList>("/apis/console.api.photo.halo.run/v1alpha1/photogroups");
     return data.items
       .map((group) => {
         if (group.spec) {
@@ -75,7 +75,7 @@ const handleSaveInBatch = async () => {
       if (group.spec) {
         group.spec.priority = index;
       }
-      return apiClient.put(`/apis/core.halo.run/v1alpha1/photogroups/${group.metadata.name}`, group);
+      return axiosInstance.put(`/apis/core.halo.run/v1alpha1/photogroups/${group.metadata.name}`, group);
     });
     if (promises) {
       await Promise.all(promises);
@@ -94,7 +94,7 @@ const handleDelete = async (group: PhotoGroup) => {
     confirmType: "danger",
     onConfirm: async () => {
       try {
-        await apiClient.delete(`/apis/console.api.photo.halo.run/v1alpha1/photogroups/${group.metadata.name}`);
+        await axiosInstance.delete(`/apis/console.api.photo.halo.run/v1alpha1/photogroups/${group.metadata.name}`);
         refetch();
       } catch (e) {
         console.error("Failed to delete photo group", e);

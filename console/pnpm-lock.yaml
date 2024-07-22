@@ -11,9 +11,12 @@ importers:
       '@formkit/core':
         specifier: 1.0.0-beta.12
         version: 1.0.0-beta.12
+      '@halo-dev/api-client':
+        specifier: ^2.17.0
+        version: 2.17.0(axios@1.7.2)
       '@halo-dev/components':
-        specifier: 1.7.0
-        version: 1.7.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
+        specifier: ^2.17.0
+        version: 2.17.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
       '@halo-dev/console-shared':
         specifier: ^2.17.0
         version: 2.17.0(axios@1.7.2)(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
@@ -32,9 +35,9 @@ importers:
       fuse.js:
         specifier: ^6.6.2
         version: 6.6.2
-      lodash.clonedeep:
-        specifier: ^4.5.0
-        version: 4.5.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       vue:
         specifier: ^3.4.33
         version: 3.4.33(typescript@5.5.3)
@@ -54,9 +57,9 @@ importers:
       '@types/jsdom':
         specifier: ^20.0.1
         version: 20.0.1
-      '@types/lodash.clonedeep':
-        specifier: ^4.5.9
-        version: 4.5.9
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^16.18.103
         version: 16.18.103
@@ -451,11 +454,14 @@ packages:
     resolution: {integrity: sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@floating-ui/core@0.3.1':
-    resolution: {integrity: sha512-ensKY7Ub59u16qsVIFEo2hwTCqZ/r9oZZFh51ivcLGHfUwTn8l1Xzng8RJUe91H/UP8PeqeBronAGx0qmzwk2g==}
+  '@floating-ui/core@1.6.4':
+    resolution: {integrity: sha512-a4IowK4QkXl4SCWTGUR0INAfEOX3wtsYw3rKK5InQEHMGObkR8Xk44qYQD9P4r6HHw0iIfK6GUKECmY8sTkqRA==}
 
-  '@floating-ui/dom@0.1.10':
-    resolution: {integrity: sha512-4kAVoogvQm2N0XE0G6APQJuCNuErjOfPW8Ux7DFxh8+AfugWflwVJ5LDlHOwrwut7z/30NUvdtHzQ3zSip4EzQ==}
+  '@floating-ui/dom@1.1.1':
+    resolution: {integrity: sha512-TpIO93+DIujg3g7SykEAGZMDtbJRrmnYRCNYSjJlvIbGhBjRSNTLVbNeDQBrzy9qDgUbiWdc7KA0uZHZ2tJmiw==}
+
+  '@floating-ui/utils@0.2.4':
+    resolution: {integrity: sha512-dWO2pw8hhi+WrXq1YJy2yCuWoL20PddgGaqTgVe4cOS9Q6qklXCiA1tJEqX6BEwRNSCP84/afac9hd4MS+zEUA==}
 
   '@formkit/core@1.0.0-beta.12':
     resolution: {integrity: sha512-/Pod7k4N58eDOG+0LE0ccV7BOYD5sEA4RqaRNJn9m6Jg9nF/JATmSNL46kVCH3mV6sSoV045L3Zir8//rya0Lw==}
@@ -468,11 +474,11 @@ packages:
     peerDependencies:
       axios: ^1.7.x
 
-  '@halo-dev/components@1.7.0':
-    resolution: {integrity: sha512-iJ71eP2VwOMyxrTJGlYLaGLH4w8pz61pnuu5HX2yaYpDJVd8K//Hs4XmWWuzQSw361mPwBfGduQLvBA+/WOhHQ==}
+  '@halo-dev/components@2.17.0':
+    resolution: {integrity: sha512-yujCVNfpZA1HjpilxD1Dzkh5Ge54u9hcIyuGj7Mr8hNHAY1xgiVo0uvuYwm8ik5/njI9HED4GXR2JIreSu/PeA==}
     peerDependencies:
-      vue: ^3.2.37
-      vue-router: ^4.0.16
+      vue: ^3.4.27
+      vue-router: ^4.3.2
 
   '@halo-dev/console-shared@2.17.0':
     resolution: {integrity: sha512-CN+2SEWB8IE4VNicVrfUYC3u7sxaxatTl0yPS1AIdYcb8Zx2X3q0/JTNKS2tE57aedP5AzMnrXu1Y3uGCawRng==}
@@ -678,8 +684,8 @@ packages:
   '@types/json-schema@7.0.12':
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
 
-  '@types/lodash.clonedeep@4.5.9':
-    resolution: {integrity: sha512-19429mWC+FyaAhOLzsS8kZUsI+/GmBAQ0HFiCPsKGU+7pBXOQWhyrY6xNNDwUSX8SMZMJvuFVMF9O5dQOlQK9Q==}
+  '@types/lodash-es@4.17.12':
+    resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
 
   '@types/lodash@4.14.196':
     resolution: {integrity: sha512-22y3o88f4a94mKljsZcanlNWPzO0uBsBdzLAngf2tp533LzZcQzb6+eZPJ+vCTt+bqF2XnvT9gejTLsAcJAJyQ==}
@@ -1557,10 +1563,14 @@ packages:
   flatted@3.2.7:
     resolution: {integrity: sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==}
 
-  floating-vue@2.0.0-beta.20:
-    resolution: {integrity: sha512-N68otcpp6WwcYC7zP8GeJqNZVdfvS7tEY88lwmuAHeqRgnfWx1Un8enzLxROyVnBDZ3TwUoUdj5IFg+bUT7JeA==}
+  floating-vue@5.2.2:
+    resolution: {integrity: sha512-afW+h2CFafo+7Y9Lvw/xsqjaQlKLdJV7h1fCHfcYQ1C4SVMlu7OAekqWgu5d4SgvkBVU0pVpLlVsrSTBURFRkg==}
     peerDependencies:
+      '@nuxt/kit': ^3.2.0
       vue: ^3.2.0
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
 
   follow-redirects@1.15.6:
     resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
@@ -1910,8 +1920,8 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
-  lodash.clonedeep@4.5.0:
-    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
+  lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -3097,11 +3107,15 @@ snapshots:
 
   '@eslint/js@8.57.0': {}
 
-  '@floating-ui/core@0.3.1': {}
-
-  '@floating-ui/dom@0.1.10':
+  '@floating-ui/core@1.6.4':
     dependencies:
-      '@floating-ui/core': 0.3.1
+      '@floating-ui/utils': 0.2.4
+
+  '@floating-ui/dom@1.1.1':
+    dependencies:
+      '@floating-ui/core': 1.6.4
+
+  '@floating-ui/utils@0.2.4': {}
 
   '@formkit/core@1.0.0-beta.12':
     dependencies:
@@ -3113,11 +3127,13 @@ snapshots:
     dependencies:
       axios: 1.7.2
 
-  '@halo-dev/components@1.7.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))':
+  '@halo-dev/components@2.17.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))':
     dependencies:
-      floating-vue: 2.0.0-beta.20(vue@3.4.33(typescript@5.5.3))
+      floating-vue: 5.2.2(vue@3.4.33(typescript@5.5.3))
       vue: 3.4.33(typescript@5.5.3)
       vue-router: 4.2.4(vue@3.4.33(typescript@5.5.3))
+    transitivePeerDependencies:
+      - '@nuxt/kit'
 
   '@halo-dev/console-shared@2.17.0(axios@1.7.2)(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))':
     dependencies:
@@ -3298,7 +3314,7 @@ snapshots:
 
   '@types/json-schema@7.0.12': {}
 
-  '@types/lodash.clonedeep@4.5.9':
+  '@types/lodash-es@4.17.12':
     dependencies:
       '@types/lodash': 4.14.196
 
@@ -4406,9 +4422,9 @@ snapshots:
 
   flatted@3.2.7: {}
 
-  floating-vue@2.0.0-beta.20(vue@3.4.33(typescript@5.5.3)):
+  floating-vue@5.2.2(vue@3.4.33(typescript@5.5.3)):
     dependencies:
-      '@floating-ui/dom': 0.1.10
+      '@floating-ui/dom': 1.1.1
       vue: 3.4.33(typescript@5.5.3)
       vue-resize: 2.0.0-alpha.1(vue@3.4.33(typescript@5.5.3))
 
@@ -4762,7 +4778,7 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash.clonedeep@4.5.0: {}
+  lodash-es@4.17.21: {}
 
   lodash.merge@4.6.2: {}
 
