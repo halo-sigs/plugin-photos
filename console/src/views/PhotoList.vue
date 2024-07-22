@@ -2,7 +2,7 @@
 import LazyImage from "@/components/LazyImage.vue";
 import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
 import type { Photo, PhotoList } from "@/types";
-import apiClient from "@/utils/api-client";
+import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
   IconAddCircle,
@@ -49,7 +49,7 @@ const {
     if (!selectedGroup.value) {
       return [];
     }
-    const { data } = await apiClient.get<PhotoList>("/apis/console.api.photo.halo.run/v1alpha1/photos", {
+    const { data } = await axiosInstance.get<PhotoList>("/apis/console.api.photo.halo.run/v1alpha1/photos", {
       params: {
         page: page.value,
         size: size.value,
@@ -122,7 +122,7 @@ const handleDeleteInBatch = () => {
     onConfirm: async () => {
       try {
         const promises = Array.from(selectedPhotos.value).map((photo) => {
-          return apiClient.delete(`/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`);
+          return axiosInstance.delete(`/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`);
         });
         await Promise.all(promises);
       } catch (e) {
@@ -262,7 +262,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
   }
 
   const createRequests = photos.map((photo) => {
-    return apiClient.post<Photo>("/apis/core.halo.run/v1alpha1/photos", {
+    return axiosInstance.post<Photo>("/apis/core.halo.run/v1alpha1/photos", {
       metadata: {
         name: "",
         generateName: "photo-",

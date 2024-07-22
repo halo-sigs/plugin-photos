@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { Photo } from "@/types";
-import apiClient from "@/utils/api-client";
 import { reset, submitForm } from "@formkit/core";
+import { axiosInstance } from "@halo-dev/api-client";
 import { IconSave, VButton, VModal } from "@halo-dev/components";
-import cloneDeep from "lodash.clonedeep";
+import { cloneDeep } from "lodash-es";
 import { computed, nextTick, ref, watch } from "vue";
 
 const props = withDefaults(
@@ -99,7 +99,7 @@ const handleSavePhoto = async () => {
   try {
     saving.value = true;
     if (isUpdateMode.value) {
-      await apiClient.put<Photo>(
+      await axiosInstance.put<Photo>(
         `/apis/core.halo.run/v1alpha1/photos/${formState.value.metadata.name}`,
         formState.value
       );
@@ -107,7 +107,7 @@ const handleSavePhoto = async () => {
       if (props.group) {
         formState.value.spec.groupName = props.group;
       }
-      const { data } = await apiClient.post<Photo>(`/apis/core.halo.run/v1alpha1/photos`, formState.value);
+      const { data } = await axiosInstance.post<Photo>(`/apis/core.halo.run/v1alpha1/photos`, formState.value);
       emit("saved", data);
     }
     onVisibleChange(false);
