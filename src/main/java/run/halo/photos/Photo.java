@@ -1,5 +1,7 @@
 package run.halo.photos;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
@@ -21,19 +23,19 @@ public class Photo extends AbstractExtension {
 
     @Data
     public static class PhotoSpec {
-        @Schema(required = true)
+        @Schema(requiredMode = REQUIRED)
         private String displayName;
 
         private String description;
 
-        @Schema(required = true)
+        @Schema(requiredMode = REQUIRED)
         private String url;
 
         private String cover;
 
         private Integer priority;
 
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^\\S+$")
+        @Schema(requiredMode = REQUIRED, pattern = "^\\S+$")
         private String groupName;
     }
 
