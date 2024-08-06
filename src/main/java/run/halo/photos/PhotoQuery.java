@@ -1,7 +1,12 @@
 package run.halo.photos;
 
+import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static run.halo.app.extension.router.QueryParamBuildUtil.sortParameter;
+
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+import org.springdoc.core.fn.builders.operation.Builder;
 import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import run.halo.app.extension.router.IListRequest;
@@ -45,5 +50,23 @@ public class PhotoQuery extends IListRequest.QueryListRequest {
     
     private Boolean convertBooleanOrNull(String value) {
         return StringUtils.isBlank(value) ? null : Boolean.parseBoolean(value);
+    }
+
+    public static void buildParameters(Builder builder) {
+        IListRequest.buildParameters(builder);
+        builder.parameter(sortParameter())
+            .parameter(parameterBuilder()
+                .in(ParameterIn.QUERY)
+                .name("keyword")
+                .description("Photos filtered by keyword.")
+                .implementation(String.class)
+                .required(false))
+            .parameter(parameterBuilder()
+                .in(ParameterIn.QUERY)
+                .name("group")
+                .description("photo group name")
+                .implementation(String.class)
+                .required(false))
+        ;
     }
 }
