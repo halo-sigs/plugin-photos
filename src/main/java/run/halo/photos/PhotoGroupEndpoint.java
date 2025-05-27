@@ -41,7 +41,6 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
                         .response(responseBuilder().implementation(
                             ListResult.generateGenericClass(PhotoGroup.class))
                         );
-
                     PhotoQuery.buildParameters(builder);
                 }
             )
@@ -75,7 +74,7 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> listPhotoGroup(ServerRequest serverRequest) {
-        QueryListRequest request = new PhotoQuery(serverRequest.queryParams());
+        var request = new PhotoQuery(serverRequest.exchange());
         return photoGroupService.listPhotoGroup(request)
             .flatMap(photoGroups -> ServerResponse.ok().bodyValue(photoGroups));
     }
