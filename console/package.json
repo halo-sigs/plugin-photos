@@ -11,7 +11,7 @@
   "dependencies": {
     "@formkit/core": "1.0.0-beta.12",
     "@halo-dev/api-client": "^2.17.0",
-    "@halo-dev/components": "^2.17.0",
+    "@halo-dev/components": "https://pkg.pr.new/@halo-dev/components@7383",
     "@halo-dev/console-shared": "^2.17.0",
     "@tanstack/vue-query": "^4.37.1",
     "@vueuse/core": "^10.11.0",
@@ -20,7 +20,7 @@
     "fuse.js": "^6.6.2",
     "lodash-es": "^4.17.21",
     "vue": "^3.4.33",
-    "vuedraggable": "^4.1.0"
+    "vue-draggable-plus": "^0.6.0"
   },
   "devDependencies": {
     "@halo-dev/ui-plugin-bundler-kit": "^2.17.0",
