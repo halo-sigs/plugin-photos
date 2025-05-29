@@ -51,9 +51,9 @@ public class PhotoEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> listPhoto(ServerRequest serverRequest) {
-        PhotoQuery query = new PhotoQuery(serverRequest.queryParams());
-        return photoService.listPhoto(query).flatMap(
-            photos -> ServerResponse.ok().bodyValue(photos));
+        PhotoQuery query = new PhotoQuery(serverRequest.exchange());
+        return photoService.listPhoto(query)
+            .flatMap(photos -> ServerResponse.ok().bodyValue(photos));
     }
 
 }
