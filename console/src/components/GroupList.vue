@@ -16,7 +16,7 @@ import {
 import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
 import { ref } from "vue";
-import Draggable from "vuedraggable";
+import { VueDraggable } from "vue-draggable-plus";
 import GroupEditingModal from "./GroupEditingModal.vue";
 
 const emit = defineEmits<{
@@ -30,7 +30,9 @@ const updateGroup = ref<PhotoGroup>();
 
 const selectedGroup = useRouteQuery<string>("photo-group");
 
-const { data: groups, refetch } = useQuery<PhotoGroup[]>({
+const groups = ref<PhotoGroup[]>([]);
+
+const { refetch } = useQuery<PhotoGroup[]>({
   queryKey: [],
   queryFn: async () => {
     const { data } = await axiosInstance.get<PhotoGroupList>("/apis/console.api.photo.halo.run/v1alpha1/photogroups");
@@ -51,6 +53,8 @@ const { data: groups, refetch } = useQuery<PhotoGroup[]>({
     return deletingGroups?.length ? 1000 : false;
   },
   onSuccess(data) {
+    groups.value = data;
+
     if (selectedGroup.value) {
       const groupNames = data.map((group) => group.metadata.name);
       if (groupNames.includes(selectedGroup.value)) {
@@ -131,23 +135,29 @@ defineExpose({
       </VEmpty>
     </Transition>
     <Transition v-else appear name="fade">
-      <Draggable
-        v-model="groups"
-        class="box-border size-full divide-y divide-gray-100"
-        group="group"
-        handle=".drag-element"
-        item-key="metadata.name"
-        tag="ul"
-        @change="handleSaveInBatch"
-      >
-        <template #item="{ element: group }">
-          <li @click="handleSelectedClick(group)">
-            <VEntity :is-selected="selectedGroup === group.metadata.name" class="group">
+      <div class="w-full overflow-x-auto">
+        <table class="w-full border-spacing-0">
+          <VueDraggable
+            v-model="groups"
+            class="divide-y divide-gray-100"
+            group="group"
+            handle=".drag-element"
+            item-key="metadata.name"
+            tag="tbody"
+            @update="handleSaveInBatch"
+          >
+            <VEntity
+              v-for="group in groups"
+              :key="group.metadata.name"
+              :is-selected="selectedGroup === group.metadata.name"
+              class="group"
+              @click="handleSelectedClick(group)"
+            >
               <template #prepend>
                 <div
                   class="drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all hover:bg-gray-200 group-hover:flex"
                 >
-                  <IconList class="h-3.5 w-3.5" />
+                  <IconList class="size-3.5" />
                 </div>
               </template>
 
@@ -171,9 +181,9 @@ defineExpose({
                 <VDropdownItem type="danger" @click="handleDelete(group)"> 删除 </VDropdownItem>
               </template>
             </VEntity>
-          </li>
-        </template>
-      </Draggable>
+          </VueDraggable>
+        </table>
+      </div>
     </Transition>
 
     <template v-if="!loading" #footer>

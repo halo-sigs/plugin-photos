@@ -15,8 +15,8 @@ importers:
         specifier: ^2.17.0
         version: 2.17.0(axios@1.7.2)
       '@halo-dev/components':
-        specifier: ^2.17.0
-        version: 2.17.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
+        specifier: https://pkg.pr.new/@halo-dev/components@7383
+        version: https://pkg.pr.new/@halo-dev/components@7383(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
       '@halo-dev/console-shared':
         specifier: ^2.17.0
         version: 2.17.0(axios@1.7.2)(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))
@@ -41,9 +41,9 @@ importers:
       vue:
         specifier: ^3.4.33
         version: 3.4.33(typescript@5.5.3)
-      vuedraggable:
-        specifier: ^4.1.0
-        version: 4.1.0(vue@3.4.33(typescript@5.5.3))
+      vue-draggable-plus:
+        specifier: ^0.6.0
+        version: 0.6.0(@types/sortablejs@1.15.8)
     devDependencies:
       '@halo-dev/ui-plugin-bundler-kit':
         specifier: ^2.17.0
@@ -474,10 +474,11 @@ packages:
     peerDependencies:
       axios: ^1.7.x
 
-  '@halo-dev/components@2.17.0':
-    resolution: {integrity: sha512-yujCVNfpZA1HjpilxD1Dzkh5Ge54u9hcIyuGj7Mr8hNHAY1xgiVo0uvuYwm8ik5/njI9HED4GXR2JIreSu/PeA==}
+  '@halo-dev/components@https://pkg.pr.new/@halo-dev/components@7383':
+    resolution: {tarball: https://pkg.pr.new/@halo-dev/components@7383}
+    version: 2.21.0
     peerDependencies:
-      vue: ^3.4.27
+      vue: ^3.5.13
       vue-router: ^4.3.2
 
   '@halo-dev/console-shared@2.17.0':
@@ -695,6 +696,9 @@ packages:
 
   '@types/semver@7.5.0':
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
+
+  '@types/sortablejs@1.15.8':
+    resolution: {integrity: sha512-b79830lW+RZfwaztgs1aVPgbasJ8e7AXtZYHTELNXZPsERt4ymJdjV4OccDbHQAvHrCcFpbF78jkm0R6h/pZVg==}
 
   '@types/tough-cookie@4.0.2':
     resolution: {integrity: sha512-Q5vtl1W5ue16D+nIaW8JWebSSraJVlK+EthKn7e7UcD4KWsaSJ8BqGPXNaPghgtcn/fhvrN17Tv8ksUsQpiplw==}
@@ -2317,9 +2321,6 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
-  sortablejs@1.14.0:
-    resolution: {integrity: sha512-pBXvQCs5/33fdN1/39pPL0NZF20LeRbLQ5jtnheIPN9JQAaufGjKdWduZn4U7wCtVuzKhmRkI0DFYHYRbB2H1w==}
-
   source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
@@ -2643,6 +2644,15 @@ packages:
       '@vue/composition-api':
         optional: true
 
+  vue-draggable-plus@0.6.0:
+    resolution: {integrity: sha512-G5TSfHrt9tX9EjdG49InoFJbt2NYk0h3kgjgKxkFWr3ulIUays0oFObr5KZ8qzD4+QnhtALiRwIqY6qul4egqw==}
+    peerDependencies:
+      '@types/sortablejs': ^1.15.0
+      '@vue/composition-api': '*'
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+
   vue-eslint-parser@9.3.1:
     resolution: {integrity: sha512-Clr85iD2XFZ3lJ52/ppmUDG/spxQu6+MAeHXjjyI4I1NUYZ9xmenQp4N0oaHJhrA8OOxltCVxMRfANGa70vU0g==}
     engines: {node: ^14.17.0 || >=16.0.0}
@@ -2681,11 +2691,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  vuedraggable@4.1.0:
-    resolution: {integrity: sha512-FU5HCWBmsf20GpP3eudURW3WdWTKIbEIQxh9/8GE806hydR9qZqRRxRE3RjqX7PkuLuMQG/A7n3cfj9rCEchww==}
-    peerDependencies:
-      vue: ^3.0.1
 
   w3c-hr-time@1.0.2:
     resolution: {integrity: sha512-z8P5DvDNjKDoFIHK7q8r8lackT6l+jo/Ye3HOle7l9nICP9lf1Ci25fy9vHd0JOWewkIFzXIEig3TdKT7JQ5fQ==}
@@ -3127,7 +3132,7 @@ snapshots:
     dependencies:
       axios: 1.7.2
 
-  '@halo-dev/components@2.17.0(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))':
+  '@halo-dev/components@https://pkg.pr.new/@halo-dev/components@7383(vue-router@4.2.4(vue@3.4.33(typescript@5.5.3)))(vue@3.4.33(typescript@5.5.3))':
     dependencies:
       floating-vue: 5.2.2(vue@3.4.33(typescript@5.5.3))
       vue: 3.4.33(typescript@5.5.3)
@@ -3323,6 +3328,8 @@ snapshots:
   '@types/node@16.18.103': {}
 
   '@types/semver@7.5.0': {}
+
+  '@types/sortablejs@1.15.8': {}
 
   '@types/tough-cookie@4.0.2': {}
 
@@ -5156,8 +5163,6 @@ snapshots:
 
   slash@3.0.0: {}
 
-  sortablejs@1.14.0: {}
-
   source-map-js@1.0.2: {}
 
   source-map-js@1.2.0: {}
@@ -5453,6 +5458,10 @@ snapshots:
     dependencies:
       vue: 3.4.33(typescript@5.5.3)
 
+  vue-draggable-plus@0.6.0(@types/sortablejs@1.15.8):
+    dependencies:
+      '@types/sortablejs': 1.15.8
+
   vue-eslint-parser@9.3.1(eslint@8.57.0):
     dependencies:
       debug: 4.3.4
@@ -5509,11 +5518,6 @@ snapshots:
       '@vue/shared': 3.4.33
     optionalDependencies:
       typescript: 5.5.3
-
-  vuedraggable@4.1.0(vue@3.4.33(typescript@5.5.3)):
-    dependencies:
-      sortablejs: 1.14.0
-      vue: 3.4.33(typescript@5.5.3)
 
   w3c-hr-time@1.0.2:
     dependencies:
