@@ -44,7 +44,7 @@ const {
   isLoading,
   refetch,
 } = useQuery<Photo[]>({
-  queryKey: [page, size, keyword, selectedGroup],
+  queryKey: ["plugin:photos:data", page, size, keyword, selectedGroup],
   queryFn: async () => {
     if (!selectedGroup.value) {
       return [];
@@ -70,9 +70,8 @@ const {
       });
   },
   refetchInterval(data) {
-    const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
-
-    return deletingGroups?.length ? 1000 : false;
+    const hasDeletingGroup = data?.some((group) => !!group.metadata.deletionTimestamp);
+    return hasDeletingGroup ? 1000 : false;
   },
   refetchOnWindowFocus: false,
 });
@@ -288,13 +287,18 @@ const pageRefetch = async () => {
   await refetch();
   selectedPhotos.value = new Set<Photo>();
 };
+
+const onEditingModalClose = () => {
+  editingModal.value = false;
+  refetch();
+};
 </script>
 <template>
   <PhotoEditingModal
-    v-model:visible="editingModal"
+    v-if="editingModal"
     :photo="selectedPhoto"
     :group="selectedGroup"
-    @close="refetch()"
+    @close="onEditingModalClose"
     @saved="pageRefetch"
   >
     <template #append-actions>
@@ -309,29 +313,29 @@ const pageRefetch = async () => {
   <AttachmentSelectorModal v-model:visible="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
   <VPageHeader title="图库">
     <template #icon>
-      <RiImage2Line class="mr-2 self-center" />
+      <RiImage2Line />
     </template>
   </VPageHeader>
-  <div class="p-4">
-    <div class="flex flex-col gap-2 lg:flex-row">
-      <div class="w-full flex-none lg:w-96">
+  <div class=":uno: p-4">
+    <div class=":uno: flex flex-col gap-2 lg:flex-row">
+      <div class=":uno: w-full flex-none lg:w-96">
         <GroupList ref="groupListRef" @select="groupSelectHandle" />
       </div>
-      <div class="flex-1 shrink min-w-0">
+      <div class=":uno: min-w-0 flex-1 shrink">
         <VCard>
           <template #header>
-            <div class="block w-full bg-gray-50 px-4 py-3">
-              <div class="relative flex flex-col items-start sm:flex-row sm:items-center">
-                <div class="mr-4 hidden items-center sm:flex">
+            <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+              <div class=":uno: relative flex flex-col items-start sm:flex-row sm:items-center">
+                <div class=":uno: mr-4 hidden items-center sm:flex">
                   <input v-model="checkedAll" type="checkbox" @change="handleCheckAllChange" />
                 </div>
-                <div class="flex w-full flex-1 sm:w-auto">
+                <div class=":uno: w-full flex flex-1 sm:w-auto">
                   <SearchInput v-if="!selectedPhotos.size" v-model="keyword" />
                   <VSpace v-else>
                     <VButton type="danger" @click="handleDeleteInBatch"> 删除 </VButton>
                   </VSpace>
                 </div>
-                <div v-if="selectedGroup" v-permission="['plugin:photos:manage']" class="mt-4 flex sm:mt-0">
+                <div v-if="selectedGroup" v-permission="['plugin:photos:manage']" class=":uno: mt-4 flex sm:mt-0">
                   <VDropdown>
                     <VButton size="xs"> 新增 </VButton>
                     <template #popper>
@@ -354,7 +358,7 @@ const pageRefetch = async () => {
                   <VButton @click="refetch"> 刷新</VButton>
                   <VButton v-permission="['plugin:photos:manage']" type="primary" @click="handleOpenEditingModal()">
                     <template #icon>
-                      <IconAddCircle class="size-full" />
+                      <IconAddCircle class=":uno: size-full" />
                     </template>
                     新增图片
                   </VButton>
@@ -363,20 +367,23 @@ const pageRefetch = async () => {
             </VEmpty>
           </Transition>
           <Transition v-else appear name="fade">
-            <div class="mt-2 grid grid-cols-1 gap-x-2 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" role="list">
+            <div
+              class=":uno: grid grid-cols-1 mt-2 gap-x-2 gap-y-3 lg:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5"
+              role="list"
+            >
               <VCard
                 v-for="photo in photos"
                 :key="photo.metadata.name"
-                :body-class="['!p-0']"
+                :body-class="[':uno: !p-0']"
                 :class="{
-                  'ring-primary ring-1': isChecked(photo),
-                  'ring-1 ring-red-600': photo.metadata.deletionTimestamp,
+                  ':uno: ring-primary ring-1': isChecked(photo),
+                  ':uno: ring-1 ring-red-600': photo.metadata.deletionTimestamp,
                 }"
-                class="hover:shadow"
+                class=":uno: hover:shadow"
                 @click="handleOpenEditingModal(photo)"
               >
-                <div class="group relative bg-white">
-                  <div class="aspect-16/9 block size-full cursor-pointer overflow-hidden bg-gray-100">
+                <div class=":uno: group relative bg-white">
+                  <div class=":uno: block aspect-16/9 size-full cursor-pointer overflow-hidden bg-gray-100">
                     <LazyImage
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
@@ -384,13 +391,13 @@ const pageRefetch = async () => {
                       classes="size-full pointer-events-none group-hover:opacity-75"
                     >
                       <template #loading>
-                        <div class="flex h-full justify-center">
+                        <div class=":uno: h-full flex justify-center">
                           <VLoading></VLoading>
                         </div>
                       </template>
                       <template #error>
-                        <div class="flex h-full items-center justify-center object-cover">
-                          <span class="text-xs text-red-400"> 加载异常 </span>
+                        <div class=":uno: h-full flex items-center justify-center object-cover">
+                          <span class=":uno: text-xs text-red-400"> 加载异常 </span>
                         </div>
                       </template>
                     </LazyImage>
@@ -398,27 +405,30 @@ const pageRefetch = async () => {
 
                   <p
                     v-tooltip="photo.spec.displayName"
-                    class="block cursor-pointer truncate px-2 py-1 text-center text-xs font-medium text-gray-700"
+                    class=":uno: block cursor-pointer truncate px-2 py-1 text-center text-xs text-gray-700 font-medium"
                   >
                     {{ photo.spec.displayName }}
                   </p>
 
-                  <div v-if="photo.metadata.deletionTimestamp" class="absolute top-1 right-1 text-xs text-red-300">
+                  <div
+                    v-if="photo.metadata.deletionTimestamp"
+                    class=":uno: absolute right-1 top-1 text-xs text-red-300"
+                  >
                     删除中...
                   </div>
 
                   <div
                     v-if="!photo.metadata.deletionTimestamp"
                     v-permission="['plugin:photos:manage']"
-                    :class="{ '!flex': selectedPhotos.has(photo) }"
-                    class="absolute top-0 left-0 hidden h-1/3 w-full cursor-pointer justify-end bg-gradient-to-b from-gray-300 to-transparent ease-in-out group-hover:flex"
+                    :class="{ ':uno: !flex': selectedPhotos.has(photo) }"
+                    class=":uno: absolute left-0 top-0 hidden h-1/3 w-full cursor-pointer justify-end from-gray-300 to-transparent bg-gradient-to-b ease-in-out group-hover:flex"
                     @click.stop="selectedPhotos.has(photo) ? selectedPhotos.delete(photo) : selectedPhotos.add(photo)"
                   >
                     <IconCheckboxFill
                       :class="{
-                        '!text-primary': selectedPhotos.has(photo),
+                        ':uno: !text-primary': selectedPhotos.has(photo),
                       }"
-                      class="hover:text-primary mt-1 mr-1 h-6 w-6 cursor-pointer text-white transition-all"
+                      class=":uno: hover:text-primary mr-1 mt-1 h-6 w-6 cursor-pointer text-white transition-all"
                     />
                   </div>
                 </div>

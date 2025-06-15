@@ -1,7 +1,8 @@
-import PhotoList from "@/views/PhotoList.vue";
 import { definePlugin } from "@halo-dev/console-shared";
-import { markRaw } from "vue";
+import { defineAsyncComponent, markRaw } from "vue";
 import RiImage2Line from "~icons/ri/image-2-line";
+import "uno.css";
+import { VLoading } from "@halo-dev/components";
 
 export default definePlugin({
   routes: [
@@ -10,7 +11,10 @@ export default definePlugin({
       route: {
         path: "/photos",
         name: "Photos",
-        component: PhotoList,
+        component: defineAsyncComponent({
+          loader: () => import("@/views/PhotoList.vue"),
+          loadingComponent: VLoading,
+        }),
         meta: {
           permissions: ["plugin:photos:view"],
           menu: {
