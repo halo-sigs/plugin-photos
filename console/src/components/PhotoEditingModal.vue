@@ -1,26 +1,23 @@
 <script lang="ts" setup>
 import type { Photo } from "@/types";
-import { reset, submitForm } from "@formkit/core";
+import { submitForm } from "@formkit/core";
 import { axiosInstance } from "@halo-dev/api-client";
-import { IconSave, VButton, VModal } from "@halo-dev/components";
+import { VButton, VModal, VSpace } from "@halo-dev/components";
 import { cloneDeep } from "lodash-es";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    visible: boolean;
     photo?: Photo;
     group?: string;
   }>(),
   {
-    visible: false,
     photo: undefined,
     group: undefined,
   }
 );
 
 const emit = defineEmits<{
-  (event: "update:visible", value: boolean): void;
   (event: "close"): void;
   (event: "saved", photo: Photo): void;
 }>();
@@ -41,8 +38,8 @@ const initialFormState: Photo = {
 } as Photo;
 
 const formState = ref<Photo>(cloneDeep(initialFormState));
-
-const saving = ref<boolean>(false);
+const isSubmitting = ref<boolean>(false);
+const modal = useTemplateRef<InstanceType<typeof VModal> | null>("modal");
 
 const isUpdateMode = computed(() => {
   return !!formState.value.metadata.creationTimestamp;
@@ -52,37 +49,12 @@ const modalTitle = computed(() => {
   return isUpdateMode.value ? "编辑图片" : "添加图片";
 });
 
-const onVisibleChange = (visible: boolean) => {
-  emit("update:visible", visible);
-  if (!visible) {
-    emit("close");
+onMounted(() => {
+  if (props.photo) {
+    formState.value = cloneDeep(props.photo);
   }
-};
+});
 
-const handleResetForm = () => {
-  formState.value = cloneDeep(initialFormState);
-  reset("photo-form");
-};
-
-watch(
-  () => props.visible,
-  (visible) => {
-    if (!visible && !props.photo) {
-      handleResetForm();
-    }
-  }
-);
-
-watch(
-  () => props.photo,
-  (photo) => {
-    if (photo) {
-      formState.value = cloneDeep(photo);
-    } else {
-      handleResetForm();
-    }
-  }
-);
 const annotationsFormRef = ref();
 
 const handleSavePhoto = async () => {
@@ -97,7 +69,7 @@ const handleSavePhoto = async () => {
     ...customAnnotations,
   };
   try {
-    saving.value = true;
+    isSubmitting.value = true;
     if (isUpdateMode.value) {
       await axiosInstance.put<Photo>(
         `/apis/core.halo.run/v1alpha1/photos/${formState.value.metadata.name}`,
@@ -110,16 +82,16 @@ const handleSavePhoto = async () => {
       const { data } = await axiosInstance.post<Photo>(`/apis/core.halo.run/v1alpha1/photos`, formState.value);
       emit("saved", data);
     }
-    onVisibleChange(false);
+    modal.value?.close();
   } catch (e) {
     console.error(e);
   } finally {
-    saving.value = false;
+    isSubmitting.value = false;
   }
 };
 </script>
 <template>
-  <VModal :title="modalTitle" :visible="visible" :width="650" @update:visible="onVisibleChange">
+  <VModal ref="modal" :title="modalTitle" :width="650" @close="emit('close')">
     <template #actions>
       <slot name="append-actions" />
     </template>
@@ -133,13 +105,13 @@ const handleSavePhoto = async () => {
       type="form"
       @submit="handleSavePhoto"
     >
-      <div class="md:grid md:grid-cols-4 md:gap-6">
-        <div class="md:col-span-1">
-          <div class="sticky top-0">
-            <span class="text-base font-medium text-gray-900"> 常规 </span>
+      <div class=":uno: md:grid md:grid-cols-4 md:gap-6">
+        <div class=":uno: md:col-span-1">
+          <div class=":uno: sticky top-0">
+            <span class=":uno: text-base text-gray-900 font-medium"> 常规 </span>
           </div>
         </div>
-        <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
+        <div class=":uno: mt-5 md:col-span-3 md:mt-0 divide-y divide-gray-100">
           <FormKit name="displayName" label="名称" type="text" validation="required"></FormKit>
           <FormKit name="url" label="图片地址" type="attachment" :accepts="['image/*']" validation="required"></FormKit>
           <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']"></FormKit>
@@ -147,18 +119,17 @@ const handleSavePhoto = async () => {
         </div>
       </div>
     </FormKit>
-    <div class="py-5">
-      <div class="border-t border-gray-200"></div>
+    <div class=":uno: py-5">
+      <div class=":uno: border-t border-gray-200"></div>
     </div>
-    <div class="md:grid md:grid-cols-4 md:gap-6">
-      <div class="md:col-span-1">
-        <div class="sticky top-0">
-          <span class="text-base font-medium text-gray-900"> 元数据 </span>
+    <div class=":uno: md:grid md:grid-cols-4 md:gap-6">
+      <div class=":uno: md:col-span-1">
+        <div class=":uno: sticky top-0">
+          <span class=":uno: text-base text-gray-900 font-medium"> 元数据 </span>
         </div>
       </div>
-      <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
+      <div class=":uno: mt-5 md:col-span-3 md:mt-0 divide-y divide-gray-100">
         <AnnotationsForm
-          v-if="visible"
           :key="formState.metadata.name"
           ref="annotationsFormRef"
           :value="formState.metadata.annotations"
@@ -168,12 +139,10 @@ const handleSavePhoto = async () => {
       </div>
     </div>
     <template #footer>
-      <VButton :loading="saving" type="secondary" @click="submitForm('photo-form')">
-        <template #icon>
-          <IconSave class="size-full" />
-        </template>
-        保存
-      </VButton>
+      <VSpace>
+        <VButton :loading="isSubmitting" type="secondary" @click="submitForm('photo-form')"> 保存 </VButton>
+        <VButton @click="modal?.close()">取消</VButton>
+      </VSpace>
     </template>
   </VModal>
 </template>

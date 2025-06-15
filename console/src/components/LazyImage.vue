@@ -45,6 +45,6 @@ onMounted(async () => {
     <template v-else-if="error">
       <slot name="error"> error </slot>
     </template>
-    <img class="object-cover size-full" v-else :src="src" :alt="alt" />
+    <img v-else class=":uno: size-full object-cover" :src="src" :alt="alt" />
   </div>
 </template>

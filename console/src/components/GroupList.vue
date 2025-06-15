@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { PhotoGroup, PhotoGroupList } from "@/types";
+import type { PhotoGroup, PhotoGroupList } from "../types/index";
 import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
@@ -23,7 +23,6 @@ const emit = defineEmits<{
   (event: "select", group?: string): void;
 }>();
 
-const loading = ref(false);
 const groupEditingModal = ref(false);
 
 const updateGroup = ref<PhotoGroup>();
@@ -32,8 +31,8 @@ const selectedGroup = useRouteQuery<string>("photo-group");
 
 const groups = ref<PhotoGroup[]>([]);
 
-const { refetch } = useQuery<PhotoGroup[]>({
-  queryKey: [],
+const { refetch, isLoading } = useQuery<PhotoGroup[]>({
+  queryKey: ["plugin:photos:groups"],
   queryFn: async () => {
     const { data } = await axiosInstance.get<PhotoGroupList>("/apis/console.api.photo.halo.run/v1alpha1/photogroups");
     return data.items
@@ -48,9 +47,8 @@ const { refetch } = useQuery<PhotoGroup[]>({
       });
   },
   refetchInterval(data) {
-    const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
-
-    return deletingGroups?.length ? 1000 : false;
+    const hasDeletingGroup = data?.some((group) => !!group.metadata.deletionTimestamp);
+    return hasDeletingGroup ? 1000 : false;
   },
   onSuccess(data) {
     groups.value = data;
@@ -120,11 +118,16 @@ const handleSelectedClick = (group: PhotoGroup) => {
 defineExpose({
   refetch,
 });
+
+function onGroupEditingModalClose() {
+  groupEditingModal.value = false;
+  refetch();
+}
 </script>
 <template>
-  <GroupEditingModal v-model:visible="groupEditingModal" :group="updateGroup" @close="refetch()" />
-  <VCard :body-class="['!p-0']" title="分组">
-    <VLoading v-if="loading" />
+  <GroupEditingModal v-if="groupEditingModal" :group="updateGroup" @close="onGroupEditingModalClose" />
+  <VCard :body-class="[':uno: !p-0']" title="分组">
+    <VLoading v-if="isLoading" />
     <Transition v-else-if="!groups || !groups.length" appear name="fade">
       <VEmpty message="你可以尝试刷新或者新建分组" title="当前没有分组">
         <template #actions>
@@ -135,11 +138,11 @@ defineExpose({
       </VEmpty>
     </Transition>
     <Transition v-else appear name="fade">
-      <div class="w-full overflow-x-auto">
-        <table class="w-full border-spacing-0">
+      <div class=":uno: w-full overflow-x-auto">
+        <table class=":uno: w-full border-spacing-0">
           <VueDraggable
             v-model="groups"
-            class="divide-y divide-gray-100"
+            class=":uno: divide-y divide-gray-100"
             group="group"
             handle=".drag-element"
             item-key="metadata.name"
@@ -150,14 +153,14 @@ defineExpose({
               v-for="group in groups"
               :key="group.metadata.name"
               :is-selected="selectedGroup === group.metadata.name"
-              class="group"
+              class=":uno: group"
               @click="handleSelectedClick(group)"
             >
               <template #prepend>
                 <div
-                  class="drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all hover:bg-gray-200 group-hover:flex"
+                  class=":uno: drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all group-hover:flex hover:bg-gray-200"
                 >
-                  <IconList class="size-3.5" />
+                  <IconList class=":uno: size-3.5" />
                 </div>
               </template>
 
@@ -186,17 +189,17 @@ defineExpose({
       </div>
     </Transition>
 
-    <template v-if="!loading" #footer>
-      <Transition appear name="fade">
-        <VButton
-          v-permission="['plugin:photos:manage']"
-          block
-          type="secondary"
-          @click="handleOpenEditingModal(undefined)"
-        >
-          新增分组
-        </VButton>
-      </Transition>
+    <template v-if="!isLoading" #footer>
+      <!-- @unocss-skip-start -->
+      <VButton
+        v-permission="['plugin:photos:manage']"
+        block
+        type="secondary"
+        @click="handleOpenEditingModal(undefined)"
+      >
+        新增分组
+      </VButton>
+      <!-- @unocss-skip-end -->
     </template>
   </VCard>
 </template>
