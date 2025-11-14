@@ -9,7 +9,7 @@ metadata:
 spec:
   enabled: true
   version: 1.0.0
-  requires: ">=2.21.0"
+  requires: ">=2.22.0"
   author:
     name: Halo
     website: https://github.com/halo-dev

@@ -11,7 +11,7 @@ const props = withDefaults(
     src: "",
     alt: "",
     classes: "",
-  }
+  },
 );
 
 const isLoading = ref(false);

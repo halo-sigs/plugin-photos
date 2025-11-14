@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { PhotoGroup, PhotoGroupList } from "../types/index";
 import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
@@ -17,6 +16,7 @@ import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
 import { ref } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
+import type { PhotoGroup, PhotoGroupList } from "../types/index";
 import GroupEditingModal from "./GroupEditingModal.vue";
 
 const emit = defineEmits<{
@@ -62,7 +62,7 @@ const { refetch, isLoading } = useQuery<PhotoGroup[]>({
     }
 
     if (data.length) {
-      handleSelectedClick(data[0]);
+      handleSelectedClick(data[0]!);
     } else {
       selectedGroup.value = "";
       emit("select", "");

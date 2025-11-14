@@ -3,7 +3,7 @@ import type { Photo } from "@/types";
 import { submitForm } from "@formkit/core";
 import { axiosInstance } from "@halo-dev/api-client";
 import { VButton, VModal, VSpace } from "@halo-dev/components";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from "es-toolkit";
 import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 
 const props = withDefaults(
@@ -14,7 +14,7 @@ const props = withDefaults(
   {
     photo: undefined,
     group: undefined,
-  }
+  },
 );
 
 const emit = defineEmits<{
@@ -73,7 +73,7 @@ const handleSavePhoto = async () => {
     if (isUpdateMode.value) {
       await axiosInstance.put<Photo>(
         `/apis/core.halo.run/v1alpha1/photos/${formState.value.metadata.name}`,
-        formState.value
+        formState.value,
       );
     } else {
       if (props.group) {
