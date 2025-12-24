@@ -4,7 +4,7 @@ import { submitForm } from "@formkit/core";
 import { axiosInstance } from "@halo-dev/api-client";
 import { VButton, VModal, VSpace } from "@halo-dev/components";
 import { useMagicKeys } from "@vueuse/core";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from "es-toolkit";
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 
 const props = withDefaults(
@@ -13,7 +13,7 @@ const props = withDefaults(
   }>(),
   {
     group: undefined,
-  }
+  },
 );
 
 const emit = defineEmits<{
@@ -68,7 +68,7 @@ const handleCreateOrUpdateGroup = async () => {
     if (isUpdateMode.value) {
       await axiosInstance.put(
         `/apis/core.halo.run/v1alpha1/photogroups/${formState.value.metadata.name}`,
-        formState.value
+        formState.value,
       );
     } else {
       await axiosInstance.post("/apis/core.halo.run/v1alpha1/photogroups", formState.value);
@@ -89,17 +89,23 @@ onMounted(() => {
 
 const { ControlLeft_Enter, Meta_Enter } = useMagicKeys();
 
-watch(ControlLeft_Enter, (v) => {
-  if (v && !isMac) {
-    submitForm("photo-group-form");
-  }
-});
+watch(
+  () => ControlLeft_Enter?.value,
+  (v) => {
+    if (v && !isMac) {
+      submitForm("photo-group-form");
+    }
+  },
+);
 
-watch(Meta_Enter, (v) => {
-  if (v && isMac) {
-    submitForm("photo-group-form");
-  }
-});
+watch(
+  () => Meta_Enter?.value,
+  (v) => {
+    if (v && isMac) {
+      submitForm("photo-group-form");
+    }
+  },
+);
 </script>
 <template>
   <VModal ref="modal" :width="600" :title="modalTitle" @close="emit('close')">

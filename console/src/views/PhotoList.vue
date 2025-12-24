@@ -20,7 +20,7 @@ import {
   VPagination,
   VSpace,
 } from "@halo-dev/components";
-import type { AttachmentLike } from "@halo-dev/console-shared";
+import type { AttachmentLike } from "@halo-dev/ui-shared";
 import { useQuery } from "@tanstack/vue-query";
 import Fuse from "fuse.js";
 import { computed, nextTick, ref, watch } from "vue";
@@ -161,7 +161,7 @@ watch(
   () => selectedPhotos.value.size,
   (newValue) => {
     checkedAll.value = newValue === photos.value?.length;
-  }
+  },
 );
 
 // search
@@ -178,7 +178,7 @@ watch(
       keys: ["spec.displayName", "metadata.name", "spec.description", "spec.url"],
       useExtendedSearch: true,
     });
-  }
+  },
 );
 
 const searchResults = computed({
