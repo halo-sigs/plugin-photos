@@ -277,6 +277,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
 
   Toast.success(`新建成功，一共创建了 ${photos.length} 张图片。`);
   pageRefetch();
+  attachmentModal.value = false;
 };
 
 const groupSelectHandle = (group?: string) => {
@@ -311,7 +312,7 @@ const onEditingModalClose = () => {
       </span>
     </template>
   </PhotoEditingModal>
-  <AttachmentSelectorModal v-model:visible="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
+  <AttachmentSelectorModal v-if="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
   <VPageHeader title="图库">
     <template #icon>
       <RiImage2Line />
