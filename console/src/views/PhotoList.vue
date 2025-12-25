@@ -21,6 +21,7 @@ import {
   VSpace,
 } from "@halo-dev/components";
 import type { AttachmentLike } from "@halo-dev/ui-shared";
+import { utils } from "@halo-dev/ui-shared";
 import { useQuery } from "@tanstack/vue-query";
 import Fuse from "fuse.js";
 import { computed, nextTick, ref, watch } from "vue";
@@ -276,6 +277,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
 
   Toast.success(`新建成功，一共创建了 ${photos.length} 张图片。`);
   pageRefetch();
+  attachmentModal.value = false;
 };
 
 const groupSelectHandle = (group?: string) => {
@@ -310,7 +312,7 @@ const onEditingModalClose = () => {
       </span>
     </template>
   </PhotoEditingModal>
-  <AttachmentSelectorModal v-model:visible="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
+  <AttachmentSelectorModal v-if="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
   <VPageHeader title="图库">
     <template #icon>
       <RiImage2Line />
@@ -387,7 +389,7 @@ const onEditingModalClose = () => {
                     <LazyImage
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
-                      :src="photo.spec.cover || photo.spec.url"
+                      :src="utils.attachment.getThumbnailUrl(photo.spec.cover || photo.spec.url, 'M')"
                       classes="size-full pointer-events-none group-hover:opacity-75"
                     >
                       <template #loading>
