@@ -21,6 +21,7 @@ import {
   VSpace,
 } from "@halo-dev/components";
 import type { AttachmentLike } from "@halo-dev/ui-shared";
+import { utils } from "@halo-dev/ui-shared";
 import { useQuery } from "@tanstack/vue-query";
 import Fuse from "fuse.js";
 import { computed, nextTick, ref, watch } from "vue";
@@ -387,7 +388,7 @@ const onEditingModalClose = () => {
                     <LazyImage
                       :key="photo.metadata.name"
                       :alt="photo.spec.displayName"
-                      :src="photo.spec.cover || photo.spec.url"
+                      :src="utils.attachment.getThumbnailUrl(photo.spec.cover || photo.spec.url, 'M')"
                       classes="size-full pointer-events-none group-hover:opacity-75"
                     >
                       <template #loading>
