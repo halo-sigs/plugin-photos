@@ -1,5 +1,6 @@
 package run.halo.photos.service.impl;
 
+import static run.halo.app.extension.index.query.Queries.equal;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
 import org.springframework.data.domain.Sort;
@@ -11,7 +12,6 @@ import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
-import run.halo.app.extension.index.query.QueryFactory;
 import run.halo.app.extension.router.IListRequest.QueryListRequest;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
@@ -57,7 +57,7 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
             .flatMap(this.client::delete)
             .flatMap(deleted -> {
                     var listOptions = ListOptions.builder()
-                        .andQuery(QueryFactory.equal("spec.groupName", name))
+                        .andQuery(equal("spec.groupName", name))
                         .build();
                     return this.client.listAll(Photo.class, listOptions, Sort.unsorted())
                         .flatMap(this.client::delete)

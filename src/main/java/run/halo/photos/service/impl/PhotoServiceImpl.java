@@ -1,5 +1,7 @@
 package run.halo.photos.service.impl;
 
+import static run.halo.app.extension.index.query.Queries.contains;
+import static run.halo.app.extension.index.query.Queries.equal;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
 import org.apache.commons.lang3.StringUtils;
@@ -9,7 +11,6 @@ import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
-import run.halo.app.extension.index.query.QueryFactory;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoQuery;
 import run.halo.photos.service.PhotoService;
@@ -44,10 +45,10 @@ class PhotoServiceImpl implements PhotoService {
         );
 
         if (StringUtils.isNotBlank(query.getKeyword())) {
-            builder.andQuery(QueryFactory.contains("spec.displayName", query.getKeyword()));
+            builder.andQuery(contains("spec.displayName", query.getKeyword()));
         }
         if (StringUtils.isNotBlank(query.getGroup())) {
-            builder.andQuery(QueryFactory.equal("spec.groupName", query.getGroup()));
+            builder.andQuery(equal("spec.groupName", query.getGroup()));
         }
         return builder.build();
     }

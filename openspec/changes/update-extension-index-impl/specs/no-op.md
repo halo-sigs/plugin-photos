@@ -1,0 +1,1 @@
+This change involves no new or modified capabilities. It is a pure internal implementation update to replace deprecated Halo APIs with their modern equivalents. All behavioral requirements remain unchanged.
