@@ -3,6 +3,8 @@ package run.halo.photos.finders.impl;
 import static org.springframework.data.domain.Sort.Order.asc;
 import static org.springframework.data.domain.Sort.Order.desc;
 
+import static run.halo.app.extension.index.query.Queries.equal;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
@@ -11,7 +13,6 @@ import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
-import run.halo.app.extension.index.query.QueryFactory;
 import run.halo.app.theme.finders.Finder;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
@@ -49,7 +50,7 @@ public class PhotoFInderImpl implements PhotoFinder {
     private Mono<ListResult<PhotoVo>> pagePhoto(Integer page, Integer size, String group) {
         var builder = ListOptions.builder();
         if (StringUtils.isNotEmpty(group)) {
-            builder.andQuery(QueryFactory.equal("spec.groupName", group));
+            builder.andQuery(equal("spec.groupName", group));
         }
         return client.listBy(Photo.class, builder.build(),
                 PageRequestImpl.of(page, size, defaultSort()))
@@ -65,7 +66,7 @@ public class PhotoFInderImpl implements PhotoFinder {
     @Override
     public Flux<PhotoVo> listBy(String groupName) {
         var options = ListOptions.builder()
-            .andQuery(QueryFactory.equal("spec.groupName", groupName))
+            .andQuery(equal("spec.groupName", groupName))
             .build();
         return client.listAll(Photo.class, options, defaultSort()).map(PhotoVo::from);
     }
