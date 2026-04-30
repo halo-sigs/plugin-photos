@@ -4,4 +4,6 @@ pluginManagement {
     }
 }
 rootProject.name = 'plugin-photos'
+include 'console'
+
 
