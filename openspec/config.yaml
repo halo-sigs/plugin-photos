@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  This is a Halo 2.0 plugin for photo gallery management.
+
+  Tech stack:
+  - Backend: Java 17, Gradle, Spring WebFlux (reactive), Lombok
+  - Frontend: Vue 3, TypeScript, Rsbuild, UnoCSS, pnpm
+
+  Key dependencies:
+  - @halo-dev/ui-shared, @halo-dev/components, @halo-dev/api-client
+  - @tanstack/vue-query, vue-draggable-plus
+
+  Conventions:
+  - Backend follows Halo's Extension model (AbstractExtension + @GVK annotations)
+  - Custom endpoints implement CustomEndpoint for console APIs
+  - Finders use @Finder annotation for theme-side APIs
+  - All data access uses ReactiveExtensionClient with Mono/Flux
+  - Frontend uses definePlugin from @halo-dev/ui-shared for route registration
+  - UnoCSS utility classes use the :uno: prefix in Vue templates
+  - Default sort: spec.priority ASC, metadata.creationTimestamp DESC, metadata.name ASC
+  - Console API base path: /apis/console.api.photo.halo.run/v1alpha1
+  - Standard CRUD path: /apis/core.halo.run/v1alpha1/photos and /photogroups
+
+  Domain:
+  - Photo: managed image with url, cover, description, priority, groupName
+  - PhotoGroup: collection of photos with displayName, priority, photoCount status
+  - Deleting a PhotoGroup cascades to delete all Photos in that group
