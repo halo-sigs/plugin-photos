@@ -156,12 +156,15 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             };
         },
         /**
-         * Upload a photo directly to the gallery.
-         * @param {string} [group] Photo group name
+         * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
+         * @param {File} file Image file to upload
+         * @param {string} [group] Photo group name to assign the new photo to
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadPhoto: async (group?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadPhoto: async (file: File, group?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('uploadPhoto', 'file', file)
             const localVarPath = `/apis/console.api.photo.halo.run/v1alpha1/photos/upload`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -173,6 +176,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             // authentication basicAuth required
             // http basic authentication required
@@ -182,15 +186,22 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (group !== undefined) {
-                localVarQueryParameter['group'] = group;
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
             }
-
-
+    
+            if (group !== undefined) { 
+                localVarFormParams.append('group', group as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -240,13 +251,14 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Upload a photo directly to the gallery.
-         * @param {string} [group] Photo group name
+         * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
+         * @param {File} file Image file to upload
+         * @param {string} [group] Photo group name to assign the new photo to
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadPhoto(group?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Photo>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadPhoto(group, options);
+        async uploadPhoto(file: File, group?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Photo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadPhoto(file, group, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ConsoleApiPhotoHaloRunV1alpha1PhotoApi.uploadPhoto']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -280,13 +292,13 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
             return localVarFp.listPhotos(requestParameters.page, requestParameters.size, requestParameters.labelSelector, requestParameters.fieldSelector, requestParameters.sort, requestParameters.keyword, requestParameters.group, requestParameters.ungrouped, requestParameters.tag, options).then((request) => request(axios, basePath));
         },
         /**
-         * Upload a photo directly to the gallery.
+         * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
          * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadPhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<Photo> {
-            return localVarFp.uploadPhoto(requestParameters.group, options).then((request) => request(axios, basePath));
+        uploadPhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest, options?: RawAxiosRequestConfig): AxiosPromise<Photo> {
+            return localVarFp.uploadPhoto(requestParameters.file, requestParameters.group, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -382,7 +394,14 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest {
  */
 export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest {
     /**
-     * Photo group name
+     * Image file to upload
+     * @type {File}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhoto
+     */
+    readonly file: File
+
+    /**
+     * Photo group name to assign the new photo to
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhoto
      */
@@ -419,14 +438,14 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     }
 
     /**
-     * Upload a photo directly to the gallery.
+     * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
      * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApi
      */
-    public uploadPhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest = {}, options?: RawAxiosRequestConfig) {
-        return ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(this.configuration).uploadPhoto(requestParameters.group, options).then((request) => request(this.axios, this.basePath));
+    public uploadPhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest, options?: RawAxiosRequestConfig) {
+        return ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(this.configuration).uploadPhoto(requestParameters.file, requestParameters.group, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

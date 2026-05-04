@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:37068",
+    "url" : "http://localhost:56010",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -255,16 +255,18 @@
     },
     "/apis/console.api.photo.halo.run/v1alpha1/photos/upload" : {
       "post" : {
-        "description" : "Upload a photo directly to the gallery.",
+        "description" : "Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.",
         "operationId" : "UploadPhoto",
-        "parameters" : [ {
-          "description" : "Photo group name",
-          "in" : "query",
-          "name" : "group",
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PhotoUploadRequest"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "default" : {
             "content" : {
@@ -1107,6 +1109,21 @@
           },
           "url" : {
             "type" : "string"
+          }
+        }
+      },
+      "PhotoUploadRequest" : {
+        "required" : [ "file" ],
+        "type" : "object",
+        "properties" : {
+          "file" : {
+            "type" : "string",
+            "description" : "Image file to upload",
+            "format" : "binary"
+          },
+          "group" : {
+            "type" : "string",
+            "description" : "Photo group name to assign the new photo to"
           }
         }
       },
