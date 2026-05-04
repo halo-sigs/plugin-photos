@@ -18,7 +18,7 @@ import run.halo.photos.PhotoGroup;
 import run.halo.photos.service.PhotoGroupService;
 
 /**
- * Service implementation for {@link Photo}.
+ * Service implementation for {@link PhotoGroup}.
  *
  * @author LIlGG
  * @since 1.0.0
