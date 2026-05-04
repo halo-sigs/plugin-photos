@@ -437,6 +437,27 @@ List<[#PhotoVo](#photovo)>
 }
 ```
 
+## Public API
+
+此插件额外提供了一组公共、匿名、只读的 JSON API，位于 `api.photo.halo.run/v1alpha1`，方便使用 React/Vue/Svelte 等前端框架构建客户端渲染图库的主题使用。
+
+### 端点列表
+
+| 端点 | 方法 | 说明 |
+| ---- | ---- | ---- |
+| `/apis/api.photo.halo.run/v1alpha1/photos` | `GET` | 分页列出图片，支持 `group`、`ungrouped`、`tag`、`keyword`、`labelSelector`、`fieldSelector`、`sort`、`page`、`size` 查询参数 |
+| `/apis/api.photo.halo.run/v1alpha1/photos/{name}` | `GET` | 根据 `metadata.name` 获取单张图片，不存在或已软删除时返回 `404` |
+| `/apis/api.photo.halo.run/v1alpha1/photogroups` | `GET` | 分页列出分组，返回 `metadata`、`spec` 和 `status.photoCount`，**不返回** `photos[]` |
+| `/apis/api.photo.halo.run/v1alpha1/tags` | `GET` | 列出所有不重复的标签名称及对应图片数量，支持可选的 `name` 参数进行大小写不敏感模糊过滤 |
+
+### 匿名访问
+
+插件内置了 `role-template-photos-anonymous` 角色模板，会自动聚合到匿名角色（`rbac.authorization.halo.run/aggregate-to-anonymous: "true"`），因此上述端点无需登录即可访问。但该角色**不会**授予 `console.api.photo.halo.run` 的访问权限，Console 端点仍需要认证。
+
+### GPS 隐私
+
+出于隐私考虑，通过 Public API 和 `photoFinder` 返回的 `PhotoVo` 中，`exif.gpsLatitude`、`exif.gpsLongitude`、`exif.gpsAltitude` 字段会被强制置为 `null`，JSON 响应中也不会包含这些字段。底层 `Photo` 扩展数据不受影响，Console 端点直接返回 `Photo` 时仍包含 GPS 数据。
+
 ### Annotations 元数据适配
 
 根据 Halo 的[元数据表单定义文档](https://docs.halo.run/developer-guide/annotations-form/)和[模型元数据文档](https://docs.halo.run/developer-guide/theme/annotations)，Halo 支持为部分模型的表单添加元数据表单，此插件同样适配了此功能，如果你作为主题开发者，需要为链接或者链接分组添加额外的字段，可以参考上述文档并结合下面的 TargetRef 列表进行适配。

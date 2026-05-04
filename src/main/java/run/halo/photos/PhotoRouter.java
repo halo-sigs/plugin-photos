@@ -2,7 +2,6 @@ package run.halo.photos;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
-import static run.halo.app.extension.index.query.Queries.equal;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -25,10 +24,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
-import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.PageRequestImpl;
+import run.halo.app.extension.index.query.Queries;
 import run.halo.app.plugin.ReactiveSettingFetcher;
 import run.halo.app.theme.router.UrlContextListResult;
 import run.halo.photos.finders.PhotoFinder;
+import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
 import run.halo.photos.vo.PhotoVo;
 
@@ -49,7 +50,7 @@ public class PhotoRouter {
     private static final int NEIGHBOR_WINDOW_SIZE = 5;
 
     private final PhotoFinder photoFinder;
-    private final ReactiveExtensionClient client;
+    private final PhotoPublicQueryService photoPublicQueryService;
     private final ReactiveSettingFetcher settingFetcher;
 
     /**
@@ -73,7 +74,9 @@ public class PhotoRouter {
             int page = positiveInt(queryParam(request, PAGE_PARAM), 1);
             return resolvePageSize(queryParam(request, SIZE_PARAM)).flatMap(size -> {
                 Mono<UrlContextListResult<PhotoVo>> photos =
-                    photoFinder.list(page, size, group)
+                    photoPublicQueryService.listPhotos(
+                            buildListOptions(group),
+                            PageRequestImpl.of(page, size, defaultPhotoSort()))
                         .map(list -> buildListContextResult(list, group, page, size));
                 Map<String, Object> model = new HashMap<>();
                 model.put("groups", photoGroups());
@@ -114,15 +117,14 @@ public class PhotoRouter {
             String group = queryParam(request, GROUP_PARAM);
             int page = positiveInt(queryParam(request, PAGE_PARAM), 1);
             return resolvePageSize(queryParam(request, SIZE_PARAM)).flatMap(size ->
-                client.fetch(Photo.class, name)
-                    .filter(photo -> !photo.isDeleted())
+                photoPublicQueryService.getByName(name)
                     .flatMap(photo -> renderOrRedirectDetail(request, photo, group, page, size))
                     .switchIfEmpty(ServerResponse.notFound().build())
             );
         };
     }
 
-    private Mono<ServerResponse> renderOrRedirectDetail(ServerRequest request, Photo photo,
+    private Mono<ServerResponse> renderOrRedirectDetail(ServerRequest request, PhotoVo photo,
         String group, int page, int size) {
         String photoGroup = photo.getSpec() == null ? null : photo.getSpec().getGroupName();
         if (StringUtils.isNotBlank(group) && !group.equals(photoGroup)) {
@@ -133,13 +135,13 @@ public class PhotoRouter {
         return renderDetail(request, photo, group, page, size);
     }
 
-    private Mono<ServerResponse> renderDetail(ServerRequest request, Photo photo,
+    private Mono<ServerResponse> renderDetail(ServerRequest request, PhotoVo photo,
         String group, int page, int size) {
         String photoName = photo.getMetadata().getName();
         return loadFilteredPhotos(group)
             .map(filtered -> {
                 int currentIndex = indexOf(filtered, photoName);
-                List<Photo> contextList;
+                List<PhotoVo> contextList;
                 int idx;
                 if (currentIndex < 0) {
                     contextList = List.of(photo);
@@ -154,15 +156,15 @@ public class PhotoRouter {
 
                 List<PhotoVo> neighbors = new ArrayList<>(end - start);
                 for (int i = start; i < end; i++) {
-                    neighbors.add(PhotoVo.from(contextList.get(i)));
+                    neighbors.add(contextList.get(i));
                 }
-                PhotoVo prev = idx > 0 ? PhotoVo.from(contextList.get(idx - 1)) : null;
-                PhotoVo next = idx + 1 < total ? PhotoVo.from(contextList.get(idx + 1)) : null;
+                PhotoVo prev = idx > 0 ? contextList.get(idx - 1) : null;
+                PhotoVo next = idx + 1 < total ? contextList.get(idx + 1) : null;
 
                 var photoUrl = new PhotoUrlBuilder(request);
 
                 Map<String, Object> model = new LinkedHashMap<>();
-                model.put("photo", PhotoVo.from(photo));
+                model.put("photo", photo);
                 model.put("neighbors", neighbors);
                 model.put("prev", prev);
                 model.put("next", next);
@@ -180,17 +182,14 @@ public class PhotoRouter {
             .flatMap(model -> ServerResponse.ok().render("photo", model));
     }
 
-    private Mono<List<Photo>> loadFilteredPhotos(String group) {
-        var builder = ListOptions.builder();
-        if (StringUtils.isNotBlank(group)) {
-            builder.andQuery(equal("spec.groupName", group));
-        }
-        return client.listAll(Photo.class, builder.build(), Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(false))
-            .collectList();
+    private Mono<List<PhotoVo>> loadFilteredPhotos(String group) {
+        return photoPublicQueryService.listPhotos(
+                buildListOptions(group),
+                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
+            .map(ListResult::getItems);
     }
 
-    private static int indexOf(List<Photo> photos, String name) {
+    private static int indexOf(List<PhotoVo> photos, String name) {
         for (int i = 0; i < photos.size(); i++) {
             if (name.equals(photos.get(i).getMetadata().getName())) {
                 return i;
@@ -282,7 +281,7 @@ public class PhotoRouter {
             .defaultIfEmpty("图库");
     }
 
-    private Mono<String> getDetailTitle(Photo photo) {
+    private Mono<String> getDetailTitle(PhotoVo photo) {
         String displayName = photo.getSpec() == null ? null : photo.getSpec().getDisplayName();
         if (StringUtils.isNotBlank(displayName)) {
             return Mono.just(displayName);
@@ -292,5 +291,21 @@ public class PhotoRouter {
 
     private Mono<List<PhotoGroupVo>> photoGroups() {
         return photoFinder.groupBy().collectList();
+    }
+
+    private static Sort defaultPhotoSort() {
+        return Sort.by(
+            Sort.Order.desc("spec.dateTimeOriginal"),
+            Sort.Order.desc("metadata.creationTimestamp"),
+            Sort.Order.asc("metadata.name")
+        );
+    }
+
+    private static ListOptions buildListOptions(String group) {
+        var builder = ListOptions.builder();
+        if (StringUtils.isNotBlank(group)) {
+            builder.andQuery(Queries.equal("spec.groupName", group));
+        }
+        return builder.build();
     }
 }

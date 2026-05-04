@@ -63,6 +63,7 @@ haloPlugin {
                 displayName = 'Extension API for Photos Plugin'
                 pathsToMatch = [
                         '/apis/console.api.photo.halo.run/v1alpha1/**',
+                        '/apis/api.photo.halo.run/v1alpha1/**',
                         '/apis/core.halo.run/v1alpha1/**',
                 ]
             }
