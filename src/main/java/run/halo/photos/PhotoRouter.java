@@ -270,13 +270,13 @@ public class PhotoRouter {
         if (requestedSize > 0) {
             return Mono.just(requestedSize);
         }
-        return this.settingFetcher.get("base")
+        return this.settingFetcher.getSettingValue("base")
             .map(item -> item.get("pageSize").asInt(ModelConst.DEFAULT_PAGE_SIZE))
             .defaultIfEmpty(ModelConst.DEFAULT_PAGE_SIZE);
     }
 
     private Mono<String> getPhotosTitle() {
-        return this.settingFetcher.get("base")
+        return this.settingFetcher.getSettingValue("base")
             .map(setting -> setting.get("title").asText("图库"))
             .defaultIfEmpty("图库");
     }

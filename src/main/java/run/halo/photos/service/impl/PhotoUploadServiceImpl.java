@@ -169,7 +169,7 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
     }
 
     private Mono<AttachmentConfig> fetchAttachmentConfig() {
-        return settingFetcher.get("base")
+        return settingFetcher.getSettingValue("base")
             .map(setting -> {
                 var policyName = setting.has("policyName")
                     ? setting.get("policyName").asText("") : "";

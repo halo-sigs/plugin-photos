@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.JsonNodeFactory;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ class PhotoUploadServiceImplTest {
         var filePart = filePartWithContent("photo.jpg", MediaType.IMAGE_JPEG, new byte[100]);
         var setting = JsonNodeFactory.instance.objectNode();
         setting.put("policyName", "");
-        when(settingFetcher.get("base")).thenReturn(Mono.just(setting));
+        when(settingFetcher.getSettingValue("base")).thenReturn(Mono.just(setting));
 
         assertThatThrownBy(() -> service.upload(filePart, null).block())
             .isInstanceOf(ServerWebInputException.class)
@@ -84,7 +84,7 @@ class PhotoUploadServiceImplTest {
     void uploadWithNoSettingShouldFail() {
         // switchIfEmpty provides AttachmentConfig("", "") which triggers the error
         var filePart = filePartWithContent("photo.jpg", MediaType.IMAGE_JPEG, new byte[100]);
-        when(settingFetcher.get("base")).thenReturn(Mono.empty());
+        when(settingFetcher.getSettingValue("base")).thenReturn(Mono.empty());
 
         assertThatThrownBy(() -> service.upload(filePart, null).block())
             .isInstanceOf(ServerWebInputException.class)
@@ -98,7 +98,7 @@ class PhotoUploadServiceImplTest {
         var setting = JsonNodeFactory.instance.objectNode();
         setting.put("policyName", "local");
         setting.put("groupName", "attachments");
-        when(settingFetcher.get("base")).thenReturn(Mono.just(setting));
+        when(settingFetcher.getSettingValue("base")).thenReturn(Mono.just(setting));
 
         var attachment = attachment("photo.jpg", "/attachments/photo.jpg");
         when(attachmentService.upload(anyString(), anyString(), anyString(), any(), any(MediaType.class)))
@@ -119,7 +119,7 @@ class PhotoUploadServiceImplTest {
 
         var setting = JsonNodeFactory.instance.objectNode();
         setting.put("policyName", "local");
-        when(settingFetcher.get("base")).thenReturn(Mono.just(setting));
+        when(settingFetcher.getSettingValue("base")).thenReturn(Mono.just(setting));
 
         var attachment = attachment("photo.jpg", "/attachments/photo.jpg");
         when(attachmentService.upload(anyString(), anyString(), anyString(), any(), any(MediaType.class)))
@@ -139,7 +139,7 @@ class PhotoUploadServiceImplTest {
 
         var setting = JsonNodeFactory.instance.objectNode();
         setting.put("policyName", "local");
-        when(settingFetcher.get("base")).thenReturn(Mono.just(setting));
+        when(settingFetcher.getSettingValue("base")).thenReturn(Mono.just(setting));
 
         var attachment = attachment("photo.webp", "/attachments/photo.webp");
         when(attachmentService.upload(anyString(), anyString(), anyString(), any(), any(MediaType.class)))

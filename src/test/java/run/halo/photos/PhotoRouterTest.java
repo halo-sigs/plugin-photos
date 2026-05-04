@@ -7,8 +7,8 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -61,7 +61,7 @@ class PhotoRouterTest {
         ObjectNode baseSetting = new ObjectMapper().createObjectNode();
         baseSetting.put("pageSize", 10);
         baseSetting.put("title", "图库");
-        lenient().when(settingFetcher.get(eq("base"))).thenReturn(Mono.just(baseSetting));
+        lenient().when(settingFetcher.getSettingValue(eq("base"))).thenReturn(Mono.just(baseSetting));
     }
 
     @ParameterizedTest(name = "windowStart(idx={0}, total={1}) -> {2}")
