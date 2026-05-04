@@ -31,6 +31,7 @@ import {
   VPagination,
   VSpace,
 } from "@halo-dev/components";
+import { utils } from "@halo-dev/ui-shared";
 import { useQueryClient } from "@tanstack/vue-query";
 import { useLocalStorage } from "@vueuse/core";
 import { useRouteQuery } from "@vueuse/router";
@@ -304,7 +305,7 @@ function onUploadModalClose() {
       <template #header>
         <div class=":uno: block w-full bg-gray-50 px-4 py-3">
           <div class=":uno: relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center">
-            <div v-permission="['plugin:photos:manage']" class=":uno: hidden items-center sm:flex">
+            <div v-if="utils.permission.has(['plugin:photos:manage'])" class=":uno: hidden items-center sm:flex">
               <input
                 v-model="checkedAll"
                 :disabled="!photos?.items?.length || isBatchOperating"
@@ -409,7 +410,7 @@ function onUploadModalClose() {
             <template #actions>
               <VSpace>
                 <VButton @click="refetch">刷新</VButton>
-                <VButton v-permission="['plugin:photos:manage']" type="primary" @click="uploadModal = true">
+                <VButton v-if="utils.permission.has(['plugin:photos:manage'])" type="primary" @click="uploadModal = true">
                   <template #icon>
                     <IconAddCircle class=":uno: h-4 w-4" />
                   </template>

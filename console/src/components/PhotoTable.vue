@@ -53,7 +53,7 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
     <table class=":uno: min-w-[920px] w-full table-fixed text-sm">
       <thead class=":uno: bg-gray-50 text-left text-xs text-gray-500 font-medium tracking-normal uppercase">
         <tr>
-          <th class=":uno: w-11 px-3 py-3"></th>
+          <th v-if="utils.permission.has(['plugin:photos:manage'])" class=":uno: w-11 px-3 py-3"></th>
           <th class=":uno: w-20 px-3 py-3">缩略图</th>
           <th class=":uno: w-[28%] px-3 py-3">名称</th>
           <th class=":uno: w-36 px-3 py-3">分组</th>
@@ -81,7 +81,7 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
           class=":uno: group transition-colors hover:bg-gray-50"
         >
           <!-- Checkbox -->
-          <td class=":uno: px-3 py-2 align-middle">
+          <td v-if="utils.permission.has(['plugin:photos:manage'])" class=":uno: px-3 py-2 align-middle">
             <input
               :checked="isSelected(photo)"
               :disabled="!!photo.metadata.deletionTimestamp"
@@ -127,8 +127,11 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
             </div>
             <div
               v-else
-              class=":uno: hover:text-primary max-w-full cursor-pointer truncate text-gray-900 font-medium"
-              @click="start(photo, 'displayName')"
+              :class="[
+                ':uno: max-w-full truncate text-gray-900 font-medium',
+                utils.permission.has(['plugin:photos:manage']) ? ':uno: cursor-pointer hover:text-primary' : '',
+              ]"
+              @click="utils.permission.has(['plugin:photos:manage']) && start(photo, 'displayName')"
             >
               {{ photo.spec.displayName }}
             </div>
@@ -157,9 +160,12 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
             </div>
             <div
               v-else
-              class=":uno: hover:text-primary max-w-full cursor-pointer truncate"
-              :class="photo.spec.groupName ? ':uno: text-gray-600' : ':uno: text-gray-400'"
-              @click="start(photo, 'groupName')"
+              :class="[
+                ':uno: max-w-full truncate',
+                photo.spec.groupName ? ':uno: text-gray-600' : ':uno: text-gray-400',
+                utils.permission.has(['plugin:photos:manage']) ? ':uno: cursor-pointer hover:text-primary' : '',
+              ]"
+              @click="utils.permission.has(['plugin:photos:manage']) && start(photo, 'groupName')"
             >
               <template v-if="photo.spec.groupName">
                 {{ groupLabel(photo.spec.groupName) }}
@@ -207,7 +213,14 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
                 </button>
               </div>
             </div>
-            <div v-else class=":uno: min-h-7 flex cursor-pointer items-center gap-1" @click="start(photo, 'tags')">
+            <div
+              v-else
+              :class="[
+                ':uno: min-h-7 flex items-center gap-1',
+                utils.permission.has(['plugin:photos:manage']) ? ':uno: cursor-pointer' : '',
+              ]"
+              @click="utils.permission.has(['plugin:photos:manage']) && start(photo, 'tags')"
+            >
               <span
                 v-for="tag in (photo.spec.tags || []).slice(0, 2)"
                 :key="tag"

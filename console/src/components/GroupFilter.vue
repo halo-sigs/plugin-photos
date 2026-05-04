@@ -6,6 +6,7 @@ import { QK_PHOTO_GROUPS, useGroupsFetch } from "@/composables/useGroupsFetch";
 import { QK_PHOTOS } from "@/composables/usePhotosFetch";
 import { QK_PHOTO_TAGS } from "@/composables/usePhotoTags";
 import { Dialog, IconAddCircle, IconMore, Toast, VDropdown, VDropdownItem, VStatusDot } from "@halo-dev/components";
+import { utils } from "@halo-dev/ui-shared";
 import { useQueryClient } from "@tanstack/vue-query";
 import { defineAsyncComponent, ref } from "vue";
 import GroupFilterItem from "./GroupFilterItem.vue";
@@ -76,7 +77,7 @@ const handleDeleteGroup = async (group: PhotoGroup) => {
           {{ group.status?.photoCount || 0 }}
         </span>
         <VStatusDot v-if="group.metadata.deletionTimestamp" class=":uno: ml-0.5" state="warning" animate />
-        <VDropdown v-else>
+        <VDropdown v-else-if="utils.permission.has(['plugin:photos:manage'])">
           <IconMore
             class=":uno: ml-0.5 h-4 w-4 rounded text-gray-400 opacity-60 transition-opacity hover:bg-gray-100 hover:text-gray-600 hover:opacity-100"
             @click.stop
@@ -88,7 +89,7 @@ const handleDeleteGroup = async (group: PhotoGroup) => {
         </VDropdown>
       </GroupFilterItem>
       <button
-        v-permission="['plugin:photos:manage']"
+        v-if="utils.permission.has(['plugin:photos:manage'])"
         class=":uno: min-h-9 inline-flex cursor-pointer items-center gap-1.5 border border-gray-300 rounded-md border-dashed bg-white px-2.5 py-1.5 text-sm text-gray-500 font-medium transition-all hover:border-gray-400 hover:text-gray-700"
         @click="creationModalVisible = true"
       >

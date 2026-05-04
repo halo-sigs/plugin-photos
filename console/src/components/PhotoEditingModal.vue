@@ -7,6 +7,7 @@ import { QK_PHOTO_TAGS } from "@/composables/usePhotoTags";
 import type { PhotoFormState } from "@/types";
 import type { JsonPatchInner } from "@halo-dev/api-client";
 import { Toast, VButton, VModal, VSpace } from "@halo-dev/components";
+import { utils } from "@halo-dev/ui-shared";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useTemplateRef } from "vue";
 import PhotoForm from "./PhotoForm.vue";
@@ -116,7 +117,7 @@ function onSubmit(data: PhotoFormState) {
     <template #footer>
       <VSpace>
         <!-- @vue-ignore -->
-        <VButton :loading="isPending" type="secondary" @click="$formkit.submit('photo-form')">保存</VButton>
+        <VButton v-if="utils.permission.has(['plugin:photos:manage'])" :loading="isPending" type="secondary" @click="$formkit.submit('photo-form')">保存</VButton>
         <VButton @click="modal?.close()">取消</VButton>
       </VSpace>
     </template>

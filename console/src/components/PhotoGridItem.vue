@@ -67,8 +67,7 @@ function handleClick() {
 
     <!-- Batch select checkbox -->
     <div
-      v-if="!photo.metadata.deletionTimestamp"
-      v-permission="['plugin:photos:manage']"
+      v-if="!photo.metadata.deletionTimestamp && utils.permission.has(['plugin:photos:manage'])"
       class=":uno: absolute left-2 top-2 z-10"
     >
       <div
