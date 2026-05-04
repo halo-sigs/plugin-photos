@@ -410,7 +410,11 @@ function onUploadModalClose() {
             <template #actions>
               <VSpace>
                 <VButton @click="refetch">刷新</VButton>
-                <VButton v-if="utils.permission.has(['plugin:photos:manage'])" type="primary" @click="uploadModal = true">
+                <VButton
+                  v-if="utils.permission.has(['plugin:photos:manage'])"
+                  type="primary"
+                  @click="uploadModal = true"
+                >
                   <template #icon>
                     <IconAddCircle class=":uno: h-4 w-4" />
                   </template>
@@ -448,13 +452,7 @@ function onUploadModalClose() {
       </div>
 
       <template #footer>
-        <VPagination
-          v-if="photos?.items?.length"
-          v-model:page="page"
-          v-model:size="size"
-          :total="photos.total"
-          :size-options="[30, 60, 120, 240]"
-        />
+        <VPagination v-model:page="page" v-model:size="size" :total="photos?.total || 0" :size-options="[30, 60, 120, 240]" />
       </template>
     </VCard>
   </div>
