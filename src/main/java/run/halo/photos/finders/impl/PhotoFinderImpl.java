@@ -75,16 +75,12 @@ public class PhotoFinderImpl implements PhotoFinder {
                             .andQuery(Queries.equal("spec.groupName", groupName))
                             .build(),
                         PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
-                    .map(photos -> {
-                        var status = group.getStatus();
-                        status.setPhotoCount(photos.getItems().size());
-                        return PhotoGroupVo.builder()
-                            .metadata(group.getMetadata())
-                            .spec(group.getSpec())
-                            .status(status)
-                            .photos(photos.getItems())
-                            .build();
-                    });
+                    .map(photos -> PhotoGroupVo.builder()
+                        .metadata(group.getMetadata())
+                        .spec(group.getSpec())
+                        .status(group.getStatus())
+                        .photos(photos.getItems())
+                        .build());
             });
     }
 

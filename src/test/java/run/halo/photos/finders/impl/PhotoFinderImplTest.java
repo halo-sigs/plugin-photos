@@ -89,10 +89,12 @@ class PhotoFinderImplTest {
 
     @Test
     void groupByShouldPopulatePhotosArrayForEachGroup() {
+        var groupStatus = new PhotoGroup.PostGroupStatus();
+        groupStatus.setPhotoCount(4);
         var groupVo = PhotoGroupVo.builder()
             .metadata(group("travel").getMetadata())
             .spec(group("travel").getSpec())
-            .status(new PhotoGroup.PostGroupStatus())
+            .status(groupStatus)
             .photos(List.of())
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
