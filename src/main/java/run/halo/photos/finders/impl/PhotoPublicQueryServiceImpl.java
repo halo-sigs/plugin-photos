@@ -4,7 +4,6 @@ import static run.halo.app.extension.index.query.Queries.contains;
 import static run.halo.app.extension.index.query.Queries.equal;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +85,7 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
     @Override
     public Mono<ListResult<PhotoGroupVo>> listGroups(ListOptions options, PageRequest page) {
         return client.listAll(PhotoGroup.class, options, Sort.unsorted())
-            .sort(groupComparator())
+            .sort(PhotoSortUtils.groupComparator())
             .collectList()
             .flatMap(groups -> {
                 int total = groups.size();
@@ -153,37 +152,6 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
     @Override
     public Mono<PhotoVo> toPhotoVo(Photo photo) {
         return Mono.fromSupplier(() -> PhotoVo.from(photo));
-    }
-
-    static Comparator<PhotoGroup> groupComparator() {
-        return (g1, g2) -> {
-            var p1 = g1.getSpec() != null && g1.getSpec().getPriority() != null
-                ? g1.getSpec().getPriority() : 0;
-            var p2 = g2.getSpec() != null && g2.getSpec().getPriority() != null
-                ? g2.getSpec().getPriority() : 0;
-            int priorityCompare = Integer.compare(p2, p1);
-            if (priorityCompare != 0) {
-                return priorityCompare;
-            }
-            var t1 = g1.getMetadata() != null ? g1.getMetadata().getCreationTimestamp() : null;
-            var t2 = g2.getMetadata() != null ? g2.getMetadata().getCreationTimestamp() : null;
-            if (t1 == null && t2 == null) {
-                return 0;
-            }
-            if (t1 == null) {
-                return 1;
-            }
-            if (t2 == null) {
-                return -1;
-            }
-            int timeCompare = t2.compareTo(t1);
-            if (timeCompare != 0) {
-                return timeCompare;
-            }
-            var n1 = g1.getMetadata() != null ? g1.getMetadata().getName() : "";
-            var n2 = g2.getMetadata() != null ? g2.getMetadata().getName() : "";
-            return n1.compareTo(n2);
-        };
     }
 
 }
