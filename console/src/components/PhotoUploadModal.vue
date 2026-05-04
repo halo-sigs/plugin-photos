@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { useConfigFetch } from "@/composables/useConfigFetch";
+import { QK_CONFIG, useConfigFetch } from "@/composables/useConfigFetch";
 import { useGroupsFetch } from "@/composables/useGroupsFetch";
 import { VAlert, VButton, VLoading, VModal } from "@halo-dev/components";
+import { useQueryClient } from "@tanstack/vue-query";
 import { computed, ref, shallowRef, useTemplateRef } from "vue";
 
 const props = defineProps<{
@@ -11,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "close"): void;
 }>();
+
+const queryClient = useQueryClient();
 
 const uploadGroup = shallowRef(props.defaultGroup || "");
 const modal = useTemplateRef<InstanceType<typeof VModal>>("modal");
@@ -35,7 +38,7 @@ const pluginDetailModalVisible = ref(false);
 
 function onPluginDetailModalClose() {
   pluginDetailModalVisible.value = false;
-  refetch();
+  queryClient.invalidateQueries({ queryKey: [QK_CONFIG] });
 }
 </script>
 
