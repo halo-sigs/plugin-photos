@@ -11,6 +11,7 @@ import { defineAsyncComponent, ref } from "vue";
 import PhotoCreationModal from "./PhotoCreationModal.vue";
 
 const PhotoUploadModal = defineAsyncComponent(() => import("@/components/PhotoUploadModal.vue"));
+const ExternalLinkImportModal = defineAsyncComponent(() => import("@/components/ExternalLinkImportModal.vue"));
 
 const props = defineProps<{
   defaultGroup?: string;
@@ -29,6 +30,7 @@ function onUploadModalClose() {
 const photoCreationModalVisible = ref(false);
 
 const attachmentModalVisible = ref(false);
+const externalLinkImportModalVisible = ref(false);
 
 const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
   const items = attachments
@@ -84,6 +86,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
       <VDropdownItem @click="uploadModalVisible = true">直接上传</VDropdownItem>
       <VDropdownItem @click="photoCreationModalVisible = true">手动添加</VDropdownItem>
       <VDropdownItem @click="attachmentModalVisible = true">从附件库选择</VDropdownItem>
+      <VDropdownItem @click="externalLinkImportModalVisible = true">批量添加外链</VDropdownItem>
     </template>
   </VDropdown>
 
@@ -96,5 +99,11 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
     @close="attachmentModalVisible = false"
     :accepts="['image/*']"
     @select="onAttachmentsSelect"
+  />
+
+  <ExternalLinkImportModal
+    v-if="externalLinkImportModalVisible"
+    :default-group="defaultGroup"
+    @close="externalLinkImportModalVisible = false"
   />
 </template>
