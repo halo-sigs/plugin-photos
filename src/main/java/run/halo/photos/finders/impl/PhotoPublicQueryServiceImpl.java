@@ -2,6 +2,12 @@ package run.halo.photos.finders.impl;
 
 import static run.halo.app.extension.index.query.Queries.contains;
 import static run.halo.app.extension.index.query.Queries.equal;
+import static run.halo.app.extension.index.query.Queries.isNull;
+import static run.halo.app.extension.index.query.Queries.not;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.time.Duration;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
 import java.util.List;
@@ -35,8 +41,16 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     private final ReactiveExtensionClient client;
 
+    private final Cache<String, List<PhotoTagVo>> tagCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofMinutes(30))
+        .build();
+
     public PhotoPublicQueryServiceImpl(ReactiveExtensionClient client) {
         this.client = client;
+    }
+
+    public void invalidateTagCache() {
+        tagCache.invalidateAll();
     }
 
     @Override
@@ -98,8 +112,14 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     @Override
     public Flux<PhotoTagVo> listTags(String nameFilter) {
+        var cacheKey = StringUtils.defaultString(nameFilter, "");
+        var cached = tagCache.getIfPresent(cacheKey);
+        if (cached != null) {
+            return Flux.fromIterable(cached);
+        }
         return client.listAll(Photo.class,
-                ListOptions.builder().build(), Sort.unsorted())
+                ListOptions.builder().andQuery(not(isNull("spec.tags"))).build(),
+                Sort.unsorted())
             .filter(photo -> !photo.isDeleted())
             .flatMapIterable(photo -> {
                 var tags = photo.getSpec() == null ? null : photo.getSpec().getTags();
@@ -117,7 +137,10 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
                         .build())
                     .toList();
                 return Flux.fromIterable(entries);
-            });
+            })
+            .collectList()
+            .doOnNext(list -> tagCache.put(cacheKey, list))
+            .flatMapMany(Flux::fromIterable);
     }
 
     @Override

@@ -2,6 +2,8 @@ package run.halo.photos.service.impl;
 
 import static run.halo.app.extension.index.query.Queries.contains;
 import static run.halo.app.extension.index.query.Queries.equal;
+import static run.halo.app.extension.index.query.Queries.isNull;
+import static run.halo.app.extension.index.query.Queries.not;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
 import java.util.List;
@@ -45,7 +47,10 @@ class PhotoServiceImpl implements PhotoService {
 
     @Override
     public Flux<String> listAllTags(PhotoQuery query) {
-        return client.listAll(Photo.class, toListOptions(query),
+        var options = ListOptions.builder(toListOptions(query))
+            .andQuery(not(isNull("spec.tags")))
+            .build();
+        return client.listAll(Photo.class, options,
                 Sort.by("metadata.name").descending())
             .flatMapIterable(photo -> {
                 var tags = photo.getSpec() == null ? null : photo.getSpec().getTags();

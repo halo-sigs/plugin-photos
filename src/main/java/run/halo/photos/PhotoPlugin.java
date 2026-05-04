@@ -3,11 +3,15 @@ package run.halo.photos;
 import java.time.Instant;
 import java.util.HashSet;
 import org.springframework.stereotype.Component;
+import run.halo.app.extension.Extension;
 import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
+import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.Watcher;
 import run.halo.app.extension.index.IndexSpecs;
 import run.halo.app.plugin.BasePlugin;
 import run.halo.app.plugin.PluginContext;
+import run.halo.photos.finders.impl.PhotoPublicQueryServiceImpl;
 
 /**
  * @author ryanwang
@@ -16,10 +20,17 @@ import run.halo.app.plugin.PluginContext;
 @Component
 public class PhotoPlugin extends BasePlugin {
     private final SchemeManager schemeManager;
+    private final ReactiveExtensionClient client;
+    private final PhotoPublicQueryServiceImpl photoPublicQueryService;
+    private Watcher photoWatcher;
 
-    public PhotoPlugin(PluginContext pluginContext, SchemeManager schemeManager) {
+    public PhotoPlugin(PluginContext pluginContext, SchemeManager schemeManager,
+        ReactiveExtensionClient client,
+        PhotoPublicQueryServiceImpl photoPublicQueryService) {
         super(pluginContext);
         this.schemeManager = schemeManager;
+        this.client = client;
+        this.photoPublicQueryService = photoPublicQueryService;
     }
 
     @Override
@@ -66,10 +77,48 @@ public class PhotoPlugin extends BasePlugin {
                 )
             );
         });
+        photoWatcher = new Watcher() {
+            private volatile boolean disposed = false;
+
+            @Override
+            public void onAdd(Extension extension) {
+                if (extension instanceof Photo) {
+                    photoPublicQueryService.invalidateTagCache();
+                }
+            }
+
+            @Override
+            public void onUpdate(Extension oldObj, Extension newObj) {
+                if (newObj instanceof Photo) {
+                    photoPublicQueryService.invalidateTagCache();
+                }
+            }
+
+            @Override
+            public void onDelete(Extension extension) {
+                if (extension instanceof Photo) {
+                    photoPublicQueryService.invalidateTagCache();
+                }
+            }
+
+            @Override
+            public void dispose() {
+                disposed = true;
+            }
+
+            @Override
+            public boolean isDisposed() {
+                return disposed;
+            }
+        };
+        client.watch(photoWatcher);
     }
 
     @Override
     public void stop() {
+        if (photoWatcher != null) {
+            photoWatcher.dispose();
+        }
         schemeManager.unregister(Scheme.buildFromType(Photo.class));
         schemeManager.unregister(Scheme.buildFromType(PhotoGroup.class));
     }

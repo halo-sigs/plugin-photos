@@ -133,6 +133,8 @@ The endpoint SHALL accept an optional `name` query parameter. When `name` is non
 
 `PhotoTagVo` SHALL NOT include a `permalink` field.
 
+The implementation MAY serve responses from a short-lived in-memory cache. Cached responses MAY reflect a state up to 2 minutes stale. The response content and shape SHALL be identical whether served from cache or computed live.
+
 #### Scenario: List all tags
 
 - **WHEN** an anonymous client issues `GET /apis/api.photo.halo.run/v1alpha1/tags`
@@ -142,12 +144,17 @@ The endpoint SHALL accept an optional `name` query parameter. When `name` is non
 #### Scenario: Filter tags by name substring
 
 - **WHEN** an anonymous client issues `GET /apis/api.photo.halo.run/v1alpha1/tags?name=sun` and the gallery has tags `sunset`, `sunrise`, `mountain`
-- **THEN** the response contains only the entries for `sunset` and `sunrise`
+- **THEN** the response contains entries for `sunset` and `sunrise` only
 
 #### Scenario: Tag VO has no permalink
 
 - **WHEN** any consumer deserializes a `PhotoTagVo` returned by this endpoint
-- **THEN** the JSON object has no `permalink` key
+- **THEN** the object has no `permalink` field
+
+#### Scenario: Cached response is content-equivalent
+
+- **WHEN** the tag list is served from cache within the TTL window
+- **THEN** the response body is identical in structure and semantics to a freshly computed response
 
 ---
 
