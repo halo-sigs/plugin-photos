@@ -1,15 +1,21 @@
 package run.halo.photos;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
+import static org.springdoc.core.fn.builders.content.Builder.contentBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
+import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
+import static org.springdoc.core.fn.builders.schema.Builder.schemaBuilder;
 import static org.springdoc.webflux.core.fn.SpringdocRouteBuilder.route;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.codec.multipart.FormFieldPart;
+import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -63,12 +69,15 @@ public class PhotoEndpoint implements CustomEndpoint {
             )
             .POST("photos/upload", this::uploadPhoto,
                 builder -> builder.operationId("UploadPhoto")
-                    .description("Upload a photo directly to the gallery.")
+                    .description("Upload a photo directly to the gallery. The `group` field "
+                        + "SHOULD be sent as a multipart form field; for backward compatibility "
+                        + "it is also accepted as a query parameter.")
                     .tag(tag)
-                    .parameter(Builder.parameterBuilder()
-                        .in(ParameterIn.QUERY)
-                        .name("group")
-                        .description("Photo group name"))
+                    .requestBody(requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                            .schema(schemaBuilder().implementation(UploadPhotoRequest.class))))
                     .response(responseBuilder().implementation(Photo.class))
             )
             .build();
@@ -86,16 +95,27 @@ public class PhotoEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> uploadPhoto(ServerRequest request) {
-        var group = request.queryParam("group").orElse("");
+        var queryGroup = request.queryParam("group").orElse("");
         return request.multipartData()
             .flatMap(parts -> {
                 var filePart = parts.getFirst("file");
                 if (filePart == null) {
                     return Mono.error(new IllegalArgumentException("File is required"));
                 }
+                var group = resolveGroup(parts.getFirst("group"), queryGroup);
                 return photoUploadService.upload((FilePart) filePart, group);
             })
             .flatMap(photo -> ServerResponse.ok().bodyValue(photo));
+    }
+
+    private static String resolveGroup(Part groupPart, String queryGroup) {
+        if (groupPart instanceof FormFieldPart formFieldPart) {
+            var value = formFieldPart.value();
+            if (StringUtils.isNotBlank(value)) {
+                return value;
+            }
+        }
+        return StringUtils.isNotBlank(queryGroup) ? queryGroup : "";
     }
 
     private Mono<ServerResponse> listTags(ServerRequest request) {
@@ -105,6 +125,18 @@ public class PhotoEndpoint implements CustomEndpoint {
             .filter(tagName -> StringUtils.isBlank(name) || StringUtils.containsIgnoreCase(tagName, name))
             .collectList()
             .flatMap(result -> ServerResponse.ok().bodyValue(result));
+    }
+
+    @Schema(name = "PhotoUploadRequest")
+    record UploadPhotoRequest(
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+            type = "string", format = "binary",
+            description = "Image file to upload")
+        Object file,
+
+        @Schema(description = "Photo group name to assign the new photo to")
+        String group
+    ) {
     }
 
 }
