@@ -1,0 +1,1 @@
+This change involves no new or modified capabilities. It is a pure internal implementation refactor to use JSON Patch instead of full PUT updates for inline table editing. All behavioral requirements remain unchanged.

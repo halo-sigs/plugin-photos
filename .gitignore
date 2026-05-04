@@ -64,12 +64,9 @@ nbdist/
 
 ### VSCode
 .vscode
+!.vscode/settings.json
 
-### Local file
-application-local.yml
-application-local.yaml
-application-local.properties
 
-/admin-frontend/node_modules/
+node_modules
 /workplace/
 /src/main/resources/console/

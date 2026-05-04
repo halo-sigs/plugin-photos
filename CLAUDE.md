@@ -27,6 +27,11 @@ This is a Halo 2.0 plugin for photo gallery management. It provides:
 # Run Java tests
 ./gradlew test
 
+# Regenerate the TypeScript API client from the backend OpenAPI spec
+# Run this whenever backend endpoints or DTO/Extension fields change.
+# Output goes to console/src/api/generated; do not edit those files by hand.
+./gradlew generateApiClient
+
 # Frontend only (console/)
 cd console
 pnpm install
@@ -62,6 +67,7 @@ All data access uses `ReactiveExtensionClient` with reactive types (`Mono`, `Flu
 - **Build system**: Uses `@halo-dev/ui-plugin-bundler-kit` which wraps Rsbuild. Production output goes to `src/main/resources/console`; dev output goes to `build/resources/main/console`.
 - **Styling**: UnoCSS with `presetWind3` and `transformerCompileClass`. Utility classes use the `:uno:` prefix in templates (e.g., `:uno: flex gap-2`).
 - **State/data fetching**: Uses `@tanstack/vue-query` (`useQuery`) for server state. `axiosInstance` from `@halo-dev/api-client` is used for HTTP.
+- **Generated API client**: TypeScript clients under `console/src/api/generated/` are produced from the backend OpenAPI spec via `./gradlew generateApiClient` (configured in `build.gradle` under `haloPlugin.openApi`). Run this task whenever backend endpoints or fields (DTOs, Extension specs) change, then import the regenerated APIs/models in the console code. Never edit the generated files by hand.
 - **Components**:
   - `PhotoList.vue` — main view with group sidebar + photo grid
   - `GroupList.vue` — draggable group list (uses `vue-draggable-plus`); drag reorder updates priorities via batch PUT
@@ -75,9 +81,26 @@ All data access uses `ReactiveExtensionClient` with reactive types (`Mono`, `Flu
 - **Permissions**: Console UI uses `v-permission="['plugin:photos:manage']"` for management actions. The permission strings are defined in `src/main/resources/extensions/roleTemplate.yaml`.
 - **API paths**: Console frontend calls custom endpoints at `/apis/console.api.photo.halo.run/v1alpha1/...` and standard CRUD endpoints at `/apis/core.halo.run/v1alpha1/photos` and `/apis/core.halo.run/v1alpha1/photogroups`.
 - **Sorting**: Default sort for photos/groups is `spec.priority ASC`, `metadata.creationTimestamp DESC`, `metadata.name ASC`.
-- **Group cascade delete**: Deleting a `PhotoGroup` also deletes all `Photo` resources with matching `spec.groupName`.
+- **Group cascade delete**: Deleting a `PhotoGroup` also deletes all `Photo` resources with matching `spec.groupName`. Photos with an empty/unset `spec.groupName` (ungrouped) are not affected.
+- **Optional grouping**: `Photo.spec.groupName` is optional. An empty/unset value means the photo is "ungrouped". The console exposes a "未分组" sidebar entry for filtering and uses an `ungrouped=true` query parameter on `console.api.photo.halo.run/v1alpha1/photos` to request only ungrouped photos.
 
 ## Local Development Setup
+
+### Running the Dev Server
+
+If the console is not reachable, start the development server:
+
+```bash
+./gradlew haloServer
+```
+
+### Testing the UI
+
+1. Open `http://127.0.0.1:8090/console` in the browser (use Chrome DevTools MCP)
+2. Login with **admin / admin**
+3. Navigate to the 图库 (Photos) plugin page
+
+### Halo Development Mode Configuration
 
 To develop this plugin against a running Halo instance, configure Halo with:
 

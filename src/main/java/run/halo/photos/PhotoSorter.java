@@ -14,8 +14,9 @@ import org.springframework.util.comparator.Comparators;
  */
 public enum PhotoSorter {
     DISPLAY_NAME,
-    
+
     CREATE_TIME;
+
     
     static final Function<Photo, String> name = photo -> photo.getMetadata()
         .getName();
@@ -57,7 +58,7 @@ public enum PhotoSorter {
             return Comparator.comparing(comparatorFunc, Comparators.nullsLow())
                 .thenComparing(name);
         }
-        
+
         throw new IllegalStateException("Unsupported sort value: " + sorter);
     }
     

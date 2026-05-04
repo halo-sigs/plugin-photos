@@ -23,6 +23,16 @@ context: |
   - Standard CRUD path: /apis/core.halo.run/v1alpha1/photos and /photogroups
 
   Domain:
-  - Photo: managed image with url, cover, description, priority, groupName
+  - Photo: managed image with url, cover, description, priority, and an optional groupName
   - PhotoGroup: collection of photos with displayName, priority, photoCount status
-  - Deleting a PhotoGroup cascades to delete all Photos in that group
+  - Deleting a PhotoGroup cascades to delete all Photos in that group; ungrouped photos are not affected
+
+  Frontend API Client:
+  - The frontend API client is generated from the backend OpenAPI spec
+  - If the backend has field or endpoint changes, run: ./gradlew generateApiClient to regenerate
+  - Generated client files are located in console/src/
+
+  Testing UI:
+  - Use chrome mcp to open http://127.0.0.1:8090/console
+  - Login credentials: admin / admin
+  - If the page is unreachable, start the dev server with: ./gradlew haloServer
