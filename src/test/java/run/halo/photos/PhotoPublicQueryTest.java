@@ -19,18 +19,33 @@ class PhotoPublicQueryTest {
         assertThat(query.getKeyword()).isEqualTo("beach");
         assertThat(query.getPage()).isEqualTo(2);
         assertThat(query.getSize()).isEqualTo(20);
-        assertThat(query.isEffectiveTimeSort()).isFalse();
         assertThat(query.getSort().getOrderFor("metadata.creationTimestamp"))
             .extracting(Sort.Order::isAscending)
             .isEqualTo(true);
+        assertThat(query.getSort().getOrderFor("effectiveTime")).isNull();
     }
 
     @Test
     void defaultSortShouldUseEffectiveTimeDescending() {
         var query = query("/photos");
 
-        assertThat(query.isEffectiveTimeSort()).isTrue();
-        assertThat(query.isEffectiveTimeAscending()).isFalse();
+        var orders = query.getSort().toList();
+        assertThat(orders).hasSize(3);
+        assertThat(orders.get(0).getProperty()).isEqualTo("effectiveTime");
+        assertThat(orders.get(0).isDescending()).isTrue();
+        assertThat(orders.get(1).getProperty()).isEqualTo("metadata.creationTimestamp");
+        assertThat(orders.get(1).isDescending()).isTrue();
+        assertThat(orders.get(2).getProperty()).isEqualTo("metadata.name");
+        assertThat(orders.get(2).isAscending()).isTrue();
+    }
+
+    @Test
+    void shootingTimeSortShouldTranslateToEffectiveTimeIndex() {
+        var query = query("/photos?sort=exif.dateTimeOriginal,asc");
+
+        var orders = query.getSort().toList();
+        assertThat(orders.get(0).getProperty()).isEqualTo("effectiveTime");
+        assertThat(orders.get(0).isAscending()).isTrue();
     }
 
     private static PhotoPublicQuery query(String uri) {

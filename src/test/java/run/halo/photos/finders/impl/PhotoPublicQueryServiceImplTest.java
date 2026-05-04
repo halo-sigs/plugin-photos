@@ -3,6 +3,8 @@ package run.halo.photos.finders.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -37,8 +39,8 @@ class PhotoPublicQueryServiceImplTest {
         var photo1 = photo("a", "2026-05-01T00:00:00Z", null);
         photo1.getSpec().setGroupName("trips");
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.just(photo1));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo1))));
 
         var options = ListOptions.builder()
             .andQuery(run.halo.app.extension.index.query.Queries.equal("spec.groupName", "trips"))
@@ -56,8 +58,8 @@ class PhotoPublicQueryServiceImplTest {
         var photo1 = photo("a", "2026-05-01T00:00:00Z", null);
         photo1.getSpec().setGroupName("");
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.just(photo1));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo1))));
 
         var options = ListOptions.builder()
             .andQuery(run.halo.app.extension.index.query.Queries.equal("spec.groupName", ""))
@@ -75,8 +77,8 @@ class PhotoPublicQueryServiceImplTest {
         var photo1 = photo("a", "2026-05-01T00:00:00Z", null);
         photo1.getSpec().setTags(List.of("sunset"));
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.just(photo1));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo1))));
 
         var options = ListOptions.builder()
             .andQuery(run.halo.app.extension.index.query.Queries.equal("spec.tags", "sunset"))
@@ -94,8 +96,8 @@ class PhotoPublicQueryServiceImplTest {
         var photo1 = photo("a", "2026-05-01T00:00:00Z", null);
         photo1.getSpec().setDisplayName("Beach Sunset");
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.just(photo1));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo1))));
 
         var options = ListOptions.builder()
             .andQuery(run.halo.app.extension.index.query.Queries.contains("spec.displayName", "beach"))
@@ -109,35 +111,75 @@ class PhotoPublicQueryServiceImplTest {
     }
 
     @Test
-    void listPhotosShouldUseDefaultSortWithNullExifTime() {
+    void listPhotosPassesThroughDatabaseOrderForEffectiveTimeSort() {
+        // Database returns photos already ordered by the effectiveTime index.
+        // Photo "b" has EXIF (2026-05-03), photo "a" has only creationTimestamp (2026-05-02).
         var photo1 = photo("a", "2026-05-02T00:00:00Z", null);
         var photo2 = photo("b", "2026-05-01T00:00:00Z", "2026-05-03T00:00:00Z");
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.just(photo1, photo2));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 2, List.of(photo2, photo1))));
 
         var result = service.listPhotos(ListOptions.builder().build(),
-            PageRequestImpl.of(1, 10, Sort.unsorted())).block();
+            PageRequestImpl.of(1, 10, Sort.by(Sort.Order.desc("effectiveTime")))).block();
 
         assertThat(result).isNotNull();
         assertThat(result.getItems()).hasSize(2);
-        // photo with EXIF time should come first (effective time 2026-05-03)
         assertThat(result.getItems().get(0).getMetadata().getName()).isEqualTo("b");
-        // photo without EXIF falls back to creation time (2026-05-02)
         assertThat(result.getItems().get(1).getMetadata().getName()).isEqualTo("a");
+    }
+
+    @Test
+    void listPhotosWithEffectiveTimeSortNeverCallsListAll() {
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(List.of())));
+
+        service.listPhotos(ListOptions.builder().build(),
+            PageRequestImpl.of(1, 10, Sort.by(Sort.Order.desc("effectiveTime")))).block();
+
+        verify(client, never()).listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class));
+    }
+
+    @Test
+    void listPhotosDefaultSortMatchesEffectiveTimeComparator() {
+        // Fixture with interleaved EXIF and non-EXIF photos.
+        var photoA = photo("a", "2026-05-02T00:00:00Z", null);
+        var photoB = photo("b", "2026-05-01T00:00:00Z", "2026-05-03T00:00:00Z");
+        var photoC = photo("c", "2026-05-04T00:00:00Z", null);
+        var photoD = photo("d", "2026-05-03T00:00:00Z", "2019-01-01T00:00:00Z");
+        var all = List.of(photoA, photoB, photoC, photoD);
+
+        // Expected order using the in-memory comparator.
+        var expected = new java.util.ArrayList<>(all);
+        expected.sort(run.halo.photos.PhotoSortUtils.effectiveTimeComparator(false));
+
+        // Mock returns photos in the DB order (same as comparator).
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(
+                new ListResult<>(1, 4, 4, List.of(photoC, photoB, photoA, photoD))));
+
+        var result = service.listPhotos(ListOptions.builder().build(),
+            PageRequestImpl.of(1, 4, Sort.by(
+                Sort.Order.desc("effectiveTime"),
+                Sort.Order.desc("metadata.creationTimestamp"),
+                Sort.Order.asc("metadata.name")))).block();
+
+        assertThat(result).isNotNull();
+        assertThat(result.getItems().stream()
+            .map(p -> p.getMetadata().getName()).toList())
+            .containsExactlyElementsOf(expected.stream()
+                .map(p -> p.getMetadata().getName()).toList());
     }
 
     @Test
     void listPhotosShouldPaginate() {
         var photos = List.of(
-            photo("a", "2026-05-04T00:00:00Z", null),
-            photo("b", "2026-05-03T00:00:00Z", null),
             photo("c", "2026-05-02T00:00:00Z", null),
             photo("d", "2026-05-01T00:00:00Z", null)
         );
 
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.fromIterable(photos));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(2, 2, 4, photos)));
 
         var result = service.listPhotos(ListOptions.builder().build(),
             PageRequestImpl.of(2, 2, Sort.unsorted())).block();

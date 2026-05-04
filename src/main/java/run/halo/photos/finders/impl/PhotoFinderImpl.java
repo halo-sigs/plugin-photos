@@ -83,7 +83,7 @@ public class PhotoFinderImpl implements PhotoFinder {
 
     static Sort defaultPhotoSort() {
         return Sort.by(
-            desc("exif.dateTimeOriginal"),
+            desc("effectiveTime"),
             desc("metadata.creationTimestamp"),
             asc("metadata.name")
         );

@@ -55,6 +55,8 @@ public class PhotoPlugin extends BasePlugin {
                     Instant dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
                     return dt == null ? "" : dt.toString();
                 }));
+            indexSpecs.add(IndexSpecs.<Photo, String>single("effectiveTime", String.class)
+                .indexFunc(PhotoPlugin::computeEffectiveTimeIndex));
         });
         schemeManager.register(PhotoGroup.class, indexSpecs -> {
             indexSpecs.add(IndexSpecs.<PhotoGroup, String>single("spec.priority", String.class)
@@ -70,5 +72,15 @@ public class PhotoPlugin extends BasePlugin {
     public void stop() {
         schemeManager.unregister(Scheme.buildFromType(Photo.class));
         schemeManager.unregister(Scheme.buildFromType(PhotoGroup.class));
+    }
+
+    static String computeEffectiveTimeIndex(Photo photo) {
+        Instant dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
+        if (dt != null) {
+            return dt.toString();
+        }
+        Instant created = photo.getMetadata() == null
+            ? null : photo.getMetadata().getCreationTimestamp();
+        return created == null ? "" : created.toString();
     }
 }

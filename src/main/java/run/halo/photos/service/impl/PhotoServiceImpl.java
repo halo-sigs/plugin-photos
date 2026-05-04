@@ -17,7 +17,6 @@ import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoQuery;
-import run.halo.photos.PhotoSortUtils;
 import run.halo.photos.service.PhotoService;
 
 /**
@@ -37,9 +36,6 @@ class PhotoServiceImpl implements PhotoService {
 
     @Override
     public Mono<ListResult<Photo>> listPhoto(PhotoQuery query) {
-        if (query.isEffectiveTimeSort()) {
-            return listPhotoByEffectiveTime(query);
-        }
         return this.client.listBy(
             Photo.class,
             toListOptions(query),
@@ -77,17 +73,5 @@ class PhotoServiceImpl implements PhotoService {
             builder.andQuery(equal("spec.tags", query.getTag()));
         }
         return builder.build();
-    }
-
-    private Mono<ListResult<Photo>> listPhotoByEffectiveTime(PhotoQuery query) {
-        return client.listAll(Photo.class, toListOptions(query), Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(query.isEffectiveTimeAscending()))
-            .collectList()
-            .map(photos -> new ListResult<>(
-                query.getPage(),
-                query.getSize(),
-                photos.size(),
-                ListResult.subList(photos, query.getPage(), query.getSize())
-            ));
     }
 }

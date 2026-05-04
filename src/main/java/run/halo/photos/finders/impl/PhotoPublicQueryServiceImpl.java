@@ -21,7 +21,6 @@ import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
-import run.halo.photos.PhotoPublicQuery;
 import run.halo.photos.PhotoSortUtils;
 import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
@@ -42,38 +41,12 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     @Override
     public Mono<ListResult<PhotoVo>> listPhotos(ListOptions options, PageRequest page) {
-        var sort = page.getSort();
-        boolean isEffectiveTimeSort = sort.isUnsorted()
-            || (sort.stream().findFirst()
-            .map(order -> PhotoPublicQuery.DATE_TIME_ORIGINAL_SORT.equals(order.getProperty()))
-            .orElse(false));
-
-        if (isEffectiveTimeSort) {
-            boolean ascending = sort.stream()
-                .filter(order -> PhotoPublicQuery.DATE_TIME_ORIGINAL_SORT.equals(order.getProperty()))
-                .findFirst()
-                .map(Sort.Order::isAscending)
-                .orElse(false);
-            return listPhotosByEffectiveTime(options, page, ascending);
-        }
-
         return client.listBy(Photo.class, options, page)
             .flatMap(result -> Flux.fromIterable(result.getItems())
                 .flatMap(this::toPhotoVo)
                 .collectList()
                 .map(items -> new ListResult<>(
                     result.getPage(), result.getSize(), result.getTotal(), items)));
-    }
-
-    private Mono<ListResult<PhotoVo>> listPhotosByEffectiveTime(
-        ListOptions options, PageRequest page, boolean ascending) {
-        return client.listAll(Photo.class, options, Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(ascending))
-            .flatMap(this::toPhotoVo)
-            .collectList()
-            .map(photos -> new ListResult<>(
-                page.getPageNumber(), page.getPageSize(), photos.size(),
-                ListResult.subList(photos, page.getPageNumber(), page.getPageSize())));
     }
 
     @Override

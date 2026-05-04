@@ -295,7 +295,7 @@ public class PhotoRouter {
 
     private static Sort defaultPhotoSort() {
         return Sort.by(
-            Sort.Order.desc("exif.dateTimeOriginal"),
+            Sort.Order.desc("effectiveTime"),
             Sort.Order.desc("metadata.creationTimestamp"),
             Sort.Order.asc("metadata.name")
         );
