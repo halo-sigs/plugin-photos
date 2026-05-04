@@ -14,10 +14,23 @@
 
 
 
-export * from './api/api-photo-halo-run-v1alpha1-photo-api';
-export * from './api/api-photo-halo-run-v1alpha1-photo-group-api';
-export * from './api/console-api-photo-halo-run-v1alpha1-photo-api';
-export * from './api/console-api-photo-halo-run-v1alpha1-photo-group-api';
-export * from './api/photo-group-v1alpha1-api';
-export * from './api/photo-v1alpha1-api';
+/**
+ * 
+ * @export
+ * @interface PhotoTagVo
+ */
+export interface PhotoTagVo {
+    /**
+     * 
+     * @type {string}
+     * @memberof PhotoTagVo
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof PhotoTagVo
+     */
+    'photoCount'?: number;
+}
 

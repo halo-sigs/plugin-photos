@@ -2,6 +2,8 @@
 .npmignore
 .openapi-generator-ignore
 api.ts
+api/api-photo-halo-run-v1alpha1-photo-api.ts
+api/api-photo-halo-run-v1alpha1-photo-group-api.ts
 api/console-api-photo-halo-run-v1alpha1-photo-api.ts
 api/console-api-photo-halo-run-v1alpha1-photo-group-api.ts
 api/photo-group-v1alpha1-api.ts
@@ -20,9 +22,14 @@ models/move-operation.ts
 models/photo-exif.ts
 models/photo-group-list.ts
 models/photo-group-spec.ts
+models/photo-group-vo-list.ts
+models/photo-group-vo.ts
 models/photo-group.ts
 models/photo-list.ts
 models/photo-spec.ts
+models/photo-tag-vo.ts
+models/photo-vo-list.ts
+models/photo-vo.ts
 models/photo.ts
 models/post-group-status.ts
 models/remove-operation.ts
