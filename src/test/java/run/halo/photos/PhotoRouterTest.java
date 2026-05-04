@@ -27,16 +27,20 @@ import org.springframework.web.reactive.result.view.ViewResolver;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
-import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.plugin.ReactiveSettingFetcher;
 import run.halo.photos.finders.PhotoFinder;
+import run.halo.photos.finders.PhotoPublicQueryService;
+import run.halo.photos.vo.PhotoVo;
 
 class PhotoRouterTest {
 
     private final PhotoFinder photoFinder = mock(PhotoFinder.class);
 
-    private final ReactiveExtensionClient client = mock(ReactiveExtensionClient.class);
+    private final PhotoPublicQueryService photoPublicQueryService = mock(
+        PhotoPublicQueryService.class);
 
     private final ReactiveSettingFetcher settingFetcher = mock(ReactiveSettingFetcher.class);
 
@@ -44,7 +48,7 @@ class PhotoRouterTest {
 
     @BeforeEach
     void setUp() {
-        var router = new PhotoRouter(photoFinder, client, settingFetcher);
+        var router = new PhotoRouter(photoFinder, photoPublicQueryService, settingFetcher);
         var strategies = HandlerStrategies.builder()
             .viewResolver(new StubViewResolver())
             .build();
@@ -84,7 +88,7 @@ class PhotoRouterTest {
 
     @Test
     void detailReturns404WhenPhotoMissing() {
-        when(client.fetch(eq(Photo.class), eq("missing"))).thenReturn(Mono.empty());
+        when(photoPublicQueryService.getByName("missing")).thenReturn(Mono.empty());
 
         webTestClient.get().uri("/photos/missing")
             .exchange()
@@ -93,9 +97,7 @@ class PhotoRouterTest {
 
     @Test
     void detailReturns404WhenPhotoSoftDeleted() {
-        var photo = photo("gone", null, null);
-        photo.getMetadata().setDeletionTimestamp(Instant.parse("2026-05-01T00:00:00Z"));
-        when(client.fetch(eq(Photo.class), eq("gone"))).thenReturn(Mono.just(photo));
+        when(photoPublicQueryService.getByName("gone")).thenReturn(Mono.empty());
 
         webTestClient.get().uri("/photos/gone")
             .exchange()
@@ -104,9 +106,9 @@ class PhotoRouterTest {
 
     @Test
     void detailRedirectsWhenGroupMismatch() {
-        var photo = photo("abc", "2026-05-01T00:00:00Z", null);
+        var photo = photoVo("abc", "2026-05-01T00:00:00Z", null);
         photo.getSpec().setGroupName("real-group");
-        when(client.fetch(eq(Photo.class), eq("abc"))).thenReturn(Mono.just(photo));
+        when(photoPublicQueryService.getByName("abc")).thenReturn(Mono.just(photo));
 
         webTestClient.get().uri("/photos/abc?group=other&page=2")
             .exchange()
@@ -118,11 +120,11 @@ class PhotoRouterTest {
 
     @Test
     void detailRendersWhenGroupMatches() {
-        var photo = photo("abc", "2026-05-01T00:00:00Z", null);
+        var photo = photoVo("abc", "2026-05-01T00:00:00Z", null);
         photo.getSpec().setGroupName("trips");
-        when(client.fetch(eq(Photo.class), eq("abc"))).thenReturn(Mono.just(photo));
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.just(photo));
+        when(photoPublicQueryService.getByName("abc")).thenReturn(Mono.just(photo));
+        when(photoPublicQueryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo))));
 
         webTestClient.get().uri("/photos/abc?group=trips&page=1&size=10")
             .exchange()
@@ -147,6 +149,39 @@ class PhotoRouterTest {
                 location -> assertThat(location).isEqualTo("/photos?page=2&group=trips"));
     }
 
+    private static PhotoVo photoVo(String name, String creationTimestamp, String dateTimeOriginal) {
+        var metadata = new Metadata();
+        metadata.setName(name);
+        if (creationTimestamp != null) {
+            metadata.setCreationTimestamp(Instant.parse(creationTimestamp));
+        }
+
+        var spec = new Photo.PhotoSpec();
+        spec.setDisplayName(name);
+        spec.setUrl("/" + name + ".jpg");
+
+        var exif = new Photo.PhotoExif();
+        if (dateTimeOriginal != null) {
+            exif.setDateTimeOriginal(Instant.parse(dateTimeOriginal));
+        }
+
+        var photo = new Photo();
+        photo.setMetadata(metadata);
+        photo.setSpec(spec);
+        photo.setExif(exif);
+        return PhotoVo.from(photo);
+    }
+
+    @SuppressWarnings("unused")
+    private static List<Photo> mixedPhotos() {
+        return List.of(
+            photo("old-exif", "2026-05-02T00:00:00Z", "2020-01-01T00:00:00Z"),
+            photo("new-no-exif", "2026-05-04T00:00:00Z", null),
+            photo("middle-exif", "2026-05-01T00:00:00Z", "2026-05-03T00:00:00Z"),
+            photo("old-no-exif", "2019-01-01T00:00:00Z", null)
+        );
+    }
+
     private static Photo photo(String name, String creationTimestamp, String dateTimeOriginal) {
         var metadata = new Metadata();
         metadata.setName(name);
@@ -168,16 +203,6 @@ class PhotoRouterTest {
         photo.setSpec(spec);
         photo.setExif(exif);
         return photo;
-    }
-
-    @SuppressWarnings("unused")
-    private static List<Photo> mixedPhotos() {
-        return List.of(
-            photo("old-exif", "2026-05-02T00:00:00Z", "2020-01-01T00:00:00Z"),
-            photo("new-no-exif", "2026-05-04T00:00:00Z", null),
-            photo("middle-exif", "2026-05-01T00:00:00Z", "2026-05-03T00:00:00Z"),
-            photo("old-no-exif", "2019-01-01T00:00:00Z", null)
-        );
     }
 
     /**

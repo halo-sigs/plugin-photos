@@ -28,3 +28,16 @@ rules:
   - apiGroups: [ "core.halo.run", "console.api.photo.halo.run"]
     resources: [ "photos", "photogroups" ]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
+---
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: role-template-photos-anonymous
+  labels:
+    halo.run/role-template: "true"
+    halo.run/hidden: "true"
+    rbac.authorization.halo.run/aggregate-to-anonymous: "true"
+rules:
+  - apiGroups: [ "api.photo.halo.run" ]
+    resources: [ "photos", "photogroups", "tags" ]
+    verbs: [ "get", "list" ]

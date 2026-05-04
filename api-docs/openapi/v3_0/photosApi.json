@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:56010",
+    "url" : "http://localhost:59507",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -13,6 +13,174 @@
     "bearerAuth" : [ ]
   } ],
   "paths" : {
+    "/apis/api.photo.halo.run/v1alpha1/photogroups" : {
+      "get" : {
+        "description" : "List photo groups.",
+        "operationId" : "queryPhotoGroups",
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroupVoList"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "api.photo.halo.run/v1alpha1/PhotoGroup" ]
+      }
+    },
+    "/apis/api.photo.halo.run/v1alpha1/photos" : {
+      "get" : {
+        "description" : "List photos.",
+        "operationId" : "queryPhotos",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Photos filtered by keyword.",
+          "in" : "query",
+          "name" : "keyword",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "photo group name",
+          "in" : "query",
+          "name" : "group",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "If true, return only photos without a group assigned. Overrides the 'group' parameter when set.",
+          "in" : "query",
+          "name" : "ungrouped",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "photo tag",
+          "in" : "query",
+          "name" : "tag",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoVoList"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/api.photo.halo.run/v1alpha1/photos/{name}" : {
+      "get" : {
+        "description" : "Get a photo by name.",
+        "operationId" : "queryPhotoByName",
+        "parameters" : [ {
+          "description" : "Photo name",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoVo"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/api.photo.halo.run/v1alpha1/tags" : {
+      "get" : {
+        "description" : "List photo tags with counts.",
+        "operationId" : "queryPhotoTags",
+        "parameters" : [ {
+          "description" : "Tag name filter",
+          "in" : "query",
+          "name" : "name",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PhotoTagVo"
+                  }
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
     "/apis/console.api.photo.halo.run/v1alpha1/photogroups" : {
       "get" : {
         "description" : "List photo groups.",
@@ -1031,6 +1199,76 @@
           }
         }
       },
+      "PhotoGroupVo" : {
+        "type" : "object",
+        "properties" : {
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "photos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PhotoVo"
+            }
+          },
+          "spec" : {
+            "$ref" : "#/components/schemas/PhotoGroupSpec"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/PostGroupStatus"
+          }
+        },
+        "description" : "A chunk of items."
+      },
+      "PhotoGroupVoList" : {
+        "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "first" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the first page."
+          },
+          "hasNext" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "hasPrevious" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "A chunk of items.",
+            "items" : {
+              "$ref" : "#/components/schemas/PhotoGroupVo"
+            }
+          },
+          "last" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the last page."
+          },
+          "page" : {
+            "type" : "integer",
+            "description" : "Page number, starts from 1. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "description" : "Size of each page. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "description" : "Total elements.",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "description" : "Indicates total pages.",
+            "format" : "int64"
+          }
+        }
+      },
       "PhotoList" : {
         "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
         "type" : "object",
@@ -1112,6 +1350,18 @@
           }
         }
       },
+      "PhotoTagVo" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "photoCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "PhotoUploadRequest" : {
         "required" : [ "file" ],
         "type" : "object",
@@ -1124,6 +1374,72 @@
           "group" : {
             "type" : "string",
             "description" : "Photo group name to assign the new photo to"
+          }
+        }
+      },
+      "PhotoVo" : {
+        "type" : "object",
+        "properties" : {
+          "exif" : {
+            "$ref" : "#/components/schemas/PhotoExif"
+          },
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "permalink" : {
+            "type" : "string"
+          },
+          "spec" : {
+            "$ref" : "#/components/schemas/PhotoSpec"
+          }
+        }
+      },
+      "PhotoVoList" : {
+        "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "first" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the first page."
+          },
+          "hasNext" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "hasPrevious" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "A chunk of items.",
+            "items" : {
+              "$ref" : "#/components/schemas/PhotoVo"
+            }
+          },
+          "last" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the last page."
+          },
+          "page" : {
+            "type" : "integer",
+            "description" : "Page number, starts from 1. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "description" : "Size of each page. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "description" : "Total elements.",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "description" : "Indicates total pages.",
+            "format" : "int64"
           }
         }
       },

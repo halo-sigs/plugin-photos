@@ -11,29 +11,34 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
-import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.PageRequestImpl;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
+import run.halo.photos.finders.PhotoPublicQueryService;
+import run.halo.photos.vo.PhotoGroupVo;
 import run.halo.photos.vo.PhotoVo;
 
 class PhotoFinderImplTest {
 
-    private final ReactiveExtensionClient client = org.mockito.Mockito.mock(
-        ReactiveExtensionClient.class);
+    private final PhotoPublicQueryService queryService = org.mockito.Mockito.mock(
+        PhotoPublicQueryService.class);
 
     private PhotoFinderImpl finder;
 
     @BeforeEach
     void setUp() {
-        finder = new PhotoFinderImpl(client);
+        finder = new PhotoFinderImpl(queryService);
     }
 
     @Test
-    void listAllShouldSortByEffectiveTimeDescending() {
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.fromIterable(mixedPhotos()));
+    void listAllShouldReturnAllPhotos() {
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4,
+                mixedPhotos().stream().map(PhotoVo::from).toList())));
 
         var names = finder.listAll()
             .map(PhotoVo::getMetadata)
@@ -50,9 +55,10 @@ class PhotoFinderImplTest {
     }
 
     @Test
-    void listShouldSortBeforePagination() {
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.fromIterable(mixedPhotos()));
+    void listShouldPaginatePhotos() {
+        var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 2, 4, photoVos.subList(0, 2))));
 
         var result = finder.list(1, 2).block();
 
@@ -62,9 +68,10 @@ class PhotoFinderImplTest {
     }
 
     @Test
-    void listByShouldSortGroupedPhotosByEffectiveTimeDescending() {
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.fromIterable(mixedPhotos()));
+    void listByShouldReturnPhotosInGroup() {
+        var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
 
         var names = finder.listBy("travel")
             .map(PhotoVo::getMetadata)
@@ -81,19 +88,69 @@ class PhotoFinderImplTest {
     }
 
     @Test
-    void groupByShouldSortPhotosInsideEachGroupByEffectiveTimeDescending() {
-        when(client.listAll(eq(PhotoGroup.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.just(group("travel")));
-        when(client.listAll(eq(Photo.class), any(ListOptions.class), any(Sort.class)))
-            .thenReturn(Flux.fromIterable(mixedPhotos()));
+    void groupByShouldPopulatePhotosArrayForEachGroup() {
+        var groupVo = PhotoGroupVo.builder()
+            .metadata(group("travel").getMetadata())
+            .spec(group("travel").getSpec())
+            .status(new PhotoGroup.PostGroupStatus())
+            .photos(List.of())
+            .build();
+        var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
+
+        when(queryService.listGroups(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 1, List.of(groupVo))));
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
 
         var groups = finder.groupBy().collectList().block();
 
-        assertThat(groups).singleElement().satisfies(group -> {
-            assertThat(group.getStatus().getPhotoCount()).isEqualTo(4);
-            assertThat(names(group.getPhotos()))
+        assertThat(groups).singleElement().satisfies(g -> {
+            assertThat(g.getStatus().getPhotoCount()).isEqualTo(4);
+            assertThat(names(g.getPhotos()))
                 .containsExactly("new-no-exif", "middle-exif", "old-exif", "old-no-exif");
         });
+    }
+
+    @Test
+    void groupByShouldEmitGroupsWithNonEmptyPhotosArrays() {
+        var groupVo = PhotoGroupVo.builder()
+            .metadata(group("travel").getMetadata())
+            .spec(group("travel").getSpec())
+            .status(new PhotoGroup.PostGroupStatus())
+            .photos(List.of())
+            .build();
+        var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
+
+        when(queryService.listGroups(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 1, List.of(groupVo))));
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+
+        var groups = finder.groupBy().collectList().block();
+
+        assertThat(groups).isNotNull();
+        assertThat(groups).hasSize(1);
+        assertThat(groups.get(0).getPhotos()).isNotEmpty();
+    }
+
+    @Test
+    void listAllShouldReturnSameSetAndOrderAsBeforeRefactor() {
+        var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
+        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+
+        var names = finder.listAll()
+            .map(PhotoVo::getMetadata)
+            .map(metadata -> metadata.getName())
+            .collectList()
+            .block();
+
+        assertThat(names).containsExactly(
+            "new-no-exif",
+            "middle-exif",
+            "old-exif",
+            "old-no-exif"
+        );
     }
 
     private static List<String> names(List<PhotoVo> photos) {
@@ -104,9 +161,9 @@ class PhotoFinderImplTest {
 
     private static List<Photo> mixedPhotos() {
         return List.of(
-            photo("old-exif", "2026-05-02T00:00:00Z", "2020-01-01T00:00:00Z"),
             photo("new-no-exif", "2026-05-04T00:00:00Z", null),
             photo("middle-exif", "2026-05-01T00:00:00Z", "2026-05-03T00:00:00Z"),
+            photo("old-exif", "2026-05-02T00:00:00Z", "2020-01-01T00:00:00Z"),
             photo("old-no-exif", "2019-01-01T00:00:00Z", null)
         );
     }

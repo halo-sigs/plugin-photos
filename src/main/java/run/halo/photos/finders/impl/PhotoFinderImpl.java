@@ -3,20 +3,19 @@ package run.halo.photos.finders.impl;
 import static org.springframework.data.domain.Sort.Order.asc;
 import static org.springframework.data.domain.Sort.Order.desc;
 
-import static run.halo.app.extension.index.query.Queries.equal;
-
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
-import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.PageRequestImpl;
+import run.halo.app.extension.index.query.Queries;
 import run.halo.app.theme.finders.Finder;
-import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
-import run.halo.photos.PhotoSortUtils;
 import run.halo.photos.finders.PhotoFinder;
+import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
 import run.halo.photos.vo.PhotoVo;
 
@@ -25,17 +24,18 @@ import run.halo.photos.vo.PhotoVo;
  */
 @Finder("photoFinder")
 public class PhotoFinderImpl implements PhotoFinder {
-    private final ReactiveExtensionClient client;
 
-    public PhotoFinderImpl(ReactiveExtensionClient client) {
-        this.client = client;
+    private final PhotoPublicQueryService photoPublicQueryService;
+
+    public PhotoFinderImpl(PhotoPublicQueryService photoPublicQueryService) {
+        this.photoPublicQueryService = photoPublicQueryService;
     }
 
     @Override
     public Flux<PhotoVo> listAll() {
-        return this.client.listAll(Photo.class, ListOptions.builder().build(), Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(false))
-            .map(PhotoVo::from);
+        return photoPublicQueryService.listPhotos(ListOptions.builder().build(),
+                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
+            .flatMapIterable(ListResult::getItems);
     }
 
     @Override
@@ -45,59 +45,62 @@ public class PhotoFinderImpl implements PhotoFinder {
 
     @Override
     public Mono<ListResult<PhotoVo>> list(Integer page, Integer size, String group) {
-        return pagePhoto(page, size, group);
-    }
-
-    private Mono<ListResult<PhotoVo>> pagePhoto(Integer page, Integer size, String group) {
-        var builder = ListOptions.builder();
+        var options = ListOptions.builder();
         if (StringUtils.isNotEmpty(group)) {
-            builder.andQuery(equal("spec.groupName", group));
+            options.andQuery(Queries.equal("spec.groupName", group));
         }
-        return client.listAll(Photo.class, builder.build(), Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(false))
-            .collectList()
-            .map(photos -> {
-                var pageItems = ListResult.subList(photos, page, size)
-                    .stream()
-                    .map(PhotoVo::from)
-                    .toList();
-                return new ListResult<>(page, size, photos.size(), pageItems);
-            });
+        return photoPublicQueryService.listPhotos(options.build(),
+            PageRequestImpl.of(page, size, defaultPhotoSort()));
     }
 
     @Override
     public Flux<PhotoVo> listBy(String groupName) {
         var options = ListOptions.builder()
-            .andQuery(equal("spec.groupName", groupName))
+            .andQuery(Queries.equal("spec.groupName", groupName))
             .build();
-        return client.listAll(Photo.class, options, Sort.unsorted())
-            .sort(PhotoSortUtils.effectiveTimeComparator(false))
-            .map(PhotoVo::from);
+        return photoPublicQueryService.listPhotos(options,
+                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
+            .flatMapIterable(ListResult::getItems);
     }
 
     @Override
     public Flux<PhotoGroupVo> groupBy() {
-        return this.client.listAll(PhotoGroup.class, ListOptions.builder().build(), defaultSort())
+        return photoPublicQueryService.listGroups(ListOptions.builder().build(),
+                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultGroupSort()))
+            .flatMapIterable(ListResult::getItems)
             .concatMap(group -> {
-                var builder = PhotoGroupVo.from(group);
-                return this.listBy(group.getMetadata().getName())
-                    .collectList()
-                    .doOnNext(photos -> {
-                        PhotoGroup.PostGroupStatus status = group.getStatus();
-                        status.setPhotoCount(photos.size());
-                        builder.status(status);
-                        builder.photos(photos);
-                    })
-                    .then(Mono.fromSupplier(builder::build));
+                String groupName = group.getMetadata().getName();
+                return photoPublicQueryService.listPhotos(
+                        ListOptions.builder()
+                            .andQuery(Queries.equal("spec.groupName", groupName))
+                            .build(),
+                        PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
+                    .map(photos -> {
+                        var status = group.getStatus();
+                        status.setPhotoCount(photos.getItems().size());
+                        return PhotoGroupVo.builder()
+                            .metadata(group.getMetadata())
+                            .spec(group.getSpec())
+                            .status(status)
+                            .photos(photos.getItems())
+                            .build();
+                    });
             });
     }
 
-    static Sort defaultSort() {
+    static Sort defaultPhotoSort() {
         return Sort.by(
-            asc("spec.priority"),
+            desc("spec.dateTimeOriginal"),
             desc("metadata.creationTimestamp"),
             asc("metadata.name")
         );
     }
 
+    static Sort defaultGroupSort() {
+        return Sort.by(
+            desc("spec.priority"),
+            desc("metadata.creationTimestamp"),
+            asc("metadata.name")
+        );
+    }
 }
