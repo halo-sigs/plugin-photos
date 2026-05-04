@@ -17,6 +17,7 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -99,11 +100,11 @@ public class PhotoEndpoint implements CustomEndpoint {
         return request.multipartData()
             .flatMap(parts -> {
                 var filePart = parts.getFirst("file");
-                if (filePart == null) {
-                    return Mono.error(new IllegalArgumentException("File is required"));
+                if (!(filePart instanceof FilePart fp)) {
+                    return Mono.error(new ServerWebInputException("file part required"));
                 }
                 var group = resolveGroup(parts.getFirst("group"), queryGroup);
-                return photoUploadService.upload((FilePart) filePart, group);
+                return photoUploadService.upload(fp, group);
             })
             .flatMap(photo -> ServerResponse.ok().bodyValue(photo));
     }
