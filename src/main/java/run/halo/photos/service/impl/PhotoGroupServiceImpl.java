@@ -34,11 +34,6 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
 
     @Override
     public Mono<ListResult<PhotoGroup>> listPhotoGroup(QueryListRequest query) {
-        var sort = Sort.by(
-            Sort.Order.desc("spec.priority"),
-            Sort.Order.desc("metadata.creationTimestamp"),
-            Sort.Order.asc("metadata.name")
-        );
         return this.client.listAll(PhotoGroup.class, toListOptions(query), Sort.unsorted())
             .sort((g1, g2) -> {
                 var p1 = g1.getSpec() != null && g1.getSpec().getPriority() != null
@@ -89,17 +84,15 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
     @Override
     public Mono<PhotoGroup> deletePhotoGroup(String name) {
         return this.client.fetch(PhotoGroup.class, name)
-            .flatMap(this.client::delete)
-            .flatMap(deleted -> {
-                    var listOptions = ListOptions.builder()
-                        .andQuery(equal("spec.groupName", name))
-                        .build();
-                    return this.client.listAll(Photo.class, listOptions, Sort.unsorted())
-                        .flatMap(this.client::delete)
-                        .then()
-                        .thenReturn(deleted);
-                }
-            );
+            .flatMap(group -> {
+                var listOptions = ListOptions.builder()
+                    .andQuery(equal("spec.groupName", name))
+                    .build();
+                return this.client.listAll(Photo.class, listOptions, Sort.unsorted())
+                    .flatMap(this.client::delete)
+                    .then(this.client.delete(group))
+                    .thenReturn(group);
+            });
     }
 
     private Mono<PhotoGroup> populatePhotos(PhotoGroup photoGroup) {
@@ -111,15 +104,12 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
     Mono<Integer> fetchPhotoCount(PhotoGroup photoGroup) {
         Assert.notNull(photoGroup, "The photoGroup must not be null.");
         String name = photoGroup.getMetadata().getName();
-        return client.list(
-                Photo.class,
-                photo -> !photo.isDeleted()
-                    && photo.getSpec() != null
-                    && name.equals(photo.getSpec().getGroupName()),
-                null
-            )
-            .count()
-            .defaultIfEmpty(0L)
+        var options = ListOptions.builder()
+            .andQuery(equal("spec.groupName", name))
+            .build();
+        return client.listBy(Photo.class, options,
+                PageRequestImpl.of(1, 1, Sort.unsorted()))
+            .map(ListResult::getTotal)
             .map(Long::intValue);
     }
 
