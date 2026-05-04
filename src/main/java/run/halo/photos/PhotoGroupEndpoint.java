@@ -6,12 +6,10 @@ import static org.springdoc.webflux.core.fn.SpringdocRouteBuilder.route;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
@@ -68,9 +66,6 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
 
     private Mono<ServerResponse> deletePhotoGroup(ServerRequest serverRequest) {
         String name = serverRequest.pathVariable("name");
-        if (StringUtils.isBlank(name)) {
-            throw new ServerWebInputException("Photo group name must not be blank.");
-        }
         return photoGroupService.deletePhotoGroup(name)
             .flatMap(photoGroup -> ServerResponse.ok().bodyValue(photoGroup));
     }

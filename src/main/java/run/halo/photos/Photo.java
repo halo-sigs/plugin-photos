@@ -4,7 +4,6 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Objects;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import run.halo.app.extension.AbstractExtension;
@@ -78,9 +77,7 @@ public class Photo extends AbstractExtension {
 
     @JsonIgnore
     public boolean isDeleted() {
-        return Objects.equals(true,
-            getMetadata().getDeletionTimestamp() != null
-        );
+        return getMetadata().getDeletionTimestamp() != null;
     }
 
 }

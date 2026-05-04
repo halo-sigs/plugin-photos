@@ -49,6 +49,7 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
         this.client = client;
     }
 
+    @Override
     public void invalidateTagCache() {
         tagCache.invalidateAll();
     }

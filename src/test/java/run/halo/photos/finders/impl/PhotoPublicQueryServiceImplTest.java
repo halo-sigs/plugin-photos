@@ -296,7 +296,7 @@ class PhotoPublicQueryServiceImplTest {
         var group = new PhotoGroup();
         group.setMetadata(metadata);
         group.setSpec(spec);
-        group.setStatus(new PhotoGroup.PostGroupStatus());
+        group.setStatus(new PhotoGroup.PhotoGroupStatus());
         return group;
     }
 }

@@ -18,8 +18,8 @@ import run.halo.app.extension.router.SortableRequest;
  * @since 1.0.0
  */
 public class PhotoQuery extends SortableRequest {
-    static final String DATE_TIME_ORIGINAL_SORT = "exif.dateTimeOriginal";
-    static final String EFFECTIVE_TIME_INDEX = "effectiveTime";
+    public static final String DATE_TIME_ORIGINAL_SORT = "exif.dateTimeOriginal";
+    public static final String EFFECTIVE_TIME_INDEX = "effectiveTime";
 
     public PhotoQuery(ServerWebExchange exchange) {
         super(exchange);

@@ -17,7 +17,7 @@ public class PhotoGroupVo implements ExtensionVoOperator {
     
     PhotoGroup.PhotoGroupSpec spec;
     
-    PhotoGroup.PostGroupStatus status;
+    PhotoGroup.PhotoGroupStatus status;
     
     List<PhotoVo> photos;
 }

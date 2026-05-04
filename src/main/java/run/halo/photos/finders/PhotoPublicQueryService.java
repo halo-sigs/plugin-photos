@@ -76,4 +76,10 @@ public interface PhotoPublicQueryService {
      */
     Flux<PhotoGroupVo> listAllGroups(ListOptions options, Sort sort);
 
+    /**
+     * Invalidate the tag cache so that the next call to {@link #listTags} re-fetches from DB.
+     * Should be called whenever a {@link run.halo.photos.Photo} is added, updated, or deleted.
+     */
+    void invalidateTagCache();
+
 }

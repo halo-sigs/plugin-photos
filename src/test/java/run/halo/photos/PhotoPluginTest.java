@@ -12,7 +12,7 @@ class PhotoPluginTest {
     void exifTimePresentShouldUseExif() {
         var photo = photo("a", "2026-05-02T00:00:00Z", "2020-01-01T00:00:00Z");
 
-        assertThat(PhotoPlugin.computeEffectiveTimeIndex(photo))
+        assertThat(PhotoSortUtils.computeEffectiveTimeIndex(photo))
             .isEqualTo("2020-01-01T00:00:00Z");
     }
 
@@ -20,7 +20,7 @@ class PhotoPluginTest {
     void exifTimeMissingShouldFallBackToCreationTimestamp() {
         var photo = photo("a", "2026-05-02T00:00:00Z", null);
 
-        assertThat(PhotoPlugin.computeEffectiveTimeIndex(photo))
+        assertThat(PhotoSortUtils.computeEffectiveTimeIndex(photo))
             .isEqualTo("2026-05-02T00:00:00Z");
     }
 
@@ -28,7 +28,7 @@ class PhotoPluginTest {
     void neitherTimePresentShouldReturnEmptyString() {
         var photo = photo("a", null, null);
 
-        assertThat(PhotoPlugin.computeEffectiveTimeIndex(photo)).isEmpty();
+        assertThat(PhotoSortUtils.computeEffectiveTimeIndex(photo)).isEmpty();
     }
 
     @Test
@@ -41,7 +41,7 @@ class PhotoPluginTest {
         photo.setMetadata(metadata);
         photo.setSpec(new Photo.PhotoSpec());
 
-        assertThat(PhotoPlugin.computeEffectiveTimeIndex(photo))
+        assertThat(PhotoSortUtils.computeEffectiveTimeIndex(photo))
             .isEqualTo("2026-05-02T00:00:00Z");
     }
 
@@ -50,7 +50,7 @@ class PhotoPluginTest {
         var photo = new Photo();
         photo.setSpec(new Photo.PhotoSpec());
 
-        assertThat(PhotoPlugin.computeEffectiveTimeIndex(photo)).isEmpty();
+        assertThat(PhotoSortUtils.computeEffectiveTimeIndex(photo)).isEmpty();
     }
 
     private static Photo photo(String name, String creationTimestamp, String dateTimeOriginal) {

@@ -87,6 +87,12 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
                 } finally {
                     DataBufferUtils.release(dataBuffer);
                 }
+            })
+            .flatMap(bytes -> {
+                if (bytes.length > MAX_FILE_SIZE) {
+                    return Mono.error(new ServerWebInputException("图片大小超过 50MB 限制。"));
+                }
+                return Mono.just(bytes);
             });
     }
 

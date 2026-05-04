@@ -20,7 +20,7 @@ public class PhotoGroup extends AbstractExtension {
     private PhotoGroupSpec spec;
 
     @Schema
-    private PostGroupStatus status;
+    private PhotoGroupStatus status;
 
     @Data
     public static class PhotoGroupSpec {
@@ -31,15 +31,15 @@ public class PhotoGroup extends AbstractExtension {
     }
 
     @JsonIgnore
-    public PostGroupStatus getStatusOrDefault() {
+    public PhotoGroupStatus getStatusOrDefault() {
         if (this.status == null) {
-            this.status = new PostGroupStatus();
+            this.status = new PhotoGroupStatus();
         }
         return this.status;
     }
 
     @Data
-    public static class PostGroupStatus {
+    public static class PhotoGroupStatus {
 
         public Integer photoCount;
     }

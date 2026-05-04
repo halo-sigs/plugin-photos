@@ -39,7 +39,7 @@ class PhotoGroupQueryEndpointTest {
         var spec = new PhotoGroup.PhotoGroupSpec();
         spec.setDisplayName("Trips");
 
-        var status = new PhotoGroup.PostGroupStatus();
+        var status = new PhotoGroup.PhotoGroupStatus();
         status.setPhotoCount(5);
 
         var groupVo = PhotoGroupVo.builder()

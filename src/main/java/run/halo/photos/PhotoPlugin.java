@@ -1,7 +1,7 @@
 package run.halo.photos;
 
-import java.time.Instant;
 import java.util.HashSet;
+import java.util.function.Function;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.Extension;
 import run.halo.app.extension.Scheme;
@@ -11,7 +11,7 @@ import run.halo.app.extension.Watcher;
 import run.halo.app.extension.index.IndexSpecs;
 import run.halo.app.plugin.BasePlugin;
 import run.halo.app.plugin.PluginContext;
-import run.halo.photos.finders.impl.PhotoPublicQueryServiceImpl;
+import run.halo.photos.finders.PhotoPublicQueryService;
 
 /**
  * @author ryanwang
@@ -21,12 +21,12 @@ import run.halo.photos.finders.impl.PhotoPublicQueryServiceImpl;
 public class PhotoPlugin extends BasePlugin {
     private final SchemeManager schemeManager;
     private final ReactiveExtensionClient client;
-    private final PhotoPublicQueryServiceImpl photoPublicQueryService;
+    private final PhotoPublicQueryService photoPublicQueryService;
     private Watcher photoWatcher;
 
     public PhotoPlugin(PluginContext pluginContext, SchemeManager schemeManager,
         ReactiveExtensionClient client,
-        PhotoPublicQueryServiceImpl photoPublicQueryService) {
+        PhotoPublicQueryService photoPublicQueryService) {
         super(pluginContext);
         this.schemeManager = schemeManager;
         this.client = client;
@@ -54,20 +54,16 @@ public class PhotoPlugin extends BasePlugin {
                     return tags == null ? new HashSet<>() : new HashSet<>(tags);
                 }));
             indexSpecs.add(IndexSpecs.<Photo, String>single("exif.make", String.class)
-                .indexFunc(photo ->
-                    photo.getExif() == null ? "" : photo.getExif().getMake() == null ? "" : photo.getExif().getMake()
-                ));
+                .indexFunc(photo -> exifStr(photo, Photo.PhotoExif::getMake)));
             indexSpecs.add(IndexSpecs.<Photo, String>single("exif.model", String.class)
-                .indexFunc(photo ->
-                    photo.getExif() == null ? "" : photo.getExif().getModel() == null ? "" : photo.getExif().getModel()
-                ));
+                .indexFunc(photo -> exifStr(photo, Photo.PhotoExif::getModel)));
             indexSpecs.add(IndexSpecs.<Photo, String>single("exif.dateTimeOriginal", String.class)
                 .indexFunc(photo -> {
-                    Instant dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
+                    var dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
                     return dt == null ? "" : dt.toString();
                 }));
             indexSpecs.add(IndexSpecs.<Photo, String>single("effectiveTime", String.class)
-                .indexFunc(PhotoPlugin::computeEffectiveTimeIndex));
+                .indexFunc(PhotoSortUtils::computeEffectiveTimeIndex));
         });
         schemeManager.register(PhotoGroup.class, indexSpecs -> {
             indexSpecs.add(IndexSpecs.<PhotoGroup, Integer>single("spec.priority", Integer.class)
@@ -123,13 +119,12 @@ public class PhotoPlugin extends BasePlugin {
         schemeManager.unregister(Scheme.buildFromType(PhotoGroup.class));
     }
 
-    static String computeEffectiveTimeIndex(Photo photo) {
-        Instant dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
-        if (dt != null) {
-            return dt.toString();
+    private static String exifStr(Photo photo, Function<Photo.PhotoExif, String> getter) {
+        var exif = photo.getExif();
+        if (exif == null) {
+            return "";
         }
-        Instant created = photo.getMetadata() == null
-            ? null : photo.getMetadata().getCreationTimestamp();
-        return created == null ? "" : created.toString();
+        var value = getter.apply(exif);
+        return value != null ? value : "";
     }
 }

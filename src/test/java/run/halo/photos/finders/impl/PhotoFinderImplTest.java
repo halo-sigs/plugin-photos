@@ -89,7 +89,7 @@ class PhotoFinderImplTest {
 
     @Test
     void groupByShouldPopulatePhotosArrayForEachGroup() {
-        var groupStatus = new PhotoGroup.PostGroupStatus();
+        var groupStatus = new PhotoGroup.PhotoGroupStatus();
         groupStatus.setPhotoCount(4);
         var groupVo = PhotoGroupVo.builder()
             .metadata(group("travel").getMetadata())
@@ -118,7 +118,7 @@ class PhotoFinderImplTest {
         var groupVo = PhotoGroupVo.builder()
             .metadata(group("travel").getMetadata())
             .spec(group("travel").getSpec())
-            .status(new PhotoGroup.PostGroupStatus())
+            .status(new PhotoGroup.PhotoGroupStatus())
             .photos(List.of())
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
@@ -180,7 +180,7 @@ class PhotoFinderImplTest {
         var group = new PhotoGroup();
         group.setMetadata(metadata);
         group.setSpec(spec);
-        group.setStatus(new PhotoGroup.PostGroupStatus());
+        group.setStatus(new PhotoGroup.PhotoGroupStatus());
         return group;
     }
 
