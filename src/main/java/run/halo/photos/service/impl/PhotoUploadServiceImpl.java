@@ -10,8 +10,9 @@ import com.drew.metadata.exif.GpsDirectory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,8 @@ import run.halo.photos.service.PhotoUploadService;
 @RequiredArgsConstructor
 public class PhotoUploadServiceImpl implements PhotoUploadService {
 
+    private static final long MAX_FILE_SIZE = 50L * 1024 * 1024;
+
     private final AttachmentService attachmentService;
     private final ReactiveExtensionClient client;
     private final ReactiveSettingFetcher settingFetcher;
@@ -50,6 +53,13 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
     @Override
     public Mono<Photo> upload(FilePart filePart, String groupName) {
         var mediaType = resolveMediaType(filePart);
+        if (!isImageMediaType(mediaType)) {
+            return Mono.error(new ServerWebInputException("不支持的图片格式，仅支持 jpeg、png、webp、gif、heic 和 heif。"));
+        }
+        var contentLength = filePart.headers().getContentLength();
+        if (contentLength > 0 && contentLength > MAX_FILE_SIZE) {
+            return Mono.error(new ServerWebInputException("图片大小超过 50MB 限制。"));
+        }
         return readFileContent(filePart)
             .flatMap(fileContent -> {
                 var filename = filePart.filename();
@@ -70,10 +80,13 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
     private Mono<byte[]> readFileContent(FilePart filePart) {
         return DataBufferUtils.join(filePart.content())
             .map(dataBuffer -> {
-                byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                dataBuffer.read(bytes);
-                DataBufferUtils.release(dataBuffer);
-                return bytes;
+                try {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    return bytes;
+                } finally {
+                    DataBufferUtils.release(dataBuffer);
+                }
             });
     }
 
@@ -93,6 +106,15 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
             return headerType;
         }
         return MediaTypeFactory.getMediaType(filePart.filename()).orElse(null);
+    }
+
+    private static boolean isImageMediaType(MediaType mediaType) {
+        if (mediaType == null) {
+            return false;
+        }
+        return mediaType.getType().equals("image")
+            && List.of("jpeg", "jpg", "png", "webp", "gif", "heic", "heif")
+                .contains(mediaType.getSubtype());
     }
 
     private Mono<Photo> createPhoto(Attachment attachment, String groupName, String filename,
@@ -207,7 +229,7 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
             }
             try {
                 var formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault());
+                    .withZone(ZoneOffset.UTC);
                 return Instant.from(formatter.parse(dateStr));
             } catch (DateTimeParseException e) {
                 log.warn("Failed to parse EXIF date: {}", dateStr);
@@ -313,6 +335,11 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
         }
 
         private static long gcd(long a, long b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            if (a == 0 && b == 0) {
+                return 1;
+            }
             return b == 0 ? a : gcd(b, a % b);
         }
     }
