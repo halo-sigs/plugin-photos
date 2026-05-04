@@ -1,5 +1,6 @@
 package run.halo.photos.service;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListResult;
 import run.halo.photos.Photo;
@@ -20,4 +21,12 @@ public interface PhotoService {
      * @return a mono of list result
      */
     Mono<ListResult<Photo>> listPhoto(PhotoQuery query);
+
+    /**
+     * List all distinct tags from photos.
+     *
+     * @param query query for filtering
+     * @return a flux of distinct tag names
+     */
+    Flux<String> listAllTags(PhotoQuery query);
 }

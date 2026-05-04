@@ -17,3 +17,12 @@ spec:
           name: pageSize
           validation: required|Number
           value: 20
+        - $formkit: attachmentPolicySelect
+          label: 附件存储策略
+          name: policyName
+          validation: required
+          help: 用于图库上传图片的存储策略
+        - $formkit: attachmentGroupSelect
+          label: 附件分组
+          name: groupName
+          help: 图库上传的图片将归入此附件分组

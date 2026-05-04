@@ -1,0 +1,1189 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Halo",
+    "version" : "2.24.1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:37068",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "basicAuth" : [ ],
+    "bearerAuth" : [ ]
+  } ],
+  "paths" : {
+    "/apis/console.api.photo.halo.run/v1alpha1/photogroups" : {
+      "get" : {
+        "description" : "List photo groups.",
+        "operationId" : "ListPhotoGroups",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Photos filtered by keyword.",
+          "in" : "query",
+          "name" : "keyword",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "photo group name",
+          "in" : "query",
+          "name" : "group",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "If true, return only photos without a group assigned. Overrides the 'group' parameter when set.",
+          "in" : "query",
+          "name" : "ungrouped",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "photo tag",
+          "in" : "query",
+          "name" : "tag",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroupList"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/PhotoGroup" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}" : {
+      "delete" : {
+        "description" : "Delete photo group.",
+        "operationId" : "DeletePhotoGroup",
+        "parameters" : [ {
+          "description" : "Photo group name",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroup"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/PhotoGroup" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photos" : {
+      "get" : {
+        "description" : "List photos.",
+        "operationId" : "ListPhotos",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Photos filtered by keyword.",
+          "in" : "query",
+          "name" : "keyword",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "photo group name",
+          "in" : "query",
+          "name" : "group",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "If true, return only photos without a group assigned. Overrides the 'group' parameter when set.",
+          "in" : "query",
+          "name" : "ungrouped",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "photo tag",
+          "in" : "query",
+          "name" : "tag",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoList"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photos/tags" : {
+      "get" : {
+        "description" : "List all photo tags.",
+        "operationId" : "ListPhotoTags",
+        "parameters" : [ {
+          "description" : "Tag name to query",
+          "in" : "query",
+          "name" : "name",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photos/upload" : {
+      "post" : {
+        "description" : "Upload a photo directly to the gallery.",
+        "operationId" : "UploadPhoto",
+        "parameters" : [ {
+          "description" : "Photo group name",
+          "in" : "query",
+          "name" : "group",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/core.halo.run/v1alpha1/photogroups" : {
+      "get" : {
+        "description" : "List PhotoGroup",
+        "operationId" : "listPhotoGroup",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroupList"
+                }
+              }
+            },
+            "description" : "Response photogroups"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      },
+      "post" : {
+        "description" : "Create PhotoGroup",
+        "operationId" : "createPhotoGroup",
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PhotoGroup"
+              }
+            }
+          },
+          "description" : "Fresh photogroup"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroup"
+                }
+              }
+            },
+            "description" : "Response photogroups created just now"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      }
+    },
+    "/apis/core.halo.run/v1alpha1/photogroups/{name}" : {
+      "delete" : {
+        "description" : "Delete PhotoGroup",
+        "operationId" : "deletePhotoGroup",
+        "parameters" : [ {
+          "description" : "Name of photogroup",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Response photogroup deleted just now"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      },
+      "get" : {
+        "description" : "Get PhotoGroup",
+        "operationId" : "getPhotoGroup",
+        "parameters" : [ {
+          "description" : "Name of photogroup",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroup"
+                }
+              }
+            },
+            "description" : "Response single photogroup"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      },
+      "patch" : {
+        "description" : "Patch PhotoGroup",
+        "operationId" : "patchPhotoGroup",
+        "parameters" : [ {
+          "description" : "Name of photogroup",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json-patch+json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/JsonPatch"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroup"
+                }
+              }
+            },
+            "description" : "Response photogroup patched just now"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      },
+      "put" : {
+        "description" : "Update PhotoGroup",
+        "operationId" : "updatePhotoGroup",
+        "parameters" : [ {
+          "description" : "Name of photogroup",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PhotoGroup"
+              }
+            }
+          },
+          "description" : "Updated photogroup"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoGroup"
+                }
+              }
+            },
+            "description" : "Response photogroups updated just now"
+          }
+        },
+        "tags" : [ "PhotoGroupV1alpha1" ]
+      }
+    },
+    "/apis/core.halo.run/v1alpha1/photos" : {
+      "get" : {
+        "description" : "List Photo",
+        "operationId" : "listPhoto",
+        "parameters" : [ {
+          "description" : "Page number. Default is 0.",
+          "in" : "query",
+          "name" : "page",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Size number. Default is 0.",
+          "in" : "query",
+          "name" : "size",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Label selector. e.g.: hidden!=true",
+          "in" : "query",
+          "name" : "labelSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Field selector. e.g.: metadata.name==halo",
+          "in" : "query",
+          "name" : "fieldSelector",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoList"
+                }
+              }
+            },
+            "description" : "Response photos"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      },
+      "post" : {
+        "description" : "Create Photo",
+        "operationId" : "createPhoto",
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Photo"
+              }
+            }
+          },
+          "description" : "Fresh photo"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "Response photos created just now"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      }
+    },
+    "/apis/core.halo.run/v1alpha1/photos/{name}" : {
+      "delete" : {
+        "description" : "Delete Photo",
+        "operationId" : "deletePhoto",
+        "parameters" : [ {
+          "description" : "Name of photo",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Response photo deleted just now"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      },
+      "get" : {
+        "description" : "Get Photo",
+        "operationId" : "getPhoto",
+        "parameters" : [ {
+          "description" : "Name of photo",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "Response single photo"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      },
+      "patch" : {
+        "description" : "Patch Photo",
+        "operationId" : "patchPhoto",
+        "parameters" : [ {
+          "description" : "Name of photo",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json-patch+json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/JsonPatch"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "Response photo patched just now"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      },
+      "put" : {
+        "description" : "Update Photo",
+        "operationId" : "updatePhoto",
+        "parameters" : [ {
+          "description" : "Name of photo",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Photo"
+              }
+            }
+          },
+          "description" : "Updated photo"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "Response photos updated just now"
+          }
+        },
+        "tags" : [ "PhotoV1alpha1" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "AddOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "add" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      },
+      "CopyOperation" : {
+        "required" : [ "op", "from", "path" ],
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "op" : {
+            "type" : "string",
+            "enum" : [ "copy" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "JsonPatch" : {
+        "minItems" : 1,
+        "uniqueItems" : true,
+        "type" : "array",
+        "description" : "JSON schema for JSONPatch operations",
+        "items" : {
+          "oneOf" : [ {
+            "$ref" : "#/components/schemas/AddOperation"
+          }, {
+            "$ref" : "#/components/schemas/ReplaceOperation"
+          }, {
+            "$ref" : "#/components/schemas/TestOperation"
+          }, {
+            "$ref" : "#/components/schemas/RemoveOperation"
+          }, {
+            "$ref" : "#/components/schemas/MoveOperation"
+          }, {
+            "$ref" : "#/components/schemas/CopyOperation"
+          } ]
+        }
+      },
+      "Metadata" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "annotations" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Annotations are like key-value format."
+          },
+          "creationTimestamp" : {
+            "type" : "string",
+            "description" : "Creation timestamp of the Extension.",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "deletionTimestamp" : {
+            "type" : "string",
+            "description" : "Deletion timestamp of the Extension.",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "finalizers" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "nullable" : true,
+            "items" : {
+              "type" : "string",
+              "nullable" : true
+            }
+          },
+          "generateName" : {
+            "type" : "string",
+            "description" : "The name field will be generated automatically according to the given generateName field"
+          },
+          "labels" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Labels are like key-value format."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Metadata name"
+          },
+          "version" : {
+            "type" : "integer",
+            "description" : "Current version of the Extension. It will be bumped up every update.",
+            "format" : "int64",
+            "nullable" : true
+          }
+        },
+        "description" : "Metadata of Extension."
+      },
+      "MoveOperation" : {
+        "required" : [ "op", "from", "path" ],
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "op" : {
+            "type" : "string",
+            "enum" : [ "move" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "Photo" : {
+        "required" : [ "apiVersion", "kind", "metadata", "spec" ],
+        "type" : "object",
+        "properties" : {
+          "apiVersion" : {
+            "type" : "string"
+          },
+          "exif" : {
+            "$ref" : "#/components/schemas/PhotoExif"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "spec" : {
+            "$ref" : "#/components/schemas/PhotoSpec"
+          }
+        }
+      },
+      "PhotoExif" : {
+        "type" : "object",
+        "properties" : {
+          "dateTimeOriginal" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "exposureMode" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "exposureProgram" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "exposureTime" : {
+            "type" : "string"
+          },
+          "flash" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "fnumber" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "focalLength" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "focalLengthIn35mm" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "gpsAltitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "gpsLatitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "gpsLongitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "imageHeight" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "imageWidth" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "iso" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "lensModel" : {
+            "type" : "string"
+          },
+          "make" : {
+            "type" : "string"
+          },
+          "meteringMode" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "software" : {
+            "type" : "string"
+          },
+          "whiteBalance" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PhotoGroup" : {
+        "required" : [ "apiVersion", "kind", "metadata", "spec" ],
+        "type" : "object",
+        "properties" : {
+          "apiVersion" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "spec" : {
+            "$ref" : "#/components/schemas/PhotoGroupSpec"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/PostGroupStatus"
+          }
+        }
+      },
+      "PhotoGroupList" : {
+        "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "first" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the first page."
+          },
+          "hasNext" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "hasPrevious" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "A chunk of items.",
+            "items" : {
+              "$ref" : "#/components/schemas/PhotoGroup"
+            }
+          },
+          "last" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the last page."
+          },
+          "page" : {
+            "type" : "integer",
+            "description" : "Page number, starts from 1. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "description" : "Size of each page. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "description" : "Total elements.",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "description" : "Indicates total pages.",
+            "format" : "int64"
+          }
+        }
+      },
+      "PhotoGroupSpec" : {
+        "required" : [ "displayName" ],
+        "type" : "object",
+        "properties" : {
+          "displayName" : {
+            "type" : "string"
+          },
+          "priority" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PhotoList" : {
+        "required" : [ "first", "hasNext", "hasPrevious", "items", "last", "page", "size", "total", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "first" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the first page."
+          },
+          "hasNext" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "hasPrevious" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page has previous page."
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "A chunk of items.",
+            "items" : {
+              "$ref" : "#/components/schemas/Photo"
+            }
+          },
+          "last" : {
+            "type" : "boolean",
+            "description" : "Indicates whether current page is the last page."
+          },
+          "page" : {
+            "type" : "integer",
+            "description" : "Page number, starts from 1. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "description" : "Size of each page. If not set or equal to 0, it means no pagination.",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "description" : "Total elements.",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "description" : "Indicates total pages.",
+            "format" : "int64"
+          }
+        }
+      },
+      "PhotoSpec" : {
+        "required" : [ "displayName", "url" ],
+        "type" : "object",
+        "properties" : {
+          "cover" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string",
+            "description" : "Photo group name. Optional; empty or missing means the photo is ungrouped."
+          },
+          "priority" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tags" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostGroupStatus" : {
+        "type" : "object",
+        "properties" : {
+          "photoCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "RemoveOperation" : {
+        "required" : [ "op", "path" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "remove" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          }
+        }
+      },
+      "ReplaceOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "replace" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      },
+      "TestOperation" : {
+        "required" : [ "op", "path", "value" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "type" : "string",
+            "enum" : [ "test" ]
+          },
+          "path" : {
+            "pattern" : "^(/[^/~]*(~[01][^/~]*)*)*$",
+            "type" : "string",
+            "description" : "A JSON Pointer path pointing to the location to move/copy from.",
+            "example" : "/a/b/c"
+          },
+          "value" : {
+            "description" : "Value can be any JSON value"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "basicAuth" : {
+        "scheme" : "basic",
+        "type" : "http"
+      },
+      "bearerAuth" : {
+        "bearerFormat" : "JWT",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  }
+}

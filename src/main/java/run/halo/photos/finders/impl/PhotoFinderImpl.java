@@ -11,11 +11,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
-import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.theme.finders.Finder;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
+import run.halo.photos.PhotoSortUtils;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.vo.PhotoGroupVo;
 import run.halo.photos.vo.PhotoVo;
@@ -24,16 +24,17 @@ import run.halo.photos.vo.PhotoVo;
  * @author LIlGG
  */
 @Finder("photoFinder")
-public class PhotoFInderImpl implements PhotoFinder {
+public class PhotoFinderImpl implements PhotoFinder {
     private final ReactiveExtensionClient client;
 
-    public PhotoFInderImpl(ReactiveExtensionClient client) {
+    public PhotoFinderImpl(ReactiveExtensionClient client) {
         this.client = client;
     }
 
     @Override
     public Flux<PhotoVo> listAll() {
-        return this.client.listAll(Photo.class, ListOptions.builder().build(), defaultSort())
+        return this.client.listAll(Photo.class, ListOptions.builder().build(), Sort.unsorted())
+            .sort(PhotoSortUtils.effectiveTimeComparator(false))
             .map(PhotoVo::from);
     }
 
@@ -52,15 +53,16 @@ public class PhotoFInderImpl implements PhotoFinder {
         if (StringUtils.isNotEmpty(group)) {
             builder.andQuery(equal("spec.groupName", group));
         }
-        return client.listBy(Photo.class, builder.build(),
-                PageRequestImpl.of(page, size, defaultSort()))
-            .flatMap(listResult -> Flux.fromStream(listResult.get())
-                .map(PhotoVo::from)
-                .collectList()
-                .map(list -> new ListResult<>(
-                    listResult.getPage(), listResult.getSize(), listResult.getTotal(), list
-                ))
-            );
+        return client.listAll(Photo.class, builder.build(), Sort.unsorted())
+            .sort(PhotoSortUtils.effectiveTimeComparator(false))
+            .collectList()
+            .map(photos -> {
+                var pageItems = ListResult.subList(photos, page, size)
+                    .stream()
+                    .map(PhotoVo::from)
+                    .toList();
+                return new ListResult<>(page, size, photos.size(), pageItems);
+            });
     }
 
     @Override
@@ -68,7 +70,9 @@ public class PhotoFInderImpl implements PhotoFinder {
         var options = ListOptions.builder()
             .andQuery(equal("spec.groupName", groupName))
             .build();
-        return client.listAll(Photo.class, options, defaultSort()).map(PhotoVo::from);
+        return client.listAll(Photo.class, options, Sort.unsorted())
+            .sort(PhotoSortUtils.effectiveTimeComparator(false))
+            .map(PhotoVo::from);
     }
 
     @Override

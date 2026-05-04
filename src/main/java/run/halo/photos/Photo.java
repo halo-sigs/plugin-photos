@@ -19,7 +19,10 @@ import run.halo.app.extension.GVK;
     singular = "photo")
 public class Photo extends AbstractExtension {
 
+    @Schema(requiredMode = REQUIRED)
     private PhotoSpec spec;
+
+    private PhotoExif exif;
 
     @Data
     public static class PhotoSpec {
@@ -35,8 +38,42 @@ public class Photo extends AbstractExtension {
 
         private Integer priority;
 
-        @Schema(requiredMode = REQUIRED, pattern = "^\\S+$")
+        @Schema(description = "Photo group name. Optional; empty or missing means the photo is "
+            + "ungrouped.")
         private String groupName;
+
+        private java.util.List<String> tags;
+    }
+
+    @Data
+    public static class PhotoExif {
+        // Camera info
+        private String make;
+        private String model;
+        private String lensModel;
+        private String software;
+
+        // Shooting parameters
+        private java.time.Instant dateTimeOriginal;
+        private Double fNumber;
+        private String exposureTime;
+        private Integer iso;
+        private Double focalLength;
+        private Integer focalLengthIn35mm;
+        private Integer flash;
+        private Integer whiteBalance;
+        private Integer exposureMode;
+        private Integer exposureProgram;
+        private Integer meteringMode;
+
+        // Image dimensions
+        private Integer imageWidth;
+        private Integer imageHeight;
+
+        // GPS location
+        private Double gpsLatitude;
+        private Double gpsLongitude;
+        private Double gpsAltitude;
     }
 
     @JsonIgnore

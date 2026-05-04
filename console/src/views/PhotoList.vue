@@ -1,14 +1,25 @@
 <script lang="ts" setup>
-import LazyImage from "@/components/LazyImage.vue";
-import PhotoEditingModal from "@/components/PhotoEditingModal.vue";
-import type { Photo, PhotoList } from "@/types";
-import { axiosInstance } from "@halo-dev/api-client";
+import { photosCoreApiClient } from "@/api";
+import type { Photo } from "@/api/generated";
+import AddButton from "@/components/AddButton.vue";
+import GroupFilter from "@/components/GroupFilter.vue";
+import PhotoGridItem from "@/components/PhotoGridItem.vue";
+import PhotoTable from "@/components/PhotoTable.vue";
+import { useBatchOperations } from "@/composables/useBatchOperations";
+import { ALL_GROUPS, UNGROUPED, useGroupSelection } from "@/composables/useGroupSelection";
+import { QK_PHOTO_GROUPS, useGroupsFetch } from "@/composables/useGroupsFetch";
+import { usePhotoSelection } from "@/composables/usePhotoSelection";
+import { QK_PHOTOS, usePhotosFetch } from "@/composables/usePhotosFetch";
+import { QK_PHOTO_TAGS, usePhotoTags } from "@/composables/usePhotoTags";
 import {
   Dialog,
   IconAddCircle,
   IconArrowLeft,
   IconArrowRight,
-  IconCheckboxFill,
+  IconExternalLinkLine,
+  IconGrid,
+  IconList,
+  IconRefreshLine,
   Toast,
   VButton,
   VCard,
@@ -20,93 +31,220 @@ import {
   VPagination,
   VSpace,
 } from "@halo-dev/components";
-import type { AttachmentLike } from "@halo-dev/ui-shared";
-import { utils } from "@halo-dev/ui-shared";
-import { useQuery } from "@tanstack/vue-query";
-import Fuse from "fuse.js";
-import { computed, nextTick, ref, watch } from "vue";
+import { useQueryClient } from "@tanstack/vue-query";
+import { useLocalStorage } from "@vueuse/core";
+import { useRouteQuery } from "@vueuse/router";
+import { cloneDeep } from "es-toolkit";
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from "vue";
 import RiImage2Line from "~icons/ri/image-2-line";
-import GroupList from "../components/GroupList.vue";
 
-const selectedPhoto = ref<Photo | undefined>();
-const selectedPhotos = ref<Set<Photo>>(new Set<Photo>());
-const selectedGroup = ref<string>();
-const editingModal = ref(false);
-const checkedAll = ref(false);
-const groupListRef = ref();
+const queryClient = useQueryClient();
 
-const page = ref(1);
-const size = ref(20);
-const total = ref(0);
-const keyword = ref("");
+// Modals are heavy and only render when their `v-if` flag flips on,
+// so lazy-load them to keep the initial bundle small.
+const PhotoEditingModal = defineAsyncComponent(() => import("@/components/PhotoEditingModal.vue"));
+const PhotoUploadModal = defineAsyncComponent(() => import("@/components/PhotoUploadModal.vue"));
+
+// ==================== Group selection (sentinel-aware) ====================
+const { selectedGroup, resolveGroupForWrite } = useGroupSelection();
+
+// ==================== View mode ====================
+
+const viewModes = [
+  {
+    name: "grid",
+    icon: IconGrid,
+    tooltip: "网格视图",
+  },
+  {
+    name: "list",
+    icon: IconList,
+    tooltip: "列表视图",
+  },
+];
+
+const viewMode = useLocalStorage<string>("plugin:photos:viewMode", "grid");
+
+// ==================== Tags ====================
+const { tagOptions } = usePhotoTags();
+
+// ==================== Listing state ====================
+const page = useRouteQuery<number>("page", 1);
+const size = useRouteQuery<number>("size", 60);
+const keyword = useRouteQuery<string>("keyword", "");
+const tagFilter = useRouteQuery<string | undefined>("tag");
+const sortOptions = [
+  { label: "默认", value: undefined },
+  { label: "拍摄时间（新→旧）", value: "spec.dateTimeOriginal,desc" },
+  { label: "拍摄时间（旧→新）", value: "spec.dateTimeOriginal,asc" },
+  { label: "创建时间（新→旧）", value: "metadata.creationTimestamp,desc" },
+  { label: "创建时间（旧→新）", value: "metadata.creationTimestamp,asc" },
+];
+
+const selectedSort = useRouteQuery<string | undefined>("sort", undefined);
+
+// ==================== Modals & dialogs ====================
+const selectedPhoto = shallowRef<Photo | undefined>();
+const editingModal = shallowRef(false);
+const uploadModal = shallowRef(false);
+
+const { data: groups } = useGroupsFetch();
 
 const {
   data: photos,
   isLoading,
   refetch,
-} = useQuery<Photo[]>({
-  queryKey: ["plugin:photos:data", page, size, keyword, selectedGroup],
-  queryFn: async () => {
-    if (!selectedGroup.value) {
-      return [];
-    }
-    const { data } = await axiosInstance.get<PhotoList>("/apis/console.api.photo.halo.run/v1alpha1/photos", {
-      params: {
-        page: page.value,
-        size: size.value,
-        keyword: keyword.value,
-        group: selectedGroup.value,
-      },
-    });
-    total.value = data.total;
-    return data.items
-      .map((group) => {
-        if (group.spec) {
-          group.spec.priority = group.spec.priority || 0;
-        }
-        return group;
-      })
-      .sort((a, b) => {
-        return (a.spec?.priority || 0) - (b.spec?.priority || 0);
-      });
-  },
-  refetchInterval(data) {
-    const hasDeletingGroup = data?.some((group) => !!group.metadata.deletionTimestamp);
-    return hasDeletingGroup ? 1000 : false;
-  },
-  refetchOnWindowFocus: false,
+  isFetching,
+} = usePhotosFetch({
+  page,
+  size,
+  keyword,
+  selectedGroup,
+  tagFilter,
+  selectedSort,
 });
 
+// ==================== Selection ====================
+const { selectedPhotos, selectedCount, checkedAll, isSelected, toggle, setAll, clear } = usePhotoSelection(
+  computed(() => photos.value?.items || []),
+);
+
+// ==================== Batch operations ====================
+const { isBatchOperating, runWithConcurrency } = useBatchOperations();
+
+// ==================== Photo navigation ====================
 const handleSelectPrevious = () => {
-  if (!photos.value) {
-    return;
-  }
-
-  const currentIndex = photos.value.findIndex((photo) => photo.metadata.name === selectedPhoto.value?.metadata.name);
-
+  if (!photos.value) return;
+  const currentIndex = photos.value.items.findIndex(
+    (photo) => photo.metadata.name === selectedPhoto.value?.metadata.name,
+  );
   if (currentIndex > 0) {
-    selectedPhoto.value = photos.value[currentIndex - 1];
+    selectedPhoto.value = photos.value.items[currentIndex - 1];
     return;
   }
-
   if (currentIndex <= 0) {
     selectedPhoto.value = undefined;
   }
 };
 
 const handleSelectNext = () => {
-  if (!photos.value) {
-    return;
-  }
-
+  if (!photos.value) return;
   if (!selectedPhoto.value) {
-    selectedPhoto.value = photos.value[0];
+    selectedPhoto.value = photos.value.items[0];
     return;
   }
-  const currentIndex = photos.value.findIndex((photo) => photo.metadata.name === selectedPhoto.value?.metadata.name);
-  if (currentIndex !== photos.value.length - 1) {
-    selectedPhoto.value = photos.value[currentIndex + 1];
+  const currentIndex = photos.value.items.findIndex(
+    (photo) => photo.metadata.name === selectedPhoto.value?.metadata.name,
+  );
+  if (currentIndex !== photos.value.items.length - 1) {
+    selectedPhoto.value = photos.value.items[currentIndex + 1];
   }
+};
+
+// ==================== Batch handlers ====================
+const handleDeleteInBatch = () => {
+  Dialog.warning({
+    title: `是否确认删除所选的 ${selectedCount.value} 张图片？`,
+    description: "删除之后将无法恢复。",
+    confirmType: "danger",
+    onConfirm: async () => {
+      isBatchOperating.value = true;
+      try {
+        const items = Array.from(selectedPhotos.value);
+        await runWithConcurrency(items, (photo) =>
+          photosCoreApiClient.photo.deletePhoto({
+            name: photo.metadata.name,
+          }),
+        );
+        Toast.success(`已删除 ${items.length} 张图片`);
+      } catch {
+        Toast.error("部分图片删除失败，请重试");
+      } finally {
+        isBatchOperating.value = false;
+        clear();
+        refetchAll();
+      }
+    },
+  });
+};
+
+const batchMoveGroup = shallowRef("");
+
+const handleBatchMoveGroup = async () => {
+  if (!batchMoveGroup.value) return;
+  const items = Array.from(selectedPhotos.value);
+  isBatchOperating.value = true;
+  try {
+    await runWithConcurrency(items, (photo) => {
+      const update = cloneDeep(photo);
+      update.spec.groupName = batchMoveGroup.value;
+      return photosCoreApiClient.photo.updatePhoto({
+        name: photo.metadata.name,
+        photo: update,
+      });
+    });
+    Toast.success(`已移动 ${items.length} 张图片到目标分组`);
+    clear();
+  } catch {
+    Toast.error("部分图片移动失败，请重试");
+  } finally {
+    isBatchOperating.value = false;
+    batchMoveGroup.value = "";
+    refetchAll();
+  }
+};
+
+const batchTags = ref<string[]>([]);
+const handleBatchAddTags = async () => {
+  if (!batchTags.value.length) return;
+  const items = Array.from(selectedPhotos.value);
+  isBatchOperating.value = true;
+  try {
+    await runWithConcurrency(items, (photo) => {
+      const update = cloneDeep(photo);
+      const existing = new Set(update.spec.tags || []);
+      batchTags.value.forEach((tag) => existing.add(tag));
+      update.spec.tags = Array.from(existing);
+      return photosCoreApiClient.photo.updatePhoto({
+        name: photo.metadata.name,
+        photo: update,
+      });
+    });
+    Toast.success(`已为 ${items.length} 张图片添加标签`);
+    clear();
+  } catch {
+    Toast.error("部分标签添加失败，请重试");
+  } finally {
+    isBatchOperating.value = false;
+    batchTags.value = [];
+    refetchAll();
+  }
+};
+
+const handleCheckAllChange = (e: Event) => {
+  const { checked } = e.target as HTMLInputElement;
+  setAll(checked);
+};
+
+const hasFilters = computed(() => {
+  return tagFilter.value || selectedSort.value || keyword.value;
+});
+
+function handleClearFilters() {
+  tagFilter.value = "";
+  selectedSort.value = undefined;
+}
+
+watch([keyword, tagFilter, selectedSort, selectedGroup], () => {
+  page.value = 1;
+});
+
+// ==================== Refetch helpers ====================
+const refetchAll = async () => {
+  queryClient.invalidateQueries({ queryKey: [QK_PHOTOS] });
+  queryClient.invalidateQueries({ queryKey: [QK_PHOTO_GROUPS] });
+  queryClient.invalidateQueries({ queryKey: [QK_PHOTO_TAGS] });
+  clear();
 };
 
 const handleOpenEditingModal = (photo?: Photo) => {
@@ -114,195 +252,213 @@ const handleOpenEditingModal = (photo?: Photo) => {
   editingModal.value = true;
 };
 
-const handleDeleteInBatch = () => {
-  Dialog.warning({
-    title: "是否确认删除所选的图片？",
-    description: "删除之后将无法恢复。",
-    confirmType: "danger",
-    onConfirm: async () => {
-      try {
-        const promises = Array.from(selectedPhotos.value).map((photo) => {
-          return axiosInstance.delete(`/apis/core.halo.run/v1alpha1/photos/${photo.metadata.name}`);
-        });
-        await Promise.all(promises);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        pageRefetch();
-      }
-    },
-  });
-};
-
-const handleCheckAllChange = (e: Event) => {
-  const { checked } = e.target as HTMLInputElement;
-  handleCheckAll(checked);
-};
-
-const handleCheckAll = (checkAll: boolean) => {
-  if (checkAll) {
-    photos.value?.forEach((photo) => {
-      selectedPhotos.value.add(photo);
-    });
-  } else {
-    selectedPhotos.value.clear();
-  }
-};
-
-const isChecked = (photo: Photo) => {
-  return (
-    photo.metadata.name === selectedPhoto.value?.metadata.name ||
-    Array.from(selectedPhotos.value)
-      .map((item) => item.metadata.name)
-      .includes(photo.metadata.name)
-  );
-};
-
-watch(
-  () => selectedPhotos.value.size,
-  (newValue) => {
-    checkedAll.value = newValue === photos.value?.length;
-  },
-);
-
-// search
-let fuse: Fuse<Photo> | undefined = undefined;
-
-watch(
-  () => photos.value,
-  () => {
-    if (!photos.value) {
-      return;
-    }
-
-    fuse = new Fuse(photos.value, {
-      keys: ["spec.displayName", "metadata.name", "spec.description", "spec.url"],
-      useExtendedSearch: true,
-    });
-  },
-);
-
-const searchResults = computed({
-  get() {
-    if (!fuse || !keyword.value) {
-      return photos.value || [];
-    }
-
-    return fuse?.search(keyword.value).map((item) => item.item);
-  },
-  set(value) {
-    photos.value = value;
-  },
-});
-
-// create by attachments
-const attachmentModal = ref(false);
-
-const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
-  const photos: {
-    url: string;
-    cover?: string;
-    displayName?: string;
-    type?: string;
-  }[] = attachments
-    .map((attachment) => {
-      const post = {
-        groupName: selectedGroup.value || "",
-      };
-
-      if (typeof attachment === "string") {
-        return {
-          ...post,
-          url: attachment,
-          cover: attachment,
-        };
-      }
-      if ("url" in attachment) {
-        return {
-          ...post,
-          url: attachment.url,
-          cover: attachment.url,
-        };
-      }
-      if ("spec" in attachment) {
-        return {
-          ...post,
-          url: attachment.status?.permalink,
-          cover: attachment.status?.permalink,
-          displayName: attachment.spec.displayName,
-          type: attachment.spec.mediaType,
-        };
-      }
-    })
-    .filter(Boolean) as {
-    url: string;
-    cover?: string;
-    displayName?: string;
-    type?: string;
-  }[];
-
-  for (const photo of photos) {
-    const type = photo.type;
-    if (!type) {
-      Toast.error("只支持选择图片");
-      nextTick(() => {
-        attachmentModal.value = true;
-      });
-
-      return;
-    }
-    const fileType = type.split("/")[0];
-    if (fileType !== "image") {
-      Toast.error("只支持选择图片");
-      nextTick(() => {
-        attachmentModal.value = true;
-      });
-      return;
-    }
-  }
-
-  const createRequests = photos.map((photo) => {
-    return axiosInstance.post<Photo>("/apis/core.halo.run/v1alpha1/photos", {
-      metadata: {
-        name: "",
-        generateName: "photo-",
-      },
-      spec: photo,
-      kind: "Photo",
-      apiVersion: "core.halo.run/v1alpha1",
-    });
-  });
-
-  await Promise.all(createRequests);
-
-  Toast.success(`新建成功，一共创建了 ${photos.length} 张图片。`);
-  pageRefetch();
-  attachmentModal.value = false;
-};
-
-const groupSelectHandle = (group?: string) => {
-  selectedGroup.value = group;
-};
-
-const pageRefetch = async () => {
-  await groupListRef.value.refetch();
-  await refetch();
-  selectedPhotos.value = new Set<Photo>();
-};
-
 const onEditingModalClose = () => {
   editingModal.value = false;
-  refetch();
+  selectedPhoto.value = undefined;
 };
+
+// ==================== Computed ====================
+const currentGroupName = computed(() => {
+  if (selectedGroup.value === ALL_GROUPS) {
+    return "全部";
+  }
+  if (selectedGroup.value === UNGROUPED) {
+    return "未分组";
+  }
+  const group = groups.value?.find((g) => g.metadata.name === selectedGroup.value);
+  return group?.spec.displayName || "全部";
+});
+
+const hasActiveFilters = computed(() => !!keyword.value || !!tagFilter.value);
+
+const handleRouteToFront = () => {
+  window.open("/photos", "_blank");
+};
+
+function onUploadModalClose() {
+  uploadModal.value = false;
+  queryClient.invalidateQueries({ queryKey: [QK_PHOTO_GROUPS] });
+  queryClient.invalidateQueries({ queryKey: [QK_PHOTOS] });
+}
 </script>
+
 <template>
-  <PhotoEditingModal
-    v-if="editingModal"
-    :photo="selectedPhoto"
-    :group="selectedGroup"
-    @close="onEditingModalClose"
-    @saved="pageRefetch"
-  >
+  <VPageHeader title="图库">
+    <template #icon>
+      <RiImage2Line />
+    </template>
+    <template #actions>
+      <VButton @click="handleRouteToFront" size="sm" ghost>
+        <template #icon>
+          <IconExternalLinkLine class=":uno: size-full" />
+        </template>
+        跳转到前台
+      </VButton>
+    </template>
+  </VPageHeader>
+
+  <div class=":uno: m-0 md:m-4">
+    <GroupFilter />
+
+    <VCard :body-class="['!p-0']">
+      <template #header>
+        <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+          <div class=":uno: relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center">
+            <div v-permission="['plugin:photos:manage']" class=":uno: hidden items-center sm:flex">
+              <input
+                v-model="checkedAll"
+                :disabled="!photos?.items?.length || isBatchOperating"
+                type="checkbox"
+                @change="handleCheckAllChange"
+              />
+            </div>
+            <div class=":uno: w-full flex flex-1 items-center sm:w-auto">
+              <SearchInput v-if="selectedCount === 0" v-model="keyword" />
+              <VSpace v-else>
+                <VButton type="danger" :disabled="isBatchOperating" @click="handleDeleteInBatch"> 删除 </VButton>
+                <VDropdown>
+                  <VButton :disabled="isBatchOperating"> 移动到分组 </VButton>
+                  <template #popper>
+                    <VDropdownItem
+                      v-for="g in groups"
+                      :key="g.metadata.name"
+                      @click="
+                        batchMoveGroup = g.metadata.name;
+                        handleBatchMoveGroup();
+                      "
+                    >
+                      {{ g.spec.displayName }}
+                    </VDropdownItem>
+                  </template>
+                </VDropdown>
+                <VDropdown>
+                  <VButton :disabled="isBatchOperating"> 添加标签 </VButton>
+                  <template #popper>
+                    <div class=":uno: min-w-[200px] p-2">
+                      <FormKit
+                        v-model="batchTags"
+                        type="select"
+                        :multiple="true"
+                        :searchable="true"
+                        :allowCreate="true"
+                        :options="tagOptions"
+                        placeholder="输入标签"
+                      />
+                      <VButton type="secondary" class=":uno: mt-2 w-full" @click="handleBatchAddTags">
+                        确认添加
+                      </VButton>
+                    </div>
+                  </template>
+                </VDropdown>
+                <VButton :disabled="isBatchOperating" @click="clear()"> 取消选择 </VButton>
+              </VSpace>
+            </div>
+            <VSpace spacing="lg" class=":uno: flex-wrap">
+              <FilterCleanButton v-if="hasFilters" @click="handleClearFilters" />
+              <FilterDropdown
+                v-model="tagFilter"
+                label="标签"
+                :items="[
+                  {
+                    label: '全部',
+                  },
+                  ...tagOptions,
+                ]"
+              />
+              <FilterDropdown v-model="selectedSort" label="排序" :items="sortOptions" />
+              <div class=":uno: flex flex-row gap-2">
+                <div
+                  v-for="(item, index) in viewModes"
+                  :key="index"
+                  v-tooltip="`${item.tooltip}`"
+                  :class="{
+                    ':uno: bg-gray-200 font-bold text-black': viewMode === item.name,
+                  }"
+                  class=":uno: cursor-pointer rounded p-1 hover:bg-gray-200"
+                  @click="viewMode = item.name"
+                >
+                  <component :is="item.icon" class=":uno: h-4 w-4" />
+                </div>
+              </div>
+              <div class=":uno: flex flex-row gap-2">
+                <button
+                  @click="refetch()"
+                  class=":uno: group cursor-pointer rounded p-1 hover:bg-gray-200"
+                  v-tooltip="'刷新'"
+                >
+                  <IconRefreshLine
+                    :class="{ ':uno: animate-spin text-gray-900': isFetching }"
+                    class=":uno: h-4 w-4 text-gray-600 group-hover:text-gray-900"
+                  />
+                </button>
+              </div>
+              <AddButton :default-group="resolveGroupForWrite(selectedGroup)" />
+            </VSpace>
+          </div>
+        </div>
+      </template>
+      <!-- Content -->
+      <VLoading v-if="isLoading" class=":uno: py-16" />
+
+      <Transition v-else-if="!photos?.items?.length" appear name="fade">
+        <div class=":uno: min-h-[420px] flex items-center justify-center px-4">
+          <VEmpty
+            :message="hasActiveFilters ? '没有符合当前筛选条件的图片。' : `当前分组「${currentGroupName}」还没有图片。`"
+            title="当前没有图片"
+          >
+            <template #actions>
+              <VSpace>
+                <VButton @click="refetch">刷新</VButton>
+                <VButton v-permission="['plugin:photos:manage']" type="primary" @click="uploadModal = true">
+                  <template #icon>
+                    <IconAddCircle class=":uno: h-4 w-4" />
+                  </template>
+                  上传图片
+                </VButton>
+              </VSpace>
+            </template>
+          </VEmpty>
+        </div>
+      </Transition>
+
+      <div v-else class=":uno: p-4" :class="viewMode === 'list' ? ':uno: !p-0' : ''">
+        <div
+          v-if="viewMode === 'grid'"
+          class=":uno: grid grid-cols-2 gap-3 2xl:grid-cols-7 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 xl:grid-cols-6"
+        >
+          <PhotoGridItem
+            v-for="photo in photos.items"
+            :key="photo.metadata.name"
+            :photo="photo"
+            :select-mode="selectedCount > 0"
+            :is-selected="isSelected(photo)"
+            @select="toggle(photo)"
+            @open-edit="handleOpenEditingModal(photo)"
+          />
+        </div>
+
+        <PhotoTable
+          v-else-if="viewMode === 'list'"
+          :photos="photos.items"
+          :is-selected="isSelected"
+          @toggle-select="toggle"
+          @open-edit="handleOpenEditingModal"
+        />
+      </div>
+
+      <template #footer>
+        <VPagination
+          v-if="photos?.items?.length"
+          v-model:page="page"
+          v-model:size="size"
+          :total="photos.total"
+          :size-options="[30, 60, 120, 240]"
+        />
+      </template>
+    </VCard>
+  </div>
+
+  <PhotoEditingModal v-if="editingModal && selectedPhoto" :photo="selectedPhoto" @close="onEditingModalClose">
     <template #append-actions>
       <span @click="handleSelectPrevious">
         <IconArrowLeft />
@@ -312,137 +468,10 @@ const onEditingModalClose = () => {
       </span>
     </template>
   </PhotoEditingModal>
-  <AttachmentSelectorModal v-if="attachmentModal" :accepts="['image/*']" @select="onAttachmentsSelect" />
-  <VPageHeader title="图库">
-    <template #icon>
-      <RiImage2Line />
-    </template>
-  </VPageHeader>
-  <div class=":uno: p-4">
-    <div class=":uno: flex flex-col gap-2 lg:flex-row">
-      <div class=":uno: w-full flex-none lg:w-96">
-        <GroupList ref="groupListRef" @select="groupSelectHandle" />
-      </div>
-      <div class=":uno: min-w-0 flex-1 shrink">
-        <VCard>
-          <template #header>
-            <div class=":uno: block w-full bg-gray-50 px-4 py-3">
-              <div class=":uno: relative flex flex-col items-start sm:flex-row sm:items-center">
-                <div class=":uno: mr-4 hidden items-center sm:flex">
-                  <input v-model="checkedAll" type="checkbox" @change="handleCheckAllChange" />
-                </div>
-                <div class=":uno: w-full flex flex-1 sm:w-auto">
-                  <SearchInput v-if="!selectedPhotos.size" v-model="keyword" />
-                  <VSpace v-else>
-                    <VButton type="danger" @click="handleDeleteInBatch"> 删除 </VButton>
-                  </VSpace>
-                </div>
-                <div v-if="selectedGroup" v-permission="['plugin:photos:manage']" class=":uno: mt-4 flex sm:mt-0">
-                  <VDropdown>
-                    <VButton size="xs"> 新增 </VButton>
-                    <template #popper>
-                      <VDropdownItem @click="handleOpenEditingModal()"> 新增 </VDropdownItem>
-                      <VDropdownItem @click="attachmentModal = true"> 从附件库选择 </VDropdownItem>
-                    </template>
-                  </VDropdown>
-                </div>
-              </div>
-            </div>
-          </template>
-          <VLoading v-if="isLoading" />
-          <Transition v-else-if="!selectedGroup" appear name="fade">
-            <VEmpty message="请选择或新建分组" title="未选择分组"></VEmpty>
-          </Transition>
-          <Transition v-else-if="!searchResults.length" appear name="fade">
-            <VEmpty message="你可以尝试刷新或者新建图片" title="当前没有图片">
-              <template #actions>
-                <VSpace>
-                  <VButton @click="refetch"> 刷新</VButton>
-                  <VButton v-permission="['plugin:photos:manage']" type="primary" @click="handleOpenEditingModal()">
-                    <template #icon>
-                      <IconAddCircle class=":uno: size-full" />
-                    </template>
-                    新增图片
-                  </VButton>
-                </VSpace>
-              </template>
-            </VEmpty>
-          </Transition>
-          <Transition v-else appear name="fade">
-            <div
-              class=":uno: grid grid-cols-1 mt-2 gap-x-2 gap-y-3 lg:grid-cols-3 sm:grid-cols-2 xl:grid-cols-5"
-              role="list"
-            >
-              <VCard
-                v-for="photo in photos"
-                :key="photo.metadata.name"
-                :body-class="[':uno: !p-0']"
-                :class="{
-                  ':uno: ring-primary ring-1': isChecked(photo),
-                  ':uno: ring-1 ring-red-600': photo.metadata.deletionTimestamp,
-                }"
-                class=":uno: hover:shadow"
-                @click="handleOpenEditingModal(photo)"
-              >
-                <div class=":uno: group relative bg-white">
-                  <div class=":uno: block aspect-16/9 size-full cursor-pointer overflow-hidden bg-gray-100">
-                    <LazyImage
-                      :key="photo.metadata.name"
-                      :alt="photo.spec.displayName"
-                      :src="utils.attachment.getThumbnailUrl(photo.spec.cover || photo.spec.url, 'M')"
-                      classes="size-full pointer-events-none group-hover:opacity-75"
-                    >
-                      <template #loading>
-                        <div class=":uno: h-full flex justify-center">
-                          <VLoading></VLoading>
-                        </div>
-                      </template>
-                      <template #error>
-                        <div class=":uno: h-full flex items-center justify-center object-cover">
-                          <span class=":uno: text-xs text-red-400"> 加载异常 </span>
-                        </div>
-                      </template>
-                    </LazyImage>
-                  </div>
 
-                  <p
-                    v-tooltip="photo.spec.displayName"
-                    class=":uno: block cursor-pointer truncate px-2 py-1 text-center text-xs text-gray-700 font-medium"
-                  >
-                    {{ photo.spec.displayName }}
-                  </p>
-
-                  <div
-                    v-if="photo.metadata.deletionTimestamp"
-                    class=":uno: absolute right-1 top-1 text-xs text-red-300"
-                  >
-                    删除中...
-                  </div>
-
-                  <div
-                    v-if="!photo.metadata.deletionTimestamp"
-                    v-permission="['plugin:photos:manage']"
-                    :class="{ ':uno: !flex': selectedPhotos.has(photo) }"
-                    class=":uno: absolute left-0 top-0 hidden h-1/3 w-full cursor-pointer justify-end from-gray-300 to-transparent bg-gradient-to-b ease-in-out group-hover:flex"
-                    @click.stop="selectedPhotos.has(photo) ? selectedPhotos.delete(photo) : selectedPhotos.add(photo)"
-                  >
-                    <IconCheckboxFill
-                      :class="{
-                        ':uno: !text-primary': selectedPhotos.has(photo),
-                      }"
-                      class=":uno: hover:text-primary mr-1 mt-1 h-6 w-6 cursor-pointer text-white transition-all"
-                    />
-                  </div>
-                </div>
-              </VCard>
-            </div>
-          </Transition>
-
-          <template #footer>
-            <VPagination v-model:page="page" v-model:size="size" :total="total" :size-options="[20, 30, 50, 100]" />
-          </template>
-        </VCard>
-      </div>
-    </div>
-  </div>
+  <PhotoUploadModal
+    v-if="uploadModal"
+    :default-group="resolveGroupForWrite(selectedGroup)"
+    @close="onUploadModalClose"
+  />
 </template>

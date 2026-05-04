@@ -1,146 +1,122 @@
 <script lang="ts" setup>
-import type { Photo } from "@/types";
-import { submitForm } from "@formkit/core";
-import { axiosInstance } from "@halo-dev/api-client";
-import { VButton, VModal, VSpace } from "@halo-dev/components";
-import { cloneDeep } from "es-toolkit";
-import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
+import { photosCoreApiClient } from "@/api";
+import type { Photo } from "@/api/generated";
+import { QK_PHOTO_GROUPS } from "@/composables/useGroupsFetch";
+import { QK_PHOTOS } from "@/composables/usePhotosFetch";
+import { QK_PHOTO_TAGS } from "@/composables/usePhotoTags";
+import type { PhotoFormState } from "@/types";
+import type { JsonPatchInner } from "@halo-dev/api-client";
+import { Toast, VButton, VModal, VSpace } from "@halo-dev/components";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useTemplateRef } from "vue";
+import PhotoForm from "./PhotoForm.vue";
 
 const props = withDefaults(
   defineProps<{
-    photo?: Photo;
-    group?: string;
+    photo: Photo;
   }>(),
-  {
-    photo: undefined,
-    group: undefined,
-  },
+  {},
 );
 
 const emit = defineEmits<{
   (event: "close"): void;
-  (event: "saved", photo: Photo): void;
 }>();
 
-const initialFormState: Photo = {
-  metadata: {
-    name: "",
-    generateName: "photo-",
-  },
-  spec: {
-    displayName: "",
-    url: "",
-    cover: "",
-    groupName: props.group || "",
-  },
-  kind: "Photo",
-  apiVersion: "core.halo.run/v1alpha1",
-} as Photo;
+const queryClient = useQueryClient();
 
-const formState = ref<Photo>(cloneDeep(initialFormState));
-const isSubmitting = ref<boolean>(false);
+defineSlots<{
+  "append-actions"?: () => unknown;
+}>();
+
 const modal = useTemplateRef<InstanceType<typeof VModal> | null>("modal");
 
-const isUpdateMode = computed(() => {
-  return !!formState.value.metadata.creationTimestamp;
-});
+const { mutate, isPending } = useMutation({
+  mutationFn: (data: PhotoFormState) => {
+    const jsonPatchInner: JsonPatchInner[] = [
+      {
+        op: "add",
+        path: "/spec/url",
+        value: data.url,
+      },
+      {
+        op: "add",
+        path: "/spec/displayName",
+        value: data.displayName,
+      },
+      {
+        op: "add",
+        path: "/spec/groupName",
+        value: data.groupName || "",
+      },
+      {
+        op: "add",
+        path: "/spec/description",
+        value: data.description || "",
+      },
+      {
+        op: "add",
+        path: "/spec/tags",
+        value: data.tags || [],
+      },
+      {
+        op: "add",
+        path: "/metadata/annotations",
+        value: data.annotations || {},
+      },
+    ];
 
-const modalTitle = computed(() => {
-  return isUpdateMode.value ? "编辑图片" : "添加图片";
-});
-
-onMounted(() => {
-  if (props.photo) {
-    formState.value = cloneDeep(props.photo);
-  }
-});
-
-const annotationsFormRef = ref();
-
-const handleSavePhoto = async () => {
-  annotationsFormRef.value?.handleSubmit();
-  await nextTick();
-  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } = annotationsFormRef.value || {};
-  if (customFormInvalid || specFormInvalid) {
-    return;
-  }
-  formState.value.metadata.annotations = {
-    ...annotations,
-    ...customAnnotations,
-  };
-  try {
-    isSubmitting.value = true;
-    if (isUpdateMode.value) {
-      await axiosInstance.put<Photo>(
-        `/apis/core.halo.run/v1alpha1/photos/${formState.value.metadata.name}`,
-        formState.value,
-      );
-    } else {
-      if (props.group) {
-        formState.value.spec.groupName = props.group;
-      }
-      const { data } = await axiosInstance.post<Photo>(`/apis/core.halo.run/v1alpha1/photos`, formState.value);
-      emit("saved", data);
+    if (data.exif) {
+      jsonPatchInner.push({
+        op: "add",
+        path: "/exif",
+        value: data.exif,
+      });
     }
+
+    return photosCoreApiClient.photo.patchPhoto({
+      name: props.photo?.metadata.name,
+      jsonPatchInner,
+    });
+  },
+  onSuccess() {
+    Toast.success("保存图片成功");
     modal.value?.close();
-  } catch (e) {
-    console.error(e);
-  } finally {
-    isSubmitting.value = false;
-  }
-};
+    queryClient.invalidateQueries({ queryKey: [QK_PHOTOS] });
+    queryClient.invalidateQueries({ queryKey: [QK_PHOTO_TAGS] });
+    queryClient.invalidateQueries({ queryKey: [QK_PHOTO_GROUPS] });
+  },
+});
+
+function onSubmit(data: PhotoFormState) {
+  mutate(data);
+}
 </script>
 <template>
-  <VModal ref="modal" :title="modalTitle" :width="650" @close="emit('close')">
+  <VModal ref="modal" title="编辑图片" :width="800" @close="emit('close')">
     <template #actions>
       <slot name="append-actions" />
     </template>
 
-    <FormKit
-      id="photo-form"
-      v-model="formState.spec"
-      name="photo-form"
-      :actions="false"
-      :config="{ validationVisibility: 'submit' }"
-      type="form"
-      @submit="handleSavePhoto"
-    >
-      <div class=":uno: md:grid md:grid-cols-4 md:gap-6">
-        <div class=":uno: md:col-span-1">
-          <div class=":uno: sticky top-0">
-            <span class=":uno: text-base text-gray-900 font-medium"> 常规 </span>
-          </div>
-        </div>
-        <div class=":uno: mt-5 md:col-span-3 md:mt-0 divide-y divide-gray-100">
-          <FormKit name="displayName" label="名称" type="text" validation="required"></FormKit>
-          <FormKit name="url" label="图片地址" type="attachment" :accepts="['image/*']" validation="required"></FormKit>
-          <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']"></FormKit>
-          <FormKit name="description" label="描述" type="textarea"></FormKit>
-        </div>
-      </div>
-    </FormKit>
-    <div class=":uno: py-5">
-      <div class=":uno: border-t border-gray-200"></div>
+    <div>
+      <PhotoForm
+        :key="photo.metadata.name"
+        :formState="{
+          url: photo.spec.url,
+          displayName: photo.spec.displayName,
+          groupName: photo.spec.groupName,
+          description: photo.spec.description,
+          tags: photo.spec.tags,
+          annotations: photo.metadata.annotations || {},
+          exif: photo.exif,
+        }"
+        @submit="onSubmit"
+      />
     </div>
-    <div class=":uno: md:grid md:grid-cols-4 md:gap-6">
-      <div class=":uno: md:col-span-1">
-        <div class=":uno: sticky top-0">
-          <span class=":uno: text-base text-gray-900 font-medium"> 元数据 </span>
-        </div>
-      </div>
-      <div class=":uno: mt-5 md:col-span-3 md:mt-0 divide-y divide-gray-100">
-        <AnnotationsForm
-          :key="formState.metadata.name"
-          ref="annotationsFormRef"
-          :value="formState.metadata.annotations"
-          kind="Photo"
-          group="core.halo.run"
-        />
-      </div>
-    </div>
+
     <template #footer>
       <VSpace>
-        <VButton :loading="isSubmitting" type="secondary" @click="submitForm('photo-form')"> 保存 </VButton>
+        <!-- @vue-ignore -->
+        <VButton :loading="isPending" type="secondary" @click="$formkit.submit('photo-form')">保存</VButton>
         <VButton @click="modal?.close()">取消</VButton>
       </VSpace>
     </template>

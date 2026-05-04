@@ -33,11 +33,13 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
+        final var tag = "console.api.photo.halo.run/v1alpha1/PhotoGroup";
         return route()
             .GET("photogroups", this::listPhotoGroup,
                 builder -> {
-                    builder.operationId("ListPhotos")
-                        .description("List photos.")
+                    builder.operationId("ListPhotoGroups")
+                        .description("List photo groups.")
+                        .tag(tag)
                         .response(responseBuilder().implementation(
                             ListResult.generateGenericClass(PhotoGroup.class))
                         );
@@ -47,6 +49,7 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
             .DELETE("photogroups/{name}", this::deletePhotoGroup,
                 builder -> builder.operationId("DeletePhotoGroup")
                     .description("Delete photo group.")
+                    .tag(tag)
                     .parameter(parameterBuilder()
                         .name("name")
                         .in(ParameterIn.PATH)

@@ -58,20 +58,36 @@ halo:
 
 ## 主题适配
 
-目前此插件为主题端提供了 `/photos` 路由，模板为 `photos.html`，也提供了 [Finder API](https://docs.halo.run/developer-guide/theme/finder-apis)，可以将图库列表渲染到任何地方。
+目前此插件为主题端提供了 `/photos` 列表路由（模板为 `photos.html`）和 `/photos/{name}` 详情路由（模板为 `photo.html`），同时也提供了 [Finder API](https://docs.halo.run/developer-guide/theme/finder-apis)，可以将图库列表渲染到任何地方。
 
 ### 模板变量
 
 #### 路由信息
 
-- 模板路径：/templates/photos.html
-- 访问路径：/photos | /photos/page/{page}
+- 列表模板路径：/templates/photos.html
+- 列表访问路径：/photos
+- 详情模板路径：/templates/photo.html
+- 详情访问路径：/photos/{metadata.name}
+
+旧版的路径分页 `/photos/page/{page}` 仍然可访问，但会以 `301 Moved Permanently` 永久重定向到新的查询字符串形式 `/photos?page={page}`，方便保留 SEO 与历史链接。
 
 #### 路由可选参数
 
-group: 图片分组名称, 对应 [#PhotoGroupVo](#photogroupvo).metadata.name
+- `group`: 图片分组名称, 对应 [#PhotoGroupVo](#photogroupvo).metadata.name
+- `page`: 分页页码（从 1 开始），仅对列表生效；详情页用于回传上下文
+- `size`: 每页条数；详情页用于回传上下文
 
-示例：/photos?group=photo-group-UEcvi | /photos/page/1?group=photo-group-UEcvi
+示例：
+
+```
+/photos?group=photo-group-UEcvi
+/photos?group=photo-group-UEcvi&page=2&size=20
+/photos/photo-abc123?group=photo-group-UEcvi&page=2&size=20
+```
+
+主题作者建议使用 `${photo.permalink}` 或 `${photoUrl.detail(photo)}` 生成详情链接，使用 `${photoUrl.list(group, page, size)}` 生成列表链接，避免手动拼接查询字符串。
+
+> 注意：未提供 `photo.html` 模板的主题，访问 `/photos/{name}` 会落到 Halo 默认的"模板未找到"行为；插件本身不会因此返回 404 或其他兜底页面，由主题作者决定如何处理缺失的模板。
 
 #### 变量
 
@@ -107,7 +123,9 @@ photos
 ```html
 <ul>
     <li th:each="photo : ${photos.items}">
-        <img th:src="${photo.spec.url}" th:alt="${photo.spec.displayName}" width="280">
+        <a th:href="@{${photoUrl.detail(photo)}}">
+            <img th:src="${photo.spec.url}" th:alt="${photo.spec.displayName}" width="280">
+        </a>
     </li>
 </ul>
 <div th:if="${photos.hasPrevious() || photos.hasNext()}">
@@ -119,6 +137,79 @@ photos
       <span>下一页</span>
    </a>
 </div>
+```
+
+#### 变量
+
+photoUrl
+
+##### 变量类型
+
+`PhotoUrlBuilder`（每次请求注入的 URL 构造器）
+
+##### 方法
+
+| 方法 | 返回值 | 说明 |
+| ---- | ---- | ---- |
+| `list()` | `String` | 返回 `/photos` |
+| `list(group)` | `String` | 返回 `/photos?group={group}`，`group` 为空时省略 |
+| `list(group, page, size)` | `String` | 返回 `/photos?group=&page=&size=`，空白或非正值参数自动省略 |
+| `detail(photo)` | `String` | 返回 `/photos/{name}`，并附加当前请求中白名单内的上下文参数（`group`、`page`、`size`） |
+| `detail(photo, overrides)` | `String` | 同上，但允许通过 `Map` 覆盖单个参数值；传入空字符串可以从最终 URL 中移除该参数 |
+
+`photoUrl` 不会传播白名单之外的查询参数，主题模板只需从中获取 URL 即可，无需自行拼接查询字符串。
+
+##### 示例
+
+```html
+<a th:href="@{${photoUrl.detail(photo)}}">查看详情</a>
+<a th:href="@{${photoUrl.list(group, 1, 20)}}">回到列表第 1 页</a>
+```
+
+### 图片详情页变量
+
+`/photos/{name}` 路由会渲染 `photo.html` 模板，并向模板注入下列变量：
+
+| 变量 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `photo` | `PhotoVo` | 当前图片 |
+| `neighbors` | `List<PhotoVo>` | 同一过滤上下文内、按规范排序的 5 张相邻图片（包含当前图片）。靠近列表头/尾时窗口自动滑动以保持 5 个项目；列表少于 5 张时返回全部 |
+| `prev` | `PhotoVo \| null` | 排序中位于当前图片之前的一张；当前为第一张时为 `null` |
+| `next` | `PhotoVo \| null` | 排序中位于当前图片之后的一张；当前为最后一张时为 `null` |
+| `position` | `int` | 当前图片在过滤上下文中的 1-based 序号 |
+| `total` | `int` | 过滤上下文中的图片总数 |
+| `group` | `String \| null` | URL 上的 `group` 查询参数（缺省时为 `null`） |
+| `page` | `int` | URL 上的 `page` 查询参数（缺省为 1） |
+| `size` | `int` | URL 上的 `size` 查询参数（缺省为 `base.pageSize` 设置） |
+| `backUrl` | `String` | 预先构造好的回到来源列表的 URL |
+| `title` | `String` | 页面标题（默认取图片 `displayName`，否则取 `base.title` 设置） |
+| `_templateId` | `String` | 固定为 `"photo"` |
+| `photoUrl` | `PhotoUrlBuilder` | 与列表页相同的 URL 助手 |
+
+#### 错误与重定向行为
+
+- 请求的图片不存在或已被软删除 → `404 Not Found`
+- URL 中的 `group` 与图片实际 `spec.groupName` 不一致 → `302 Found` 重定向到 `/photos/{name}`，并去掉错误的 `group` 查询参数（其他参数保留）
+
+#### 缩略图条示例
+
+```html
+<nav aria-label="Photo navigation">
+    <a th:if="${prev != null}" th:href="@{${photoUrl.detail(prev)}}">
+        <span>上一张</span>
+    </a>
+    <a th:if="${next != null}" th:href="@{${photoUrl.detail(next)}}">
+        <span>下一张</span>
+    </a>
+</nav>
+
+<div th:if="${!#lists.isEmpty(neighbors)}">
+    <a th:each="neighbor : ${neighbors}" th:href="@{${photoUrl.detail(neighbor)}}">
+        <img th:src="${neighbor.spec.url}" th:alt="${neighbor.spec.displayName}">
+    </a>
+</div>
+
+<a th:href="@{${backUrl}}">返回列表</a>
 ```
 
 ### Finder API
@@ -281,8 +372,9 @@ List<[#PhotoVo](#photovo)>
     "url": "string",                                    // 图片链接
     "cover": "string",                                  // 封面链接
     "priority": 0,                                      // 优先级
-    "groupName": "string",                              // 分组名称，对应分组 metadata.name
+    "groupName": "string",                              // 分组名称，对应分组 metadata.name；可选，留空表示未分组
   },
+  "permalink": "/photos/string",                        // 详情页固定链接，与上下文无关
 }
 ```
 
