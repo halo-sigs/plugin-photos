@@ -79,7 +79,7 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
                 int total = groups.size();
                 var pageItems = ListResult.subList(groups, page.getPageNumber(), page.getPageSize());
                 return Flux.fromIterable(pageItems)
-                    .concatMap(this::toGroupVo)
+                    .flatMapSequential(this::toGroupVo)
                     .collectList()
                     .map(items -> new ListResult<>(page.getPageNumber(), page.getPageSize(), total, items));
             });
