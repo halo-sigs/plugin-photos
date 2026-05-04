@@ -59,10 +59,10 @@ public class PhotoPlugin extends BasePlugin {
                 .indexFunc(PhotoPlugin::computeEffectiveTimeIndex));
         });
         schemeManager.register(PhotoGroup.class, indexSpecs -> {
-            indexSpecs.add(IndexSpecs.<PhotoGroup, String>single("spec.priority", String.class)
+            indexSpecs.add(IndexSpecs.<PhotoGroup, Integer>single("spec.priority", Integer.class)
                 .indexFunc(group ->
                     group.getSpec() == null || group.getSpec().getPriority() == null
-                        ? String.valueOf(0) : group.getSpec().getPriority().toString()
+                        ? 0 : group.getSpec().getPriority()
                 )
             );
         });
