@@ -3,6 +3,7 @@ package run.halo.photos;
 import java.time.Instant;
 import java.util.HashSet;
 import org.springframework.stereotype.Component;
+import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
 import run.halo.app.extension.index.IndexSpecs;
 import run.halo.app.plugin.BasePlugin;
@@ -36,12 +37,6 @@ public class PhotoPlugin extends BasePlugin {
                     photo.getSpec() == null ? "" : photo.getSpec().getDisplayName()
                 )
             );
-            indexSpecs.add(IndexSpecs.<Photo, String>single("spec.priority", String.class)
-                .indexFunc(photo ->
-                    photo.getSpec() == null || photo.getSpec().getPriority() == null
-                        ? String.valueOf(0) : photo.getSpec().getPriority().toString()
-                )
-            );
             indexSpecs.add(IndexSpecs.<Photo, String>multi("spec.tags", String.class)
                 .indexFunc(photo -> {
                     var tags = photo.getSpec() == null ? null : photo.getSpec().getTags();
@@ -73,7 +68,7 @@ public class PhotoPlugin extends BasePlugin {
 
     @Override
     public void stop() {
-        schemeManager.unregister(schemeManager.get(Photo.class));
-        schemeManager.unregister(schemeManager.get(PhotoGroup.class));
+        schemeManager.unregister(Scheme.buildFromType(Photo.class));
+        schemeManager.unregister(Scheme.buildFromType(PhotoGroup.class));
     }
 }

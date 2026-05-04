@@ -66,7 +66,7 @@ public class PhotoFinderImpl implements PhotoFinder {
     @Override
     public Flux<PhotoGroupVo> groupBy() {
         return photoPublicQueryService.listGroups(ListOptions.builder().build(),
-                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultGroupSort()))
+                PageRequestImpl.of(1, Integer.MAX_VALUE, Sort.unsorted()))
             .flatMapIterable(ListResult::getItems)
             .concatMap(group -> {
                 String groupName = group.getMetadata().getName();
@@ -91,14 +91,6 @@ public class PhotoFinderImpl implements PhotoFinder {
     static Sort defaultPhotoSort() {
         return Sort.by(
             desc("exif.dateTimeOriginal"),
-            desc("metadata.creationTimestamp"),
-            asc("metadata.name")
-        );
-    }
-
-    static Sort defaultGroupSort() {
-        return Sort.by(
-            desc("spec.priority"),
             desc("metadata.creationTimestamp"),
             asc("metadata.name")
         );
