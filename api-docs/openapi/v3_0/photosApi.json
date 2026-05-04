@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:59507",
+    "url" : "http://localhost:51952",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -73,7 +73,7 @@
             }
           }
         }, {
-          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
           "in" : "query",
           "name" : "sort",
           "schema" : {
@@ -222,7 +222,7 @@
             }
           }
         }, {
-          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
           "in" : "query",
           "name" : "sort",
           "schema" : {
@@ -341,7 +341,7 @@
             }
           }
         }, {
-          "description" : "Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
+          "description" : "Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.",
           "in" : "query",
           "name" : "sort",
           "schema" : {

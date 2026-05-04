@@ -18,7 +18,7 @@ import run.halo.app.extension.router.SortableRequest;
  * @since 1.0.0
  */
 public class PhotoQuery extends SortableRequest {
-    static final String DATE_TIME_ORIGINAL_SORT = "spec.dateTimeOriginal";
+    static final String DATE_TIME_ORIGINAL_SORT = "exif.dateTimeOriginal";
 
     public PhotoQuery(ServerWebExchange exchange) {
         super(exchange);
@@ -86,8 +86,8 @@ public class PhotoQuery extends SortableRequest {
                 .in(ParameterIn.QUERY)
                 .name("sort")
                 .description("Sort criteria: field,(asc|desc). "
-                    + "Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. "
-                    + "Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp "
+                    + "Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. "
+                    + "Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp "
                     + "when EXIF time is missing.")
                 .implementation(String.class)
                 .required(false))

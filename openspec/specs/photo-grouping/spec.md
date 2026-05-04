@@ -77,7 +77,7 @@ Deleting a `PhotoGroup` SHALL only delete photos whose `spec.groupName` matches 
 - **THEN** only photos whose `spec.groupName` equals that group are removed; ungrouped photos remain
 
 ### Requirement: Theme Finder Honors Optional Group
-The `photoFinder` theme APIs SHALL keep returning all photos when no group is requested and SHALL provide a way to fetch ungrouped photos when callers ask for them. The default sort order SHALL use each photo's effective photo time descending: `spec.dateTimeOriginal` when present, otherwise `metadata.creationTimestamp`.
+The `photoFinder` theme APIs SHALL keep returning all photos when no group is requested and SHALL provide a way to fetch ungrouped photos when callers ask for them. The default sort order SHALL use each photo's effective photo time descending: `exif.dateTimeOriginal` when present, otherwise `metadata.creationTimestamp`.
 
 #### Scenario: List photos without group filter
 - **WHEN** a theme calls `photoFinder.list(page, size)` without specifying a group

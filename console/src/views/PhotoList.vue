@@ -76,8 +76,8 @@ const keyword = useRouteQuery<string>("keyword", "");
 const tagFilter = useRouteQuery<string | undefined>("tag");
 const sortOptions = [
   { label: "默认", value: undefined },
-  { label: "拍摄时间（新→旧）", value: "spec.dateTimeOriginal,desc" },
-  { label: "拍摄时间（旧→新）", value: "spec.dateTimeOriginal,asc" },
+  { label: "拍摄时间（新→旧）", value: "exif.dateTimeOriginal,desc" },
+  { label: "拍摄时间（旧→新）", value: "exif.dateTimeOriginal,asc" },
   { label: "创建时间（新→旧）", value: "metadata.creationTimestamp,desc" },
   { label: "创建时间（旧→新）", value: "metadata.creationTimestamp,asc" },
 ];

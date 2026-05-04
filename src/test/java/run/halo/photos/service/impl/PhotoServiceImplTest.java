@@ -58,7 +58,7 @@ class PhotoServiceImplTest {
             .thenReturn(Flux.fromIterable(mixedPhotos()));
 
         var result = photoService.listPhoto(
-            query("/photos?page=1&size=4&sort=spec.dateTimeOriginal,asc")).block();
+            query("/photos?page=1&size=4&sort=exif.dateTimeOriginal,asc")).block();
 
         assertThat(result).isNotNull();
         assertThat(names(result.getItems())).containsExactly(

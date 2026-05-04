@@ -79,7 +79,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
          * @param {Array<string>} [fieldSelector] Field selector. e.g.: metadata.name&#x3D;&#x3D;halo
-         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
+         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
          * @param {string} [keyword] Photos filtered by keyword.
          * @param {string} [group] photo group name
          * @param {boolean} [ungrouped] If true, return only photos without a group assigned. Overrides the \&#39;group\&#39; parameter when set.
@@ -236,7 +236,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
          * @param {Array<string>} [fieldSelector] Field selector. e.g.: metadata.name&#x3D;&#x3D;halo
-         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
+         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
          * @param {string} [keyword] Photos filtered by keyword.
          * @param {string} [group] photo group name
          * @param {boolean} [ungrouped] If true, return only photos without a group assigned. Overrides the \&#39;group\&#39; parameter when set.
@@ -352,7 +352,7 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest {
     readonly fieldSelector?: Array<string>
 
     /**
-     * Sort criteria: field,(asc|desc). Supported fields: spec.dateTimeOriginal, metadata.creationTimestamp. Sorting by spec.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
+     * Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotos
      */

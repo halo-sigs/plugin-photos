@@ -84,7 +84,7 @@ When the URL supplies a `group` query parameter that does not match the resolved
 
 The detail handler SHALL compute neighboring photos within the same filtered+sorted list that the originating `/photos` view would produce. The window MUST be fixed at 5 items and MUST slide near the head or tail to preserve its full width whenever the filtered list contains at least 5 photos.
 
-The canonical sort MUST be the same effective-time comparator used by the list (`spec.dateTimeOriginal` descending falling back to `metadata.creationTimestamp` descending, with `metadata.creationTimestamp` descending and `metadata.name` ascending as tie-breakers).
+The canonical sort MUST be the same effective-time comparator used by the list (`exif.dateTimeOriginal` descending falling back to `metadata.creationTimestamp` descending, with `metadata.creationTimestamp` descending and `metadata.name` ascending as tie-breakers).
 
 #### Scenario: Current photo is in the middle of the list
 

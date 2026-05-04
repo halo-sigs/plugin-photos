@@ -19,7 +19,7 @@ class PhotoQueryTest {
 
     @Test
     void shootingTimeSortShouldUseEffectiveTimeDirection() {
-        var query = query("/photos?sort=spec.dateTimeOriginal,asc");
+        var query = query("/photos?sort=exif.dateTimeOriginal,asc");
 
         assertThat(query.isEffectiveTimeSort()).isTrue();
         assertThat(query.isEffectiveTimeAscending()).isTrue();
