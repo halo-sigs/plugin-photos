@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
@@ -169,8 +170,8 @@ class PhotoPublicQueryServiceImplTest {
 
         when(client.listAll(eq(PhotoGroup.class), any(ListOptions.class), eq(Sort.unsorted())))
             .thenReturn(Flux.just(group));
-        when(client.list(eq(Photo.class), any(), eq(null)))
-            .thenReturn(Flux.just(photo));
+        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
+            .thenReturn(Mono.just(new ListResult<>(1, 1, 1, List.of(photo))));
 
         var result = service.listGroups(ListOptions.builder().build(),
             PageRequestImpl.of(1, 10, Sort.unsorted())).block();

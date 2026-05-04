@@ -113,15 +113,12 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     private Mono<Integer> fetchPhotoCount(PhotoGroup group) {
         String name = group.getMetadata().getName();
-        return client.list(
-                Photo.class,
-                photo -> !photo.isDeleted()
-                    && photo.getSpec() != null
-                    && name.equals(photo.getSpec().getGroupName()),
-                null
-            )
-            .count()
-            .defaultIfEmpty(0L)
+        var options = ListOptions.builder()
+            .andQuery(equal("spec.groupName", name))
+            .build();
+        return client.listBy(Photo.class, options,
+                PageRequestImpl.of(1, 1, Sort.unsorted()))
+            .map(ListResult::getTotal)
             .map(Long::intValue);
     }
 

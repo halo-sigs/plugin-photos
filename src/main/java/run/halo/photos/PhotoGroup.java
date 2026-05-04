@@ -16,7 +16,7 @@ import run.halo.app.extension.GVK;
     plural = "photogroups", singular = "photogroup")
 public class PhotoGroup extends AbstractExtension {
 
-    @Schema(required = true)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private PhotoGroupSpec spec;
 
     @Schema
@@ -24,7 +24,7 @@ public class PhotoGroup extends AbstractExtension {
 
     @Data
     public static class PhotoGroupSpec {
-        @Schema(required = true)
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         private String displayName;
 
         private Integer priority;
