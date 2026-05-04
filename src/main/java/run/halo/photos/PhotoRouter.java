@@ -183,10 +183,10 @@ public class PhotoRouter {
     }
 
     private Mono<List<PhotoVo>> loadFilteredPhotos(String group) {
-        return photoPublicQueryService.listPhotos(
+        return photoPublicQueryService.listAllPhotos(
                 buildListOptions(group),
-                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
-            .map(ListResult::getItems);
+                defaultPhotoSort())
+            .collectList();
     }
 
     private static int indexOf(List<PhotoVo> photos, String name) {

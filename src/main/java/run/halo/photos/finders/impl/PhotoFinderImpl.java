@@ -33,9 +33,8 @@ public class PhotoFinderImpl implements PhotoFinder {
 
     @Override
     public Flux<PhotoVo> listAll() {
-        return photoPublicQueryService.listPhotos(ListOptions.builder().build(),
-                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
-            .flatMapIterable(ListResult::getItems);
+        return photoPublicQueryService.listAllPhotos(ListOptions.builder().build(),
+            defaultPhotoSort());
     }
 
     @Override
@@ -58,28 +57,26 @@ public class PhotoFinderImpl implements PhotoFinder {
         var options = ListOptions.builder()
             .andQuery(Queries.equal("spec.groupName", groupName))
             .build();
-        return photoPublicQueryService.listPhotos(options,
-                PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
-            .flatMapIterable(ListResult::getItems);
+        return photoPublicQueryService.listAllPhotos(options, defaultPhotoSort());
     }
 
     @Override
     public Flux<PhotoGroupVo> groupBy() {
-        return photoPublicQueryService.listGroups(ListOptions.builder().build(),
-                PageRequestImpl.of(1, Integer.MAX_VALUE, Sort.unsorted()))
-            .flatMapIterable(ListResult::getItems)
+        return photoPublicQueryService.listAllGroups(ListOptions.builder().build(),
+                Sort.unsorted())
             .concatMap(group -> {
                 String groupName = group.getMetadata().getName();
-                return photoPublicQueryService.listPhotos(
+                return photoPublicQueryService.listAllPhotos(
                         ListOptions.builder()
                             .andQuery(Queries.equal("spec.groupName", groupName))
                             .build(),
-                        PageRequestImpl.of(1, Integer.MAX_VALUE, defaultPhotoSort()))
+                        defaultPhotoSort())
+                    .collectList()
                     .map(photos -> PhotoGroupVo.builder()
                         .metadata(group.getMetadata())
                         .spec(group.getSpec())
                         .status(group.getStatus())
-                        .photos(photos.getItems())
+                        .photos(photos)
                         .build());
             });
     }

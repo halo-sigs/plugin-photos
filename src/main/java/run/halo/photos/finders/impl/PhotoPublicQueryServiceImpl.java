@@ -7,6 +7,7 @@ import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldS
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
@@ -149,6 +150,33 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
     @Override
     public Mono<PhotoVo> toPhotoVo(Photo photo) {
         return Mono.fromSupplier(() -> PhotoVo.from(photo));
+    }
+
+    @Override
+    public Flux<PhotoVo> listAllPhotos(ListOptions options, Sort sort) {
+        return fetchAllPages(
+            page -> listPhotos(options, PageRequestImpl.of(page, 500, sort)));
+    }
+
+    @Override
+    public Flux<PhotoGroupVo> listAllGroups(ListOptions options, Sort sort) {
+        return fetchAllPages(
+            page -> listGroups(options, PageRequestImpl.of(page, 500, sort)));
+    }
+
+    private static <T> Flux<T> fetchAllPages(
+        Function<Integer, Mono<ListResult<T>>> fetchPage) {
+        return fetchPage.apply(1)
+            .expand(result -> {
+                long totalPages = result.getSize() > 0
+                    ? (long) Math.ceil((double) result.getTotal() / result.getSize())
+                    : 0;
+                if (result.getPage() < totalPages) {
+                    return fetchPage.apply(result.getPage() + 1);
+                }
+                return Mono.empty();
+            })
+            .concatMapIterable(ListResult::getItems);
     }
 
 }

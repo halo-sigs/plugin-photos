@@ -123,8 +123,8 @@ class PhotoRouterTest {
         var photo = photoVo("abc", "2026-05-01T00:00:00Z", null);
         photo.getSpec().setGroupName("trips");
         when(photoPublicQueryService.getByName("abc")).thenReturn(Mono.just(photo));
-        when(photoPublicQueryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(photo))));
+        when(photoPublicQueryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(List.of(photo)));
 
         webTestClient.get().uri("/photos/abc?group=trips&page=1&size=10")
             .exchange()

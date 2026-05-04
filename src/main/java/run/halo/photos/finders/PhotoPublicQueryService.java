@@ -1,5 +1,6 @@
 package run.halo.photos.finders;
 
+import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
@@ -56,5 +57,23 @@ public interface PhotoPublicQueryService {
      * @return a mono of photo vo
      */
     Mono<PhotoVo> toPhotoVo(Photo photo);
+
+    /**
+     * List all photos matching the given options, iterating through all pages.
+     *
+     * @param options list options
+     * @param sort    sort order
+     * @return a flux of all matching photo vos
+     */
+    Flux<PhotoVo> listAllPhotos(ListOptions options, Sort sort);
+
+    /**
+     * List all photo groups matching the given options, iterating through all pages.
+     *
+     * @param options list options
+     * @param sort    sort order
+     * @return a flux of all matching photo group vos
+     */
+    Flux<PhotoGroupVo> listAllGroups(ListOptions options, Sort sort);
 
 }

@@ -36,9 +36,9 @@ class PhotoFinderImplTest {
 
     @Test
     void listAllShouldReturnAllPhotos() {
-        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4,
-                mixedPhotos().stream().map(PhotoVo::from).toList())));
+        when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(
+                mixedPhotos().stream().map(PhotoVo::from).toList()));
 
         var names = finder.listAll()
             .map(PhotoVo::getMetadata)
@@ -70,8 +70,8 @@ class PhotoFinderImplTest {
     @Test
     void listByShouldReturnPhotosInGroup() {
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
-        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+        when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(photoVos));
 
         var names = finder.listBy("travel")
             .map(PhotoVo::getMetadata)
@@ -99,10 +99,10 @@ class PhotoFinderImplTest {
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
 
-        when(queryService.listGroups(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 1, List.of(groupVo))));
-        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+        when(queryService.listAllGroups(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(List.of(groupVo)));
+        when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(photoVos));
 
         var groups = finder.groupBy().collectList().block();
 
@@ -123,10 +123,10 @@ class PhotoFinderImplTest {
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
 
-        when(queryService.listGroups(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 1, List.of(groupVo))));
-        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+        when(queryService.listAllGroups(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(List.of(groupVo)));
+        when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(photoVos));
 
         var groups = finder.groupBy().collectList().block();
 
@@ -138,8 +138,8 @@ class PhotoFinderImplTest {
     @Test
     void listAllShouldReturnSameSetAndOrderAsBeforeRefactor() {
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
-        when(queryService.listPhotos(any(ListOptions.class), any(PageRequestImpl.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, Integer.MAX_VALUE, 4, photoVos)));
+        when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.fromIterable(photoVos));
 
         var names = finder.listAll()
             .map(PhotoVo::getMetadata)
