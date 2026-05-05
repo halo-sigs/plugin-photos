@@ -152,6 +152,26 @@
 
 ---
 
+#### 评论支持
+
+图库图片已适配 Halo 的评论来源。在详情页模板中，可通过 `halo:comment` 标签为照片添加评论功能：
+
+```html
+<halo:comment group="core.halo.run" kind="Photo" th:attr="name=${photo.metadata.name}" />
+```
+
+参数说明：
+
+| 属性 | 值 | 说明 |
+| ---- | ---- | ---- |
+| `group` | `core.halo.run` | Photo 扩展的 API group |
+| `kind` | `Photo` | Photo 扩展的 kind |
+| `name` | `${photo.metadata.name}` | 当前照片的 metadata name |
+
+> 注：评论功能依赖 Halo 的 `plugin-comment-widget` 插件。如果该插件未启用，评论标签不会渲染任何内容。
+
+---
+
 ## Finder API
 
 Finder API 由 `photoFinder` 对象提供，可在主题模板的任意位置使用，无需依赖路由页面。
