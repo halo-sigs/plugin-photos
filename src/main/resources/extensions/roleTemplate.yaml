@@ -28,6 +28,8 @@ rules:
   - apiGroups: [ "core.halo.run", "console.api.photo.halo.run"]
     resources: [ "photos", "photogroups" ]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
+  - nonResourceURLs: [ "/apis/console.api.photo.halo.run/v1alpha1/photos/upload" ]
+    verbs: [ "create" ]
 ---
 apiVersion: v1alpha1
 kind: Role
