@@ -21,13 +21,13 @@ import type { Metadata } from './metadata';
 import type { PhotoGroupSpec } from './photo-group-spec';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PhotoVo } from './photo-vo';
+import type { PhotoGroupStatus } from './photo-group-status';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PostGroupStatus } from './post-group-status';
+import type { PhotoVo } from './photo-vo';
 
 /**
- * A chunk of items.
+ * 
  * @export
  * @interface PhotoGroupVo
  */
@@ -52,9 +52,9 @@ export interface PhotoGroupVo {
     'spec'?: PhotoGroupSpec;
     /**
      * 
-     * @type {PostGroupStatus}
+     * @type {PhotoGroupStatus}
      * @memberof PhotoGroupVo
      */
-    'status'?: PostGroupStatus;
+    'status'?: PhotoGroupStatus;
 }
 

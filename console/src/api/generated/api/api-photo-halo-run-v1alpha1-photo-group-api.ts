@@ -22,7 +22,7 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
-import type { PhotoGroupVoList } from '../models';
+import type { PhotoGroupVo } from '../models';
 /**
  * ApiPhotoHaloRunV1alpha1PhotoGroupApi - axios parameter creator
  * @export
@@ -30,7 +30,7 @@ import type { PhotoGroupVoList } from '../models';
 export const ApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * List photo groups.
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -77,11 +77,11 @@ export const ApiPhotoHaloRunV1alpha1PhotoGroupApiFp = function(configuration?: C
     const localVarAxiosParamCreator = ApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator(configuration)
     return {
         /**
-         * List photo groups.
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async queryPhotoGroups(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PhotoGroupVoList>> {
+        async queryPhotoGroups(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PhotoGroupVo>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.queryPhotoGroups(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ApiPhotoHaloRunV1alpha1PhotoGroupApi.queryPhotoGroups']?.[localVarOperationServerIndex]?.url;
@@ -98,11 +98,11 @@ export const ApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (configurati
     const localVarFp = ApiPhotoHaloRunV1alpha1PhotoGroupApiFp(configuration)
     return {
         /**
-         * List photo groups.
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        queryPhotoGroups(options?: RawAxiosRequestConfig): AxiosPromise<PhotoGroupVoList> {
+        queryPhotoGroups(options?: RawAxiosRequestConfig): AxiosPromise<Array<PhotoGroupVo>> {
             return localVarFp.queryPhotoGroups(options).then((request) => request(axios, basePath));
         },
     };
@@ -116,7 +116,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (configurati
  */
 export class ApiPhotoHaloRunV1alpha1PhotoGroupApi extends BaseAPI {
     /**
-     * List photo groups.
+     * List all photo groups sorted by priority.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ApiPhotoHaloRunV1alpha1PhotoGroupApi

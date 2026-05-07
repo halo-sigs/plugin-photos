@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
-import run.halo.app.extension.ListResult;
 import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
 
@@ -31,20 +30,19 @@ public class PhotoGroupQueryEndpoint implements CustomEndpoint {
         return route()
             .GET("photogroups", this::listGroups,
                 builder -> builder.operationId("queryPhotoGroups")
-                    .description("List photo groups.")
+                    .description("List all photo groups sorted by priority.")
                     .tag(tag)
-                    .response(responseBuilder()
-                        .implementation(ListResult.generateGenericClass(PhotoGroupVo.class)))
+                    .response(responseBuilder().implementationArray(PhotoGroupVo.class))
             )
             .build();
     }
 
     private Mono<ServerResponse> listGroups(ServerRequest request) {
-        PhotoPublicQuery query = new PhotoPublicQuery(request.exchange());
-        return photoPublicQueryService.listGroups(query.toListOptions(), query.toPageRequest())
-            .flatMap(result -> ServerResponse.ok()
+        return photoPublicQueryService.listGroups()
+            .collectList()
+            .flatMap(groups -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(result));
+                .bodyValue(groups));
     }
 
     @Override

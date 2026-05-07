@@ -21,7 +21,7 @@ import type { Metadata } from './metadata';
 import type { PhotoGroupSpec } from './photo-group-spec';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PostGroupStatus } from './post-group-status';
+import type { PhotoGroupStatus } from './photo-group-status';
 
 /**
  * 
@@ -55,9 +55,9 @@ export interface PhotoGroup {
     'spec': PhotoGroupSpec;
     /**
      * 
-     * @type {PostGroupStatus}
+     * @type {PhotoGroupStatus}
      * @memberof PhotoGroup
      */
-    'status'?: PostGroupStatus;
+    'status'?: PhotoGroupStatus;
 }
 

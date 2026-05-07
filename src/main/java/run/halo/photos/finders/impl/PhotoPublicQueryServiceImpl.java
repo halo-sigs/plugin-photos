@@ -1,6 +1,5 @@
 package run.halo.photos.finders.impl;
 
-import static run.halo.app.extension.index.query.Queries.contains;
 import static run.halo.app.extension.index.query.Queries.equal;
 import static run.halo.app.extension.index.query.Queries.isNull;
 import static run.halo.app.extension.index.query.Queries.not;
@@ -8,8 +7,6 @@ import static run.halo.app.extension.index.query.Queries.not;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
-import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,18 +73,10 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
     }
 
     @Override
-    public Mono<ListResult<PhotoGroupVo>> listGroups(ListOptions options, PageRequest page) {
-        return client.listAll(PhotoGroup.class, options, Sort.unsorted())
+    public Flux<PhotoGroupVo> listGroups() {
+        return client.listAll(PhotoGroup.class, new ListOptions(), Sort.unsorted())
             .sort(PhotoSortUtils.groupComparator())
-            .collectList()
-            .flatMap(groups -> {
-                int total = groups.size();
-                var pageItems = ListResult.subList(groups, page.getPageNumber(), page.getPageSize());
-                return Flux.fromIterable(pageItems)
-                    .flatMapSequential(this::toGroupVo)
-                    .collectList()
-                    .map(items -> new ListResult<>(page.getPageNumber(), page.getPageSize(), total, items));
-            });
+            .concatMap(this::toGroupVo);
     }
 
     private Mono<PhotoGroupVo> toGroupVo(PhotoGroup group) {
@@ -157,12 +146,6 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
     public Flux<PhotoVo> listAllPhotos(ListOptions options, Sort sort) {
         return fetchAllPages(
             page -> listPhotos(options, PageRequestImpl.of(page, 500, sort)));
-    }
-
-    @Override
-    public Flux<PhotoGroupVo> listAllGroups(ListOptions options, Sort sort) {
-        return fetchAllPages(
-            page -> listGroups(options, PageRequestImpl.of(page, 500, sort)));
     }
 
     private static <T> Flux<T> fetchAllPages(

@@ -1,6 +1,5 @@
 package run.halo.photos;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,9 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
-import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
-import run.halo.app.extension.router.IListRequest.QueryListRequest;
 import run.halo.photos.service.PhotoGroupService;
 
 class PhotoGroupEndpointTest {
@@ -31,31 +28,29 @@ class PhotoGroupEndpointTest {
     }
 
     @Test
-    void listPhotoGroupsShouldReturn200WithListResult() {
+    void listPhotoGroupsShouldReturn200WithArray() {
         var group = group("trips");
-        when(photoGroupService.listPhotoGroup(any(QueryListRequest.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, 10, 1, List.of(group))));
+        when(photoGroupService.listPhotoGroup())
+            .thenReturn(Mono.just(List.of(group)));
 
         webTestClient.get().uri("/photogroups")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$.total").isEqualTo(1)
-            .jsonPath("$.items[0].metadata.name").isEqualTo("trips")
-            .jsonPath("$.items[0].spec.displayName").isEqualTo("Trips");
+            .jsonPath("$[0].metadata.name").isEqualTo("trips")
+            .jsonPath("$[0].spec.displayName").isEqualTo("Trips");
     }
 
     @Test
-    void listPhotoGroupsShouldReturnEmptyListWhenNoGroups() {
-        when(photoGroupService.listPhotoGroup(any(QueryListRequest.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, 10, 0, List.of())));
+    void listPhotoGroupsShouldReturnEmptyArrayWhenNoGroups() {
+        when(photoGroupService.listPhotoGroup())
+            .thenReturn(Mono.just(List.of()));
 
         webTestClient.get().uri("/photogroups")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$.total").isEqualTo(0)
-            .jsonPath("$.items").isEmpty();
+            .jsonPath("$").isEmpty();
     }
 
     @Test

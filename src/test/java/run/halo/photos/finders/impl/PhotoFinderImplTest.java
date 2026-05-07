@@ -99,7 +99,7 @@ class PhotoFinderImplTest {
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
 
-        when(queryService.listAllGroups(any(ListOptions.class), any(Sort.class)))
+        when(queryService.listGroups())
             .thenReturn(Flux.fromIterable(List.of(groupVo)));
         when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
             .thenReturn(Flux.fromIterable(photoVos));
@@ -123,7 +123,7 @@ class PhotoFinderImplTest {
             .build();
         var photoVos = mixedPhotos().stream().map(PhotoVo::from).toList();
 
-        when(queryService.listAllGroups(any(ListOptions.class), any(Sort.class)))
+        when(queryService.listGroups())
             .thenReturn(Flux.fromIterable(List.of(groupVo)));
         when(queryService.listAllPhotos(any(ListOptions.class), any(Sort.class)))
             .thenReturn(Flux.fromIterable(photoVos));

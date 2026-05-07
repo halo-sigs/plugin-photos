@@ -23,8 +23,6 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
 import type { PhotoGroup } from '../models';
-// @ts-ignore
-import type { PhotoGroupList } from '../models';
 /**
  * ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi - axios parameter creator
  * @export
@@ -73,20 +71,11 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = func
             };
         },
         /**
-         * List photo groups.
-         * @param {number} [page] Page number. Default is 0.
-         * @param {number} [size] Size number. Default is 0.
-         * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
-         * @param {Array<string>} [fieldSelector] Field selector. e.g.: metadata.name&#x3D;&#x3D;halo
-         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
-         * @param {string} [keyword] Photos filtered by keyword.
-         * @param {string} [group] photo group name
-         * @param {boolean} [ungrouped] If true, return only photos without a group assigned. Overrides the \&#39;group\&#39; parameter when set.
-         * @param {string} [tag] photo tag
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listPhotoGroups: async (page?: number, size?: number, labelSelector?: Array<string>, fieldSelector?: Array<string>, sort?: string, keyword?: string, group?: string, ungrouped?: boolean, tag?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        listPhotoGroups: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/apis/console.api.photo.halo.run/v1alpha1/photogroups`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -106,42 +95,6 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = func
             // authentication bearerAuth required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (labelSelector) {
-                localVarQueryParameter['labelSelector'] = labelSelector;
-            }
-
-            if (fieldSelector) {
-                localVarQueryParameter['fieldSelector'] = fieldSelector;
-            }
-
-            if (sort !== undefined) {
-                localVarQueryParameter['sort'] = sort;
-            }
-
-            if (keyword !== undefined) {
-                localVarQueryParameter['keyword'] = keyword;
-            }
-
-            if (group !== undefined) {
-                localVarQueryParameter['group'] = group;
-            }
-
-            if (ungrouped !== undefined) {
-                localVarQueryParameter['ungrouped'] = ungrouped;
-            }
-
-            if (tag !== undefined) {
-                localVarQueryParameter['tag'] = tag;
-            }
 
 
     
@@ -177,21 +130,12 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp = function(configurat
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List photo groups.
-         * @param {number} [page] Page number. Default is 0.
-         * @param {number} [size] Size number. Default is 0.
-         * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
-         * @param {Array<string>} [fieldSelector] Field selector. e.g.: metadata.name&#x3D;&#x3D;halo
-         * @param {string} [sort] Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
-         * @param {string} [keyword] Photos filtered by keyword.
-         * @param {string} [group] photo group name
-         * @param {boolean} [ungrouped] If true, return only photos without a group assigned. Overrides the \&#39;group\&#39; parameter when set.
-         * @param {string} [tag] photo tag
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listPhotoGroups(page?: number, size?: number, labelSelector?: Array<string>, fieldSelector?: Array<string>, sort?: string, keyword?: string, group?: string, ungrouped?: boolean, tag?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PhotoGroupList>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listPhotoGroups(page, size, labelSelector, fieldSelector, sort, keyword, group, ungrouped, tag, options);
+        async listPhotoGroups(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PhotoGroup>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listPhotoGroups(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi.listPhotoGroups']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -216,13 +160,12 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (conf
             return localVarFp.deletePhotoGroup(requestParameters.name, options).then((request) => request(axios, basePath));
         },
         /**
-         * List photo groups.
-         * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest} requestParameters Request parameters.
+         * List all photo groups sorted by priority.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listPhotoGroups(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<PhotoGroupList> {
-            return localVarFp.listPhotoGroups(requestParameters.page, requestParameters.size, requestParameters.labelSelector, requestParameters.fieldSelector, requestParameters.sort, requestParameters.keyword, requestParameters.group, requestParameters.ungrouped, requestParameters.tag, options).then((request) => request(axios, basePath));
+        listPhotoGroups(options?: RawAxiosRequestConfig): AxiosPromise<Array<PhotoGroup>> {
+            return localVarFp.listPhotoGroups(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -239,76 +182,6 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequ
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
      */
     readonly name: string
-}
-
-/**
- * Request parameters for listPhotoGroups operation in ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi.
- * @export
- * @interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest
- */
-export interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest {
-    /**
-     * Page number. Default is 0.
-     * @type {number}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly page?: number
-
-    /**
-     * Size number. Default is 0.
-     * @type {number}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly size?: number
-
-    /**
-     * Label selector. e.g.: hidden!&#x3D;true
-     * @type {Array<string>}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly labelSelector?: Array<string>
-
-    /**
-     * Field selector. e.g.: metadata.name&#x3D;&#x3D;halo
-     * @type {Array<string>}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly fieldSelector?: Array<string>
-
-    /**
-     * Sort criteria: field,(asc|desc). Supported fields: exif.dateTimeOriginal, metadata.creationTimestamp. Sorting by exif.dateTimeOriginal uses metadata.creationTimestamp when EXIF time is missing.
-     * @type {string}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly sort?: string
-
-    /**
-     * Photos filtered by keyword.
-     * @type {string}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly keyword?: string
-
-    /**
-     * photo group name
-     * @type {string}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly group?: string
-
-    /**
-     * If true, return only photos without a group assigned. Overrides the \&#39;group\&#39; parameter when set.
-     * @type {boolean}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly ungrouped?: boolean
-
-    /**
-     * photo tag
-     * @type {string}
-     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroups
-     */
-    readonly tag?: string
 }
 
 /**
@@ -330,14 +203,13 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi extends BaseAPI {
     }
 
     /**
-     * List photo groups.
-     * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest} requestParameters Request parameters.
+     * List all photo groups sorted by priority.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi
      */
-    public listPhotoGroups(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiListPhotoGroupsRequest = {}, options?: RawAxiosRequestConfig) {
-        return ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp(this.configuration).listPhotoGroups(requestParameters.page, requestParameters.size, requestParameters.labelSelector, requestParameters.fieldSelector, requestParameters.sort, requestParameters.keyword, requestParameters.group, requestParameters.ungrouped, requestParameters.tag, options).then((request) => request(this.axios, this.basePath));
+    public listPhotoGroups(options?: RawAxiosRequestConfig) {
+        return ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp(this.configuration).listPhotoGroups(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

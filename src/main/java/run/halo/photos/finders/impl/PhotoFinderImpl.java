@@ -3,7 +3,6 @@ package run.halo.photos.finders.impl;
 import static org.springframework.data.domain.Sort.Order.asc;
 import static org.springframework.data.domain.Sort.Order.desc;
 
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
@@ -13,7 +12,6 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.index.query.Queries;
 import run.halo.app.theme.finders.Finder;
-import run.halo.photos.PhotoGroup;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
@@ -62,8 +60,7 @@ public class PhotoFinderImpl implements PhotoFinder {
 
     @Override
     public Flux<PhotoGroupVo> groupBy() {
-        return photoPublicQueryService.listAllGroups(ListOptions.builder().build(),
-                Sort.unsorted())
+        return photoPublicQueryService.listGroups()
             .concatMap(group -> {
                 String groupName = group.getMetadata().getName();
                 return photoPublicQueryService.listAllPhotos(

@@ -9,7 +9,7 @@ export function useGroupsFetch() {
     queryKey: [QK_PHOTO_GROUPS],
     queryFn: async () => {
       const { data } = await photosConsoleApiClient.group.listPhotoGroups();
-      return data.items;
+      return data;
     },
     refetchInterval(data) {
       const hasDeletingGroup = data?.some((group) => !!group.metadata.deletionTimestamp);

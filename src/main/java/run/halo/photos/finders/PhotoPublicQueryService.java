@@ -34,13 +34,11 @@ public interface PhotoPublicQueryService {
     Mono<PhotoVo> getByName(String name);
 
     /**
-     * List photo groups without inline photos.
+     * List all photo groups sorted by priority, with photo counts populated.
      *
-     * @param options list options
-     * @param page    page request
-     * @return a mono of list result
+     * @return a flux of all photo group vos
      */
-    Mono<ListResult<PhotoGroupVo>> listGroups(ListOptions options, PageRequest page);
+    Flux<PhotoGroupVo> listGroups();
 
     /**
      * List distinct tags with photo counts.
@@ -66,15 +64,6 @@ public interface PhotoPublicQueryService {
      * @return a flux of all matching photo vos
      */
     Flux<PhotoVo> listAllPhotos(ListOptions options, Sort sort);
-
-    /**
-     * List all photo groups matching the given options, iterating through all pages.
-     *
-     * @param options list options
-     * @param sort    sort order
-     * @return a flux of all matching photo group vos
-     */
-    Flux<PhotoGroupVo> listAllGroups(ListOptions options, Sort sort);
 
     /**
      * Invalidate the tag cache so that the next call to {@link #listTags} re-fetches from DB.

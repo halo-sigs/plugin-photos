@@ -1,8 +1,7 @@
 package run.halo.photos.service;
 
+import java.util.List;
 import reactor.core.publisher.Mono;
-import run.halo.app.extension.ListResult;
-import run.halo.app.extension.router.IListRequest.QueryListRequest;
 import run.halo.photos.PhotoGroup;
 
 /**
@@ -12,14 +11,13 @@ import run.halo.photos.PhotoGroup;
  * @since 2.0.0
  */
 public interface PhotoGroupService {
-    
+
     /**
-     * List photo groups.
+     * List all photo groups sorted by priority.
      *
-     * @param request request
-     * @return a mono of list result
+     * @return a mono of all photo groups with photo counts populated
      */
-    Mono<ListResult<PhotoGroup>> listPhotoGroup(QueryListRequest request);
+    Mono<List<PhotoGroup>> listPhotoGroup();
     
     /**
      * Create a photo group.

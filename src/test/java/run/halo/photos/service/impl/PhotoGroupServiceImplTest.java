@@ -14,8 +14,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
@@ -25,7 +23,6 @@ import run.halo.app.extension.PageRequest;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
-import run.halo.photos.PhotoQuery;
 
 class PhotoGroupServiceImplTest {
 
@@ -39,51 +36,17 @@ class PhotoGroupServiceImplTest {
     }
 
     @Test
-    void listPhotoGroupShouldReturnFirstPage() {
+    void listPhotoGroupShouldReturnAllGroupsSorted() {
         var groups = List.of(group("a", 2), group("b", 1), group("c", 0));
         when(client.listAll(eq(PhotoGroup.class), any(ListOptions.class), eq(Sort.unsorted())))
             .thenReturn(Flux.fromIterable(groups));
         when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequest.class)))
             .thenReturn(Mono.just(new ListResult<>(1, 1, 0L, List.of())));
 
-        var result = service.listPhotoGroup(query("/groups?page=1&size=2")).block();
+        var result = service.listPhotoGroup().block();
 
         assertThat(result).isNotNull();
-        assertThat(result.getTotal()).isEqualTo(3);
-        assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getItems()).hasSize(2);
-    }
-
-    @Test
-    void listPhotoGroupShouldReturnSecondPage() {
-        var groups = List.of(group("a", 2), group("b", 1), group("c", 0));
-        when(client.listAll(eq(PhotoGroup.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.fromIterable(groups));
-        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequest.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, 1, 0L, List.of())));
-
-        var result = service.listPhotoGroup(query("/groups?page=2&size=2")).block();
-
-        assertThat(result).isNotNull();
-        assertThat(result.getTotal()).isEqualTo(3);
-        assertThat(result.getPage()).isEqualTo(2);
-        assertThat(result.getItems()).hasSize(1);
-    }
-
-    @Test
-    void listPhotoGroupOutOfBoundsPageShouldFallBackToFirstPage() {
-        var groups = List.of(group("a", 0), group("b", 0));
-        when(client.listAll(eq(PhotoGroup.class), any(ListOptions.class), eq(Sort.unsorted())))
-            .thenReturn(Flux.fromIterable(groups));
-        when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequest.class)))
-            .thenReturn(Mono.just(new ListResult<>(1, 1, 0L, List.of())));
-
-        // page=5 is out of bounds (only 2 groups with size=2)
-        var result = service.listPhotoGroup(query("/groups?page=5&size=2")).block();
-
-        assertThat(result).isNotNull();
-        assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getItems()).hasSize(2);
+        assertThat(result).hasSize(3);
     }
 
     @Test
@@ -94,11 +57,11 @@ class PhotoGroupServiceImplTest {
         when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequest.class)))
             .thenReturn(Mono.just(new ListResult<>(1, 1, 5L, List.of())));
 
-        var result = service.listPhotoGroup(query("/groups?page=1&size=10")).block();
+        var result = service.listPhotoGroup().block();
 
         assertThat(result).isNotNull();
-        assertThat(result.getItems()).hasSize(1);
-        assertThat(result.getItems().get(0).getStatusOrDefault().getPhotoCount()).isEqualTo(5);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getStatusOrDefault().getPhotoCount()).isEqualTo(5);
     }
 
     @Test
@@ -152,11 +115,6 @@ class PhotoGroupServiceImplTest {
         var count = service.fetchPhotoCount(group).block();
 
         assertThat(count).isEqualTo(7);
-    }
-
-    private static PhotoQuery query(String uri) {
-        var request = MockServerHttpRequest.get(uri).build();
-        return new PhotoQuery(MockServerWebExchange.from(request));
     }
 
     private static PhotoGroup group(String name, int priority) {

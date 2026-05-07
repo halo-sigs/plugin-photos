@@ -222,13 +222,12 @@ class PhotoPublicQueryServiceImplTest {
         when(client.listBy(eq(Photo.class), any(ListOptions.class), any(PageRequestImpl.class)))
             .thenReturn(Mono.just(new ListResult<>(1, 1, 1, List.of(photo))));
 
-        var result = service.listGroups(ListOptions.builder().build(),
-            PageRequestImpl.of(1, 10, Sort.unsorted())).block();
+        var result = service.listGroups().collectList().block();
 
         assertThat(result).isNotNull();
-        assertThat(result.getItems()).hasSize(1);
-        assertThat(result.getItems().get(0).getPhotos()).isNull();
-        assertThat(result.getItems().get(0).getStatus().getPhotoCount()).isEqualTo(1);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPhotos()).isNull();
+        assertThat(result.get(0).getStatus().getPhotoCount()).isEqualTo(1);
     }
 
     @Test

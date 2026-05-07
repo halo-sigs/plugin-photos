@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
-import run.halo.app.extension.ListResult;
 import run.halo.photos.service.PhotoGroupService;
 
 /**
@@ -33,15 +32,10 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
         final var tag = "console.api.photo.halo.run/v1alpha1/PhotoGroup";
         return route()
             .GET("photogroups", this::listPhotoGroup,
-                builder -> {
-                    builder.operationId("ListPhotoGroups")
-                        .description("List photo groups.")
-                        .tag(tag)
-                        .response(responseBuilder().implementation(
-                            ListResult.generateGenericClass(PhotoGroup.class))
-                        );
-                    PhotoQuery.buildParameters(builder);
-                }
+                builder -> builder.operationId("ListPhotoGroups")
+                    .description("List all photo groups sorted by priority.")
+                    .tag(tag)
+                    .response(responseBuilder().implementationArray(PhotoGroup.class))
             )
             .DELETE("photogroups/{name}", this::deletePhotoGroup,
                 builder -> builder.operationId("DeletePhotoGroup")
@@ -71,9 +65,8 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> listPhotoGroup(ServerRequest serverRequest) {
-        var request = new PhotoQuery(serverRequest.exchange());
-        return photoGroupService.listPhotoGroup(request)
-            .flatMap(photoGroups -> ServerResponse.ok().bodyValue(photoGroups));
+        return photoGroupService.listPhotoGroup()
+            .flatMap(groups -> ServerResponse.ok().bodyValue(groups));
     }
 
 }

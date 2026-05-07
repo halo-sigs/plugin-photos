@@ -22,7 +22,7 @@ models/move-operation.ts
 models/photo-exif.ts
 models/photo-group-list.ts
 models/photo-group-spec.ts
-models/photo-group-vo-list.ts
+models/photo-group-status.ts
 models/photo-group-vo.ts
 models/photo-group.ts
 models/photo-list.ts
@@ -31,7 +31,6 @@ models/photo-tag-vo.ts
 models/photo-vo-list.ts
 models/photo-vo.ts
 models/photo.ts
-models/post-group-status.ts
 models/remove-operation.ts
 models/replace-operation.ts
 models/test-operation.ts

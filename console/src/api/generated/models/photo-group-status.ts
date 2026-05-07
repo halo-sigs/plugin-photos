@@ -17,13 +17,13 @@
 /**
  * 
  * @export
- * @interface PostGroupStatus
+ * @interface PhotoGroupStatus
  */
-export interface PostGroupStatus {
+export interface PhotoGroupStatus {
     /**
      * 
      * @type {number}
-     * @memberof PostGroupStatus
+     * @memberof PhotoGroupStatus
      */
     'photoCount'?: number;
 }

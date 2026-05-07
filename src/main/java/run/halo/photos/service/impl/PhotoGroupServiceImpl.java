@@ -1,8 +1,8 @@
 package run.halo.photos.service.impl;
 
 import static run.halo.app.extension.index.query.Queries.equal;
-import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
+import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -12,9 +12,9 @@ import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
-import run.halo.app.extension.router.IListRequest.QueryListRequest;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoGroup;
+import run.halo.photos.PhotoSortUtils;
 import run.halo.photos.service.PhotoGroupService;
 
 /**
@@ -33,25 +33,11 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
     }
 
     @Override
-    public Mono<ListResult<PhotoGroup>> listPhotoGroup(QueryListRequest query) {
-        return this.client.listAll(PhotoGroup.class, toListOptions(query), Sort.unsorted())
-            .sort(run.halo.photos.PhotoSortUtils.groupComparator())
-            .collectList()
-            .flatMap(groups -> {
-                int page = Math.max(query.getPage(), 1);
-                int size = query.getSize();
-                int total = groups.size();
-                int fromIndex = (page - 1) * size;
-                boolean outOfBounds = fromIndex >= total;
-                int safeFromIndex = outOfBounds ? 0 : fromIndex;
-                int resultPage = outOfBounds ? 1 : page;
-                int toIndex = Math.min(safeFromIndex + size, total);
-                var pageGroups = groups.subList(safeFromIndex, toIndex);
-                return Flux.fromIterable(pageGroups)
-                    .flatMap(this::populatePhotos)
-                    .collectList()
-                    .map(populated -> new ListResult<>(resultPage, size, total, populated));
-            });
+    public Mono<List<PhotoGroup>> listPhotoGroup() {
+        return client.listAll(PhotoGroup.class, new ListOptions(), Sort.unsorted())
+            .sort(PhotoSortUtils.groupComparator())
+            .concatMap(this::populatePhotos)
+            .collectList();
     }
 
     @Override
@@ -84,11 +70,5 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
                 PageRequestImpl.of(1, 1, Sort.unsorted()))
             .map(ListResult::getTotal)
             .map(Long::intValue);
-    }
-
-    ListOptions toListOptions(QueryListRequest query) {
-        return labelAndFieldSelectorToListOptions(
-            query.getLabelSelector(), query.getFieldSelector()
-        );
     }
 }
