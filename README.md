@@ -1,7 +1,5 @@
 # plugin-photos
 
-> **注意：当前 README 为 2.0.0 测试版文档。如需查阅稳定版文档，请访问：[v1.6.1 分支 README](https://github.com/halo-sigs/plugin-photos/tree/v1.6.1)**
-
 Halo 2.0 的相册管理插件，支持在 Console 进行管理，并为主题端提供 `/photos` 页面路由和 Finder API。
 
 ![](./images/preview.jpeg)
