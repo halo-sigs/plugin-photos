@@ -51,10 +51,11 @@ Console API 位于 `console.api.photo.halo.run/v1alpha1`，供 Console 前端使
 | 端点 | 方法 | 说明 |
 | ---- | ---- | ---- |
 | `/apis/console.api.photo.halo.run/v1alpha1/photos` | `GET` | 列出图片，支持 `keyword`、`group`、`ungrouped`、`tag`、`sort`、`page`、`size` 等查询参数 |
+| `/apis/console.api.photo.halo.run/v1alpha1/photos/{name}` | `DELETE` | 删除指定图片。可选查询参数 `withAttachment=true`：同时删除该图片对应的附件文件（默认 `false`） |
 | `/apis/console.api.photo.halo.run/v1alpha1/photos/tags` | `GET` | 列出所有标签名称（字符串数组），支持可选的 `name` 参数进行大小写不敏感模糊过滤 |
 | `/apis/console.api.photo.halo.run/v1alpha1/photos/upload` | `POST` | 上传图片文件并自动创建 Photo 资源，同时提取 EXIF 信息。请求体为 `multipart/form-data`，包含 `file`（必填，图片文件）和 `group`（可选，分组名称）字段。支持 jpeg、png、webp、gif、heic、heif 格式，文件大小限制 50MB |
 | `/apis/console.api.photo.halo.run/v1alpha1/photogroups` | `GET` | 返回所有分组数组，按 `spec.priority` 降序排列（值越大越靠前），每项包含 `spec.photoCount`，不支持任何查询参数 |
-| `/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}` | `DELETE` | 删除指定分组及其下所有图片 |
+| `/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}` | `DELETE` | 删除指定分组。可选查询参数：`deletePhotos`（默认 `true`）控制是否删除分组下的图片，`false` 时图片变为未分组；`withAttachment=true` 在删除图片的同时也删除对应附件文件（仅 `deletePhotos=true` 时有效，默认 `false`） |
 
 > 注意：上传端点需要在插件设置（`base.policyName`）中配置附件存储策略，否则返回错误。
 
