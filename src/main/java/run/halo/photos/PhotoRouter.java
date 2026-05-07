@@ -119,7 +119,6 @@ public class PhotoRouter {
             return resolvePageSize(queryParam(request, SIZE_PARAM)).flatMap(size ->
                 photoPublicQueryService.getByName(name)
                     .flatMap(photo -> renderOrRedirectDetail(request, photo, group, page, size))
-                    .switchIfEmpty(ServerResponse.notFound().build())
             );
         };
     }

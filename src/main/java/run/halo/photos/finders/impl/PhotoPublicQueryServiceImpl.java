@@ -17,7 +17,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
@@ -66,8 +68,10 @@ public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     @Override
     public Mono<PhotoVo> getByName(String name) {
-        return client.fetch(Photo.class, name)
+        return client.get(Photo.class, name)
             .filter(photo -> !photo.isDeleted())
+            .switchIfEmpty(Mono.error(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Photo not found")))
             .flatMap(this::toPhotoVo);
     }
 

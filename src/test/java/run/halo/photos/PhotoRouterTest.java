@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.result.view.View;
@@ -88,7 +89,9 @@ class PhotoRouterTest {
 
     @Test
     void detailReturns404WhenPhotoMissing() {
-        when(photoPublicQueryService.getByName("missing")).thenReturn(Mono.empty());
+        when(photoPublicQueryService.getByName("missing"))
+            .thenReturn(Mono.error(
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Photo not found")));
 
         webTestClient.get().uri("/photos/missing")
             .exchange()
@@ -97,7 +100,9 @@ class PhotoRouterTest {
 
     @Test
     void detailReturns404WhenPhotoSoftDeleted() {
-        when(photoPublicQueryService.getByName("gone")).thenReturn(Mono.empty());
+        when(photoPublicQueryService.getByName("gone"))
+            .thenReturn(Mono.error(
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Photo not found")));
 
         webTestClient.get().uri("/photos/gone")
             .exchange()

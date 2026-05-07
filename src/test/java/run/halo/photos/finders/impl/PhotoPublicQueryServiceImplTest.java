@@ -1,6 +1,7 @@
 package run.halo.photos.finders.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -12,6 +13,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
@@ -194,14 +197,18 @@ class PhotoPublicQueryServiceImplTest {
     }
 
     @Test
-    void getByNameShouldReturnEmptyForSoftDeletedPhoto() {
+    void getByNameShouldThrowNotFoundForSoftDeletedPhoto() {
         var photo = photo("gone", "2026-05-01T00:00:00Z", null);
         photo.getMetadata().setDeletionTimestamp(Instant.parse("2026-05-01T00:00:00Z"));
 
-        when(client.fetch(Photo.class, "gone")).thenReturn(Mono.just(photo));
+        when(client.get(Photo.class, "gone")).thenReturn(Mono.just(photo));
 
-        var result = service.getByName("gone").blockOptional();
-        assertThat(result).isEmpty();
+        assertThatThrownBy(() -> service.getByName("gone").block())
+            .isInstanceOf(ResponseStatusException.class)
+            .satisfies(ex -> {
+                var re = (ResponseStatusException) ex;
+                assertThat(re.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            });
     }
 
     @Test
