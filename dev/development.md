@@ -9,41 +9,21 @@ git clone git@github.com:halo-sigs/plugin-photos.git
 git clone git@github.com:{your_github_id}/plugin-photos.git
 ```
 
-## 安装依赖 & 构建
+## 启动开发容器
+
+所需环境依赖：
+
+1. JDK 21
+2. Docker
+3. Node.js 24
+4. pnpm 10
 
 ```bash
-cd path/to/plugin-photos
-
-# 安装前端依赖
 # macOS / Linux
-./gradlew pnpmInstall
+./gradlew haloServer
 
 # Windows
-./gradlew.bat pnpmInstall
-
-# 构建（编译前端 + Java）
-# macOS / Linux
-./gradlew build
-
-# Windows
-./gradlew.bat build
-```
-
-## Halo 配置（开发模式）
-
-修改 Halo 配置文件，使插件以开发模式从源码加载：
-
-```yaml
-halo:
-  plugin:
-    runtime-mode: development
-    classes-directories:
-      - "build/classes"
-      - "build/resources"
-    lib-directories:
-      - "libs"
-    fixedPluginPath:
-      - "/path/to/plugin-photos"
+./gradlew.bat haloServer
 ```
 
 ## 前端开发
