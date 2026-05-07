@@ -18,7 +18,7 @@ https://raw.githubusercontent.com/halo-sigs/plugin-photos/refs/heads/main/api-do
 | ---- | ---- | ---- |
 | `/apis/api.photo.halo.run/v1alpha1/photos` | `GET` | 分页列出图片，支持 `group`、`ungrouped`、`tag`、`keyword`、`labelSelector`、`fieldSelector`、`sort`、`page`、`size` 查询参数 |
 | `/apis/api.photo.halo.run/v1alpha1/photos/{name}` | `GET` | 根据 `metadata.name` 获取单张图片，不存在或已软删除时返回 `404` |
-| `/apis/api.photo.halo.run/v1alpha1/photogroups` | `GET` | 分页列出分组，返回 `metadata`、`spec` 和 `status.photoCount`，**不返回** `photos[]` |
+| `/apis/api.photo.halo.run/v1alpha1/photogroups` | `GET` | 返回所有分组数组，按 `spec.priority` 升序排列，每项包含 `metadata`、`spec` 和 `status.photoCount`，**不返回** `photos[]`，不支持任何查询参数 |
 | `/apis/api.photo.halo.run/v1alpha1/tags` | `GET` | 列出所有不重复的标签名称及对应图片数量，支持可选的 `name` 参数进行大小写不敏感模糊过滤 |
 
 ### 匿名访问说明
@@ -53,7 +53,7 @@ Console API 位于 `console.api.photo.halo.run/v1alpha1`，供 Console 前端使
 | `/apis/console.api.photo.halo.run/v1alpha1/photos` | `GET` | 列出图片，支持 `keyword`、`group`、`ungrouped`、`tag`、`sort`、`page`、`size` 等查询参数 |
 | `/apis/console.api.photo.halo.run/v1alpha1/photos/tags` | `GET` | 列出所有标签名称（字符串数组），支持可选的 `name` 参数进行大小写不敏感模糊过滤 |
 | `/apis/console.api.photo.halo.run/v1alpha1/photos/upload` | `POST` | 上传图片文件并自动创建 Photo 资源，同时提取 EXIF 信息。请求体为 `multipart/form-data`，包含 `file`（必填，图片文件）和 `group`（可选，分组名称）字段。支持 jpeg、png、webp、gif、heic、heif 格式，文件大小限制 50MB |
-| `/apis/console.api.photo.halo.run/v1alpha1/photogroups` | `GET` | 列出所有分组 |
+| `/apis/console.api.photo.halo.run/v1alpha1/photogroups` | `GET` | 返回所有分组数组，按 `spec.priority` 升序排列，每项包含 `spec.photoCount`，不支持任何查询参数 |
 | `/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}` | `DELETE` | 删除指定分组及其下所有图片 |
 
 > 注意：上传端点需要在插件设置（`base.policyName`）中配置附件存储策略，否则返回错误。
