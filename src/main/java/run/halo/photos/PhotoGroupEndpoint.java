@@ -48,6 +48,22 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
                         .implementation(String.class)
                         .required(true)
                     )
+                    .parameter(parameterBuilder()
+                        .name("deletePhotos")
+                        .in(ParameterIn.QUERY)
+                        .description("Delete photos in the group; when false, photos become "
+                            + "ungrouped")
+                        .required(false)
+                        .implementation(Boolean.class)
+                    )
+                    .parameter(parameterBuilder()
+                        .name("withAttachment")
+                        .in(ParameterIn.QUERY)
+                        .description("Also delete the attachment files of each photo "
+                            + "(only effective when deletePhotos is true)")
+                        .required(false)
+                        .implementation(Boolean.class)
+                    )
                     .response(responseBuilder().implementation(PhotoGroup.class))
             )
             .build();
@@ -60,7 +76,13 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
 
     private Mono<ServerResponse> deletePhotoGroup(ServerRequest serverRequest) {
         String name = serverRequest.pathVariable("name");
-        return photoGroupService.deletePhotoGroup(name)
+        boolean deletePhotos = serverRequest.queryParam("deletePhotos")
+            .map(Boolean::parseBoolean)
+            .orElse(true);
+        boolean withAttachment = serverRequest.queryParam("withAttachment")
+            .map(Boolean::parseBoolean)
+            .orElse(false);
+        return photoGroupService.deletePhotoGroup(name, deletePhotos, withAttachment)
             .flatMap(photoGroup -> ServerResponse.ok().bodyValue(photoGroup));
     }
 

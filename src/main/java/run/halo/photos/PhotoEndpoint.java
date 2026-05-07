@@ -56,6 +56,26 @@ public class PhotoEndpoint implements CustomEndpoint {
                     PhotoQuery.buildParameters(builder);
                 }
             )
+            .DELETE("photos/{name}", this::deletePhoto,
+                builder -> builder.operationId("DeletePhoto")
+                    .description("Delete a photo by name, optionally deleting its attachment.")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("name")
+                        .in(ParameterIn.PATH)
+                        .description("Photo name")
+                        .implementation(String.class)
+                        .required(true)
+                    )
+                    .parameter(parameterBuilder()
+                        .name("withAttachment")
+                        .in(ParameterIn.QUERY)
+                        .description("Also delete the attachment file associated with this photo")
+                        .required(false)
+                        .implementation(Boolean.class)
+                    )
+                    .response(responseBuilder().implementation(Photo.class))
+            )
             .GET("photos/tags", this::listTags,
                 builder -> builder.operationId("ListPhotoTags")
                     .description("List all photo tags.")
@@ -87,6 +107,15 @@ public class PhotoEndpoint implements CustomEndpoint {
     @Override
     public GroupVersion groupVersion() {
         return GroupVersion.parseAPIVersion("console.api.photo.halo.run/v1alpha1");
+    }
+
+    private Mono<ServerResponse> deletePhoto(ServerRequest request) {
+        String name = request.pathVariable("name");
+        boolean withAttachment = request.queryParam("withAttachment")
+            .map(Boolean::parseBoolean)
+            .orElse(false);
+        return photoService.deletePhoto(name, withAttachment)
+            .flatMap(photo -> ServerResponse.ok().bodyValue(photo));
     }
 
     private Mono<ServerResponse> listPhoto(ServerRequest serverRequest) {

@@ -75,7 +75,7 @@ class PhotoGroupServiceImplTest {
         when(client.delete(any(Photo.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
         when(client.delete(group)).thenReturn(Mono.just(group));
 
-        var result = service.deletePhotoGroup("mygroup").block();
+        var result = service.deletePhotoGroup("mygroup", true, false).block();
 
         assertThat(result).isEqualTo(group);
         verify(client, times(2)).delete(any(Photo.class));
@@ -90,7 +90,7 @@ class PhotoGroupServiceImplTest {
             .thenReturn(Flux.empty());
         when(client.delete(group)).thenReturn(Mono.just(group));
 
-        var result = service.deletePhotoGroup("empty").block();
+        var result = service.deletePhotoGroup("empty", true, false).block();
 
         assertThat(result).isEqualTo(group);
         verify(client).delete(group);
@@ -101,9 +101,30 @@ class PhotoGroupServiceImplTest {
     void deletePhotoGroupShouldReturnEmptyWhenGroupNotFound() {
         when(client.fetch(PhotoGroup.class, "missing")).thenReturn(Mono.empty());
 
-        var result = service.deletePhotoGroup("missing").blockOptional();
+        var result = service.deletePhotoGroup("missing", true, false).blockOptional();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void deletePhotoGroupWithUngroupModeShouldClearGroupNameOnPhotos() {
+        var group = group("mygroup", 0);
+        var photo1 = photo("p1", "mygroup");
+        var photo2 = photo("p2", "mygroup");
+        when(client.fetch(PhotoGroup.class, "mygroup")).thenReturn(Mono.just(group));
+        when(client.listAll(eq(Photo.class), any(ListOptions.class), eq(Sort.unsorted())))
+            .thenReturn(Flux.just(photo1, photo2));
+        when(client.update(any(Photo.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(client.delete(group)).thenReturn(Mono.just(group));
+
+        var result = service.deletePhotoGroup("mygroup", false, false).block();
+
+        assertThat(result).isEqualTo(group);
+        verify(client, times(2)).update(any(Photo.class));
+        verify(client, never()).delete(any(Photo.class));
+        verify(client).delete(group);
+        assertThat(photo1.getSpec().getGroupName()).isEmpty();
+        assertThat(photo2.getSpec().getGroupName()).isEmpty();
     }
 
     @Test

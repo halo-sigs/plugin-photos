@@ -29,4 +29,14 @@ public interface PhotoService {
      * @return a flux of distinct tag names
      */
     Flux<String> listAllTags(PhotoQuery query);
+
+    /**
+     * Delete a photo by name, optionally deleting its associated attachment.
+     *
+     * @param name           photo name
+     * @param withAttachment when true, also deletes the {@code Attachment} whose
+     *                       {@code status.permalink} matches {@code photo.spec.url}
+     * @return the deleted photo, or empty if not found
+     */
+    Mono<Photo> deletePhoto(String name, boolean withAttachment);
 }

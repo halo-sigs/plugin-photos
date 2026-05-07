@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { photosCoreApiClient } from "@/api";
+import { photosCoreApiClient, photosConsoleApiClient } from "@/api";
 import type { Photo } from "@/api/generated";
 import AddButton from "@/components/AddButton.vue";
 import GroupFilter from "@/components/GroupFilter.vue";
@@ -143,9 +143,12 @@ const handleSelectNext = () => {
 };
 
 // ==================== Batch handlers ====================
-const handleDeleteInBatch = () => {
+const handleDeleteInBatch = (withAttachment: boolean = false) => {
+  const title = withAttachment
+    ? `是否确认删除所选的 ${selectedCount.value} 张图片及其附件？`
+    : `是否确认删除所选的 ${selectedCount.value} 张图片？`;
   Dialog.warning({
-    title: `是否确认删除所选的 ${selectedCount.value} 张图片？`,
+    title,
     description: "删除之后将无法恢复。",
     confirmType: "danger",
     onConfirm: async () => {
@@ -153,8 +156,9 @@ const handleDeleteInBatch = () => {
       try {
         const items = Array.from(selectedPhotos.value);
         await runWithConcurrency(items, (photo) =>
-          photosCoreApiClient.photo.deletePhoto({
+          photosConsoleApiClient.photo.deletePhoto({
             name: photo.metadata.name,
+            withAttachment,
           }),
         );
         Toast.success(`已删除 ${items.length} 张图片`);
@@ -316,7 +320,17 @@ function onUploadModalClose() {
             <div class=":uno: w-full flex flex-1 items-center sm:w-auto">
               <SearchInput v-if="selectedCount === 0" v-model="keyword" />
               <VSpace v-else>
-                <VButton type="danger" :disabled="isBatchOperating" @click="handleDeleteInBatch"> 删除 </VButton>
+                <VDropdown>
+                  <VButton type="danger" :disabled="isBatchOperating"> 删除 </VButton>
+                  <template #popper>
+                    <VDropdownItem type="danger" @click="handleDeleteInBatch(false)">
+                      仅删除图片
+                    </VDropdownItem>
+                    <VDropdownItem type="danger" @click="handleDeleteInBatch(true)">
+                      删除图片及附件
+                    </VDropdownItem>
+                  </template>
+                </VDropdown>
                 <VDropdown>
                   <VButton :disabled="isBatchOperating"> 移动到分组 </VButton>
                   <template #popper>

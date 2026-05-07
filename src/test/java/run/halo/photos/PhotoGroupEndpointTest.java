@@ -56,7 +56,7 @@ class PhotoGroupEndpointTest {
     @Test
     void deletePhotoGroupShouldReturn200WithDeletedGroup() {
         var group = group("trips");
-        when(photoGroupService.deletePhotoGroup("trips"))
+        when(photoGroupService.deletePhotoGroup("trips", true, false))
             .thenReturn(Mono.just(group));
 
         webTestClient.delete().uri("/photogroups/trips")
@@ -65,20 +65,46 @@ class PhotoGroupEndpointTest {
             .expectBody()
             .jsonPath("$.metadata.name").isEqualTo("trips");
 
-        verify(photoGroupService).deletePhotoGroup("trips");
+        verify(photoGroupService).deletePhotoGroup("trips", true, false);
     }
 
     @Test
     void deletePhotoGroupShouldPassCorrectNameToService() {
         var group = group("vacations");
-        when(photoGroupService.deletePhotoGroup("vacations"))
+        when(photoGroupService.deletePhotoGroup("vacations", true, false))
             .thenReturn(Mono.just(group));
 
         webTestClient.delete().uri("/photogroups/vacations")
             .exchange()
             .expectStatus().isOk();
 
-        verify(photoGroupService).deletePhotoGroup("vacations");
+        verify(photoGroupService).deletePhotoGroup("vacations", true, false);
+    }
+
+    @Test
+    void deletePhotoGroupWithUngroupModeShouldPassDeletePhotosFalse() {
+        var group = group("trips");
+        when(photoGroupService.deletePhotoGroup("trips", false, false))
+            .thenReturn(Mono.just(group));
+
+        webTestClient.delete().uri("/photogroups/trips?deletePhotos=false")
+            .exchange()
+            .expectStatus().isOk();
+
+        verify(photoGroupService).deletePhotoGroup("trips", false, false);
+    }
+
+    @Test
+    void deletePhotoGroupWithAttachmentShouldPassBothFlags() {
+        var group = group("trips");
+        when(photoGroupService.deletePhotoGroup("trips", true, true))
+            .thenReturn(Mono.just(group));
+
+        webTestClient.delete().uri("/photogroups/trips?deletePhotos=true&withAttachment=true")
+            .exchange()
+            .expectStatus().isOk();
+
+        verify(photoGroupService).deletePhotoGroup("trips", true, true);
     }
 
     private static PhotoGroup group(String name) {

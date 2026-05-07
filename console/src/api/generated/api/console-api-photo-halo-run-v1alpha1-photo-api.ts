@@ -32,6 +32,52 @@ import type { PhotoList } from '../models';
 export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * Delete a photo by name, optionally deleting its attachment.
+         * @param {string} name Photo name
+         * @param {boolean} [withAttachment] Also delete the attachment file associated with this photo
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deletePhoto: async (name: string, withAttachment?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('deletePhoto', 'name', name)
+            const localVarPath = `/apis/console.api.photo.halo.run/v1alpha1/photos/{name}`
+                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication basicAuth required
+            // http basic authentication required
+            setBasicAuthToObject(localVarRequestOptions, configuration)
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (withAttachment !== undefined) {
+                localVarQueryParameter['withAttachment'] = withAttachment;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * List all photo tags.
          * @param {string} [name] Tag name to query
          * @param {*} [options] Override http request option.
@@ -219,6 +265,19 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
     const localVarAxiosParamCreator = ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator(configuration)
     return {
         /**
+         * Delete a photo by name, optionally deleting its attachment.
+         * @param {string} name Photo name
+         * @param {boolean} [withAttachment] Also delete the attachment file associated with this photo
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deletePhoto(name: string, withAttachment?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Photo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deletePhoto(name, withAttachment, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConsoleApiPhotoHaloRunV1alpha1PhotoApi.deletePhoto']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * List all photo tags.
          * @param {string} [name] Tag name to query
          * @param {*} [options] Override http request option.
@@ -274,6 +333,15 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
     const localVarFp = ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(configuration)
     return {
         /**
+         * Delete a photo by name, optionally deleting its attachment.
+         * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deletePhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest, options?: RawAxiosRequestConfig): AxiosPromise<Photo> {
+            return localVarFp.deletePhoto(requestParameters.name, requestParameters.withAttachment, options).then((request) => request(axios, basePath));
+        },
+        /**
          * List all photo tags.
          * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTagsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -302,6 +370,27 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
         },
     };
 };
+
+/**
+ * Request parameters for deletePhoto operation in ConsoleApiPhotoHaloRunV1alpha1PhotoApi.
+ * @export
+ * @interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest
+ */
+export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest {
+    /**
+     * Photo name
+     * @type {string}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhoto
+     */
+    readonly name: string
+
+    /**
+     * Also delete the attachment file associated with this photo
+     * @type {boolean}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhoto
+     */
+    readonly withAttachment?: boolean
+}
 
 /**
  * Request parameters for listPhotoTags operation in ConsoleApiPhotoHaloRunV1alpha1PhotoApi.
@@ -415,6 +504,17 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest {
  * @extends {BaseAPI}
  */
 export class ConsoleApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
+    /**
+     * Delete a photo by name, optionally deleting its attachment.
+     * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApi
+     */
+    public deletePhoto(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest, options?: RawAxiosRequestConfig) {
+        return ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(this.configuration).deletePhoto(requestParameters.name, requestParameters.withAttachment, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * List all photo tags.
      * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTagsRequest} requestParameters Request parameters.

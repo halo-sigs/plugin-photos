@@ -114,6 +114,30 @@ class PhotoEndpointTest {
             .expectStatus().is4xxClientError();
     }
 
+    @Test
+    void deletePhotoShouldReturn200() {
+        var photo = photo("p1", "2026-05-01T00:00:00Z");
+        when(photoService.deletePhoto("p1", false)).thenReturn(Mono.just(photo));
+
+        webTestClient.delete().uri("/photos/p1")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.metadata.name").isEqualTo("p1");
+    }
+
+    @Test
+    void deletePhotoWithAttachmentShouldPassFlagToService() {
+        var photo = photo("p1", "2026-05-01T00:00:00Z");
+        when(photoService.deletePhoto("p1", true)).thenReturn(Mono.just(photo));
+
+        webTestClient.delete().uri("/photos/p1?withAttachment=true")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.metadata.name").isEqualTo("p1");
+    }
+
     private static Photo photo(String name, String creationTimestamp) {
         var metadata = new Metadata();
         metadata.setName(name);

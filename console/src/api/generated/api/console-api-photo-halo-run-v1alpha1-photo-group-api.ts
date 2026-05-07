@@ -32,10 +32,12 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = func
         /**
          * Delete photo group.
          * @param {string} name Photo group name
+         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped
+         * @param {boolean} [withAttachment] Also delete the attachment files of each photo (only effective when deletePhotos is true)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deletePhotoGroup: async (name: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        deletePhotoGroup: async (name: string, deletePhotos?: boolean, withAttachment?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'name' is not null or undefined
             assertParamExists('deletePhotoGroup', 'name', name)
             const localVarPath = `/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}`
@@ -58,6 +60,14 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = func
             // authentication bearerAuth required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (deletePhotos !== undefined) {
+                localVarQueryParameter['deletePhotos'] = deletePhotos;
+            }
+
+            if (withAttachment !== undefined) {
+                localVarQueryParameter['withAttachment'] = withAttachment;
+            }
 
 
     
@@ -120,11 +130,13 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp = function(configurat
         /**
          * Delete photo group.
          * @param {string} name Photo group name
+         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped
+         * @param {boolean} [withAttachment] Also delete the attachment files of each photo (only effective when deletePhotos is true)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deletePhotoGroup(name: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PhotoGroup>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deletePhotoGroup(name, options);
+        async deletePhotoGroup(name: string, deletePhotos?: boolean, withAttachment?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PhotoGroup>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deletePhotoGroup(name, deletePhotos, withAttachment, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi.deletePhotoGroup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -157,7 +169,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (conf
          * @throws {RequiredError}
          */
         deletePhotoGroup(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequest, options?: RawAxiosRequestConfig): AxiosPromise<PhotoGroup> {
-            return localVarFp.deletePhotoGroup(requestParameters.name, options).then((request) => request(axios, basePath));
+            return localVarFp.deletePhotoGroup(requestParameters.name, requestParameters.deletePhotos, requestParameters.withAttachment, options).then((request) => request(axios, basePath));
         },
         /**
          * List all photo groups sorted by priority.
@@ -182,6 +194,20 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequ
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
      */
     readonly name: string
+
+    /**
+     * Delete photos in the group; when false, photos become ungrouped
+     * @type {boolean}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
+     */
+    readonly deletePhotos?: boolean
+
+    /**
+     * Also delete the attachment files of each photo (only effective when deletePhotos is true)
+     * @type {boolean}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
+     */
+    readonly withAttachment?: boolean
 }
 
 /**
@@ -199,7 +225,7 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi extends BaseAPI {
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi
      */
     public deletePhotoGroup(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequest, options?: RawAxiosRequestConfig) {
-        return ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp(this.configuration).deletePhotoGroup(requestParameters.name, options).then((request) => request(this.axios, this.basePath));
+        return ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp(this.configuration).deletePhotoGroup(requestParameters.name, requestParameters.deletePhotos, requestParameters.withAttachment, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

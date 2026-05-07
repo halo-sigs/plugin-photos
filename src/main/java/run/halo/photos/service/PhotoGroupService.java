@@ -20,11 +20,17 @@ public interface PhotoGroupService {
     Mono<List<PhotoGroup>> listPhotoGroup();
     
     /**
-     * Create a photo group.
+     * Delete a photo group by name.
      *
-     * @param name name
-     * @return a mono of photo group
+     * @param name           group name
+     * @param deletePhotos   when {@code true}, all photos in the group are deleted;
+     *                       when {@code false}, photos are unlinked (their
+     *                       {@code spec.groupName} is cleared to empty string)
+     * @param withAttachment when {@code true} (and {@code deletePhotos} is also {@code true}),
+     *                       the {@code Attachment} matching each photo's {@code spec.url}
+     *                       permalink is also deleted
+     * @return the deleted group, or empty if not found
      */
-    Mono<PhotoGroup> deletePhotoGroup(String name);
-    
+    Mono<PhotoGroup> deletePhotoGroup(String name, boolean deletePhotos, boolean withAttachment);
+
 }

@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:46816",
+    "url" : "http://localhost:57756",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -218,6 +218,20 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "description" : "Delete photos in the group; when false, photos become ungrouped",
+          "in" : "query",
+          "name" : "deletePhotos",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Also delete the attachment files of each photo (only effective when deletePhotos is true)",
+          "in" : "query",
+          "name" : "withAttachment",
+          "schema" : {
+            "type" : "boolean"
+          }
         } ],
         "responses" : {
           "default" : {
@@ -369,6 +383,41 @@
           },
           "required" : true
         },
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photos/{name}" : {
+      "delete" : {
+        "description" : "Delete a photo by name, optionally deleting its attachment.",
+        "operationId" : "DeletePhoto",
+        "parameters" : [ {
+          "description" : "Photo name",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Also delete the attachment file associated with this photo",
+          "in" : "query",
+          "name" : "withAttachment",
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
         "responses" : {
           "default" : {
             "content" : {

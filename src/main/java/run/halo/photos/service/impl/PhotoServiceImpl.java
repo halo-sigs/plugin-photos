@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.core.extension.attachment.Attachment;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
@@ -78,5 +79,21 @@ class PhotoServiceImpl implements PhotoService {
             builder.andQuery(equal("spec.tags", query.getTag()));
         }
         return builder.build();
+    }
+
+    @Override
+    public Mono<Photo> deletePhoto(String name, boolean withAttachment) {
+        return client.fetch(Photo.class, name)
+            .flatMap(photo -> {
+                if (withAttachment && StringUtils.isNotBlank(photo.getSpec().getUrl())) {
+                    var options = ListOptions.builder()
+                        .andQuery(equal("status.permalink", photo.getSpec().getUrl()))
+                        .build();
+                    return client.listAll(Attachment.class, options, Sort.unsorted())
+                        .flatMap(client::delete)
+                        .then(client.delete(photo));
+                }
+                return client.delete(photo);
+            });
     }
 }

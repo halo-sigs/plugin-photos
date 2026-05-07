@@ -3,11 +3,13 @@ package run.halo.photos.service.impl;
 import static run.halo.app.extension.index.query.Queries.equal;
 
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.core.extension.attachment.Attachment;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
@@ -41,17 +43,50 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
     }
 
     @Override
-    public Mono<PhotoGroup> deletePhotoGroup(String name) {
+    public Mono<PhotoGroup> deletePhotoGroup(String name, boolean deletePhotos,
+        boolean withAttachment) {
         return this.client.fetch(PhotoGroup.class, name)
             .flatMap(group -> {
                 var listOptions = ListOptions.builder()
                     .andQuery(equal("spec.groupName", name))
                     .build();
-                return this.client.listAll(Photo.class, listOptions, Sort.unsorted())
+                Flux<Photo> photos = this.client.listAll(Photo.class, listOptions, Sort.unsorted());
+                if (!deletePhotos) {
+                    // Ungroup: clear spec.groupName so photos become ungrouped
+                    return photos
+                        .flatMap(photo -> {
+                            photo.getSpec().setGroupName("");
+                            return client.update(photo);
+                        })
+                        .then(this.client.delete(group))
+                        .thenReturn(group);
+                }
+                if (withAttachment) {
+                    // Delete photos and their attachment files
+                    return photos
+                        .flatMap(photo -> deletePhotoWithAttachment(photo))
+                        .then(this.client.delete(group))
+                        .thenReturn(group);
+                }
+                // Default: delete photos only
+                return photos
                     .flatMap(this.client::delete)
                     .then(this.client.delete(group))
                     .thenReturn(group);
             });
+    }
+
+    private Mono<Photo> deletePhotoWithAttachment(Photo photo) {
+        String url = photo.getSpec().getUrl();
+        if (StringUtils.isBlank(url)) {
+            return client.delete(photo);
+        }
+        var options = ListOptions.builder()
+            .andQuery(equal("status.permalink", url))
+            .build();
+        return client.listAll(Attachment.class, options, Sort.unsorted())
+            .flatMap(client::delete)
+            .then(client.delete(photo));
     }
 
     private Mono<PhotoGroup> populatePhotos(PhotoGroup photoGroup) {
