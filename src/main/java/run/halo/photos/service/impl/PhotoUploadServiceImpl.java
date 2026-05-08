@@ -10,11 +10,9 @@ import com.drew.metadata.exif.GpsDirectory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.TimeZone;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -229,18 +227,8 @@ public class PhotoUploadServiceImpl implements PhotoUploadService {
             if (dir == null) {
                 return null;
             }
-            var dateStr = dir.getString(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-            if (StringUtils.isBlank(dateStr)) {
-                return null;
-            }
-            try {
-                var formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
-                    .withZone(ZoneOffset.UTC);
-                return Instant.from(formatter.parse(dateStr));
-            } catch (DateTimeParseException e) {
-                log.warn("Failed to parse EXIF date: {}", dateStr);
-                return null;
-            }
+            var date = dir.getDateOriginal(TimeZone.getDefault());
+            return date != null ? date.toInstant() : null;
         }
 
         Double getFNumber() {
