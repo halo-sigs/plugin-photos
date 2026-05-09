@@ -202,6 +202,47 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             };
         },
         /**
+         * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
+         * @param {string} name Photo name
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        reextractExif: async (name: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('reextractExif', 'name', name)
+            const localVarPath = `/apis/console.api.photo.halo.run/v1alpha1/photos/{name}/reextract-exif`
+                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication basicAuth required
+            // http basic authentication required
+            setBasicAuthToObject(localVarRequestOptions, configuration)
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
          * @param {File} file Image file to upload
          * @param {string} [group] Photo group name to assign the new photo to
@@ -310,6 +351,18 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
+         * @param {string} name Photo name
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async reextractExif(name: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Photo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.reextractExif(name, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConsoleApiPhotoHaloRunV1alpha1PhotoApi.reextractExif']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
          * @param {File} file Image file to upload
          * @param {string} [group] Photo group name to assign the new photo to
@@ -358,6 +411,15 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
          */
         listPhotos(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<PhotoList> {
             return localVarFp.listPhotos(requestParameters.page, requestParameters.size, requestParameters.labelSelector, requestParameters.fieldSelector, requestParameters.sort, requestParameters.keyword, requestParameters.group, requestParameters.ungrouped, requestParameters.tag, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
+         * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        reextractExif(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest, options?: RawAxiosRequestConfig): AxiosPromise<Photo> {
+            return localVarFp.reextractExif(requestParameters.name, options).then((request) => request(axios, basePath));
         },
         /**
          * Upload a photo directly to the gallery. The `group` field SHOULD be sent as a multipart form field; for backward compatibility it is also accepted as a query parameter.
@@ -477,6 +539,20 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest {
 }
 
 /**
+ * Request parameters for reextractExif operation in ConsoleApiPhotoHaloRunV1alpha1PhotoApi.
+ * @export
+ * @interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest
+ */
+export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest {
+    /**
+     * Photo name
+     * @type {string}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExif
+     */
+    readonly name: string
+}
+
+/**
  * Request parameters for uploadPhoto operation in ConsoleApiPhotoHaloRunV1alpha1PhotoApi.
  * @export
  * @interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiUploadPhotoRequest
@@ -535,6 +611,17 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
      */
     public listPhotos(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest = {}, options?: RawAxiosRequestConfig) {
         return ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(this.configuration).listPhotos(requestParameters.page, requestParameters.size, requestParameters.labelSelector, requestParameters.fieldSelector, requestParameters.sort, requestParameters.keyword, requestParameters.group, requestParameters.ungrouped, requestParameters.tag, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
+     * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApi
+     */
+    public reextractExif(requestParameters: ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest, options?: RawAxiosRequestConfig) {
+        return ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp(this.configuration).reextractExif(requestParameters.name, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

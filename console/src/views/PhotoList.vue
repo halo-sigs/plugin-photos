@@ -226,6 +226,25 @@ const handleBatchAddTags = async () => {
   }
 };
 
+const handleBatchReextractExif = async () => {
+  const items = Array.from(selectedPhotos.value);
+  isBatchOperating.value = true;
+  try {
+    await runWithConcurrency(items, (photo) =>
+      photosConsoleApiClient.photo.reextractExif({
+        name: photo.metadata.name,
+      }),
+    );
+    Toast.success(`已重新读取 ${items.length} 张图片的 EXIF 信息`);
+    clear();
+  } catch {
+    Toast.error("部分图片 EXIF 读取失败，请重试");
+  } finally {
+    isBatchOperating.value = false;
+    refetchAll();
+  }
+};
+
 const handleCheckAllChange = (e: Event) => {
   const { checked } = e.target as HTMLInputElement;
   setAll(checked);
@@ -365,6 +384,9 @@ function onUploadModalClose() {
                     </div>
                   </template>
                 </VDropdown>
+                <VButton :disabled="isBatchOperating" @click="handleBatchReextractExif">
+                  重新读取 EXIF
+                </VButton>
                 <VButton :disabled="isBatchOperating" @click="clear()"> 取消选择 </VButton>
               </VSpace>
             </div>

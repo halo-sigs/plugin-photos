@@ -138,6 +138,18 @@ class PhotoEndpointTest {
             .jsonPath("$.metadata.name").isEqualTo("p1");
     }
 
+    @Test
+    void reextractExifShouldReturn200() {
+        var photo = photo("p1", "2026-05-01T00:00:00Z");
+        when(photoService.reextractExif("p1")).thenReturn(Mono.just(photo));
+
+        webTestClient.post().uri("/photos/p1/reextract-exif")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.metadata.name").isEqualTo("p1");
+    }
+
     private static Photo photo(String name, String creationTimestamp) {
         var metadata = new Metadata();
         metadata.setName(name);

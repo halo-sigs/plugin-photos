@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:57756",
+    "url" : "http://localhost:51635",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -416,6 +416,34 @@
           "name" : "withAttachment",
           "schema" : {
             "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Photo"
+                }
+              }
+            },
+            "description" : "default response"
+          }
+        },
+        "tags" : [ "console.api.photo.halo.run/v1alpha1/Photo" ]
+      }
+    },
+    "/apis/console.api.photo.halo.run/v1alpha1/photos/{name}/reextract-exif" : {
+      "post" : {
+        "description" : "Re-extract EXIF data from the local attachment file of an existing photo and update the photo's exif field.",
+        "operationId" : "ReextractExif",
+        "parameters" : [ {
+          "description" : "Photo name",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {

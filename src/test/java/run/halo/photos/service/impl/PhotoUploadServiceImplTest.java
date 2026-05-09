@@ -31,12 +31,13 @@ class PhotoUploadServiceImplTest {
     private final AttachmentService attachmentService = mock(AttachmentService.class);
     private final ReactiveExtensionClient client = mock(ReactiveExtensionClient.class);
     private final ReactiveSettingFetcher settingFetcher = mock(ReactiveSettingFetcher.class);
+    private final ExifExtractor exifExtractor = new ExifExtractor();
 
     private PhotoUploadServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new PhotoUploadServiceImpl(attachmentService, client, settingFetcher);
+        service = new PhotoUploadServiceImpl(attachmentService, client, settingFetcher, exifExtractor);
     }
 
     @Test

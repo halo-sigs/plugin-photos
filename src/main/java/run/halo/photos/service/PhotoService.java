@@ -39,4 +39,14 @@ public interface PhotoService {
      * @return the deleted photo, or empty if not found
      */
     Mono<Photo> deletePhoto(String name, boolean withAttachment);
+
+    /**
+     * Re-extract EXIF data from the local attachment file of an existing photo
+     * and update the photo's {@code exif} field.
+     *
+     * @param name photo name
+     * @return the updated photo; if no local attachment exists or the file cannot
+     *         be read, returns the photo unchanged
+     */
+    Mono<Photo> reextractExif(String name);
 }

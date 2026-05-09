@@ -6,8 +6,11 @@ import static run.halo.app.extension.index.query.Queries.isNull;
 import static run.halo.app.extension.index.query.Queries.not;
 import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,7 @@ import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.infra.BackupRootGetter;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoQuery;
 import run.halo.photos.service.PhotoService;
@@ -28,13 +32,20 @@ import run.halo.photos.service.PhotoService;
  * @author LIlGG
  * @since 1.0.0
  */
+@Slf4j
 @Component
 class PhotoServiceImpl implements PhotoService {
 
     private final ReactiveExtensionClient client;
+    private final BackupRootGetter backupRootGetter;
+    private final ExifExtractor exifExtractor;
 
-    public PhotoServiceImpl(ReactiveExtensionClient client) {
+    public PhotoServiceImpl(ReactiveExtensionClient client,
+        BackupRootGetter backupRootGetter,
+        ExifExtractor exifExtractor) {
         this.client = client;
+        this.backupRootGetter = backupRootGetter;
+        this.exifExtractor = exifExtractor;
     }
 
     @Override
@@ -94,6 +105,41 @@ class PhotoServiceImpl implements PhotoService {
                         .then(client.delete(photo));
                 }
                 return client.delete(photo);
+            });
+    }
+
+    @Override
+    public Mono<Photo> reextractExif(String name) {
+        return client.fetch(Photo.class, name)
+            .flatMap(photo -> {
+                var url = photo.getSpec().getUrl();
+                if (StringUtils.isBlank(url)) {
+                    return Mono.just(photo);
+                }
+                var options = ListOptions.builder()
+                    .andQuery(equal("status.permalink", url))
+                    .build();
+                return client.listAll(Attachment.class, options, Sort.unsorted())
+                    .next()
+                    .flatMap(attachment -> {
+                        try {
+                            var workDir = backupRootGetter.get().getParent();
+                            var filePath = workDir.resolve("attachments" + url);
+                            if (!Files.exists(filePath)) {
+                                log.warn("Attachment file not found for photo {}: {}", name, filePath);
+                                return Mono.just(photo);
+                            }
+                            var bytes = Files.readAllBytes(filePath);
+                            var exifData = exifExtractor.extractExif(bytes);
+                            var exif = exifExtractor.toPhotoExif(exifData);
+                            photo.setExif(exif);
+                            return client.update(photo);
+                        } catch (Exception e) {
+                            log.warn("Failed to re-extract EXIF for photo {}: {}", name, e.getMessage());
+                            return Mono.just(photo);
+                        }
+                    })
+                    .switchIfEmpty(Mono.just(photo));
             });
     }
 }

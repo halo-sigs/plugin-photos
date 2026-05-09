@@ -3,10 +3,12 @@ package run.halo.photos.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,12 +17,15 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Sort;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.core.extension.attachment.Attachment;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.PageRequest;
 import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.infra.BackupRootGetter;
 import run.halo.photos.Photo;
 import run.halo.photos.PhotoQuery;
 
@@ -28,12 +33,14 @@ class PhotoServiceImplTest {
 
     private final ReactiveExtensionClient client = org.mockito.Mockito.mock(
         ReactiveExtensionClient.class);
+    private final BackupRootGetter backupRootGetter = mock(BackupRootGetter.class);
+    private final ExifExtractor exifExtractor = new ExifExtractor();
 
     private PhotoServiceImpl photoService;
 
     @BeforeEach
     void setUp() {
-        photoService = new PhotoServiceImpl(client);
+        photoService = new PhotoServiceImpl(client, backupRootGetter, exifExtractor);
     }
 
     @Test
@@ -170,5 +177,66 @@ class PhotoServiceImplTest {
 
     private static Instant parse(String value) {
         return value == null ? null : Instant.parse(value);
+    }
+
+    @Test
+    void reextractExifWithBlankUrlShouldReturnPhotoUnchanged() {
+        var photo = new Photo();
+        var metadata = new Metadata();
+        metadata.setName("no-url");
+        photo.setMetadata(metadata);
+        var spec = new Photo.PhotoSpec();
+        spec.setUrl("");
+        photo.setSpec(spec);
+
+        when(client.fetch(Photo.class, "no-url")).thenReturn(Mono.just(photo));
+
+        var result = photoService.reextractExif("no-url").block();
+
+        assertThat(result).isNotNull();
+        assertThat(result.getExif()).isNull();
+    }
+
+    @Test
+    void reextractExifWithMissingAttachmentShouldReturnPhotoUnchanged() {
+        var photo = new Photo();
+        var metadata = new Metadata();
+        metadata.setName("no-attachment");
+        photo.setMetadata(metadata);
+        var spec = new Photo.PhotoSpec();
+        spec.setUrl("/upload/test.jpg");
+        photo.setSpec(spec);
+
+        when(client.fetch(Photo.class, "no-attachment")).thenReturn(Mono.just(photo));
+        when(client.listAll(eq(Attachment.class), any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.empty());
+
+        var result = photoService.reextractExif("no-attachment").block();
+
+        assertThat(result).isNotNull();
+        assertThat(result.getExif()).isNull();
+    }
+
+    @Test
+    void reextractExifWithMissingFileShouldReturnPhotoUnchanged() {
+        var photo = new Photo();
+        var metadata = new Metadata();
+        metadata.setName("missing-file");
+        photo.setMetadata(metadata);
+        var spec = new Photo.PhotoSpec();
+        spec.setUrl("/upload/nonexistent.jpg");
+        photo.setSpec(spec);
+
+        var attachment = mock(Attachment.class);
+        when(client.fetch(Photo.class, "missing-file")).thenReturn(Mono.just(photo));
+        when(client.listAll(eq(Attachment.class), any(ListOptions.class), any(Sort.class)))
+            .thenReturn(Flux.just(attachment));
+        when(backupRootGetter.get()).thenReturn(
+            Path.of(System.getProperty("java.io.tmpdir"), "backups"));
+
+        var result = photoService.reextractExif("missing-file").block();
+
+        assertThat(result).isNotNull();
+        assertThat(result.getExif()).isNull();
     }
 }

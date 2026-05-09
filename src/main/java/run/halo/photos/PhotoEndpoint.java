@@ -101,6 +101,20 @@ public class PhotoEndpoint implements CustomEndpoint {
                             .schema(schemaBuilder().implementation(UploadPhotoRequest.class))))
                     .response(responseBuilder().implementation(Photo.class))
             )
+            .POST("photos/{name}/reextract-exif", this::reextractExif,
+                builder -> builder.operationId("ReextractExif")
+                    .description("Re-extract EXIF data from the local attachment file "
+                        + "of an existing photo and update the photo's exif field.")
+                    .tag(tag)
+                    .parameter(parameterBuilder()
+                        .name("name")
+                        .in(ParameterIn.PATH)
+                        .description("Photo name")
+                        .implementation(String.class)
+                        .required(true)
+                    )
+                    .response(responseBuilder().implementation(Photo.class))
+            )
             .build();
     }
 
@@ -146,6 +160,12 @@ public class PhotoEndpoint implements CustomEndpoint {
             }
         }
         return StringUtils.isNotBlank(queryGroup) ? queryGroup : "";
+    }
+
+    private Mono<ServerResponse> reextractExif(ServerRequest request) {
+        String name = request.pathVariable("name");
+        return photoService.reextractExif(name)
+            .flatMap(photo -> ServerResponse.ok().bodyValue(photo));
     }
 
     private Mono<ServerResponse> listTags(ServerRequest request) {
