@@ -1,0 +1,3 @@
+change:
+  id: lazy-query-photo-router
+  description: 将 PhotoRouter 中的模板变量改为按需查询，减少不必要的数据库查询
