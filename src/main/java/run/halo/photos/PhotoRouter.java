@@ -4,11 +4,14 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -21,6 +24,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.thymeleaf.context.LazyContextVariable;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
@@ -48,6 +52,7 @@ public class PhotoRouter {
     private static final String PAGE_PARAM = PhotoUrlBuilder.PAGE_PARAM;
     private static final String SIZE_PARAM = PhotoUrlBuilder.SIZE_PARAM;
     private static final int NEIGHBOR_WINDOW_SIZE = 5;
+    private static final Duration BLOCKING_TIMEOUT = Duration.ofSeconds(10);
 
     private final PhotoFinder photoFinder;
     private final PhotoPublicQueryService photoPublicQueryService;
@@ -73,16 +78,34 @@ public class PhotoRouter {
             String group = queryParam(request, GROUP_PARAM);
             int page = positiveInt(queryParam(request, PAGE_PARAM), 1);
             return resolvePageSize(queryParam(request, SIZE_PARAM)).flatMap(size -> {
-                Mono<UrlContextListResult<PhotoVo>> photos =
-                    photoPublicQueryService.listPhotos(
-                            buildListOptions(group),
-                            PageRequestImpl.of(page, size, defaultPhotoSort()))
-                        .map(list -> buildListContextResult(list, group, page, size));
+                var photos = new LazyContextVariable<UrlContextListResult<PhotoVo>>() {
+                    @Override
+                    protected UrlContextListResult<PhotoVo> loadValue() {
+                        System.out.println("进来了吗？");
+                        return photoPublicQueryService.listPhotos(
+                                buildListOptions(group),
+                                PageRequestImpl.of(page, size, defaultPhotoSort()))
+                            .map(list -> buildListContextResult(list, group, page, size))
+                            .block(BLOCKING_TIMEOUT);
+                    }
+                };
+                var groups = new LazyContextVariable<List<PhotoGroupVo>>() {
+                    @Override
+                    protected List<PhotoGroupVo> loadValue() {
+                        return photoGroups().block(BLOCKING_TIMEOUT);
+                    }
+                };
+                var title = new LazyContextVariable<String>() {
+                    @Override
+                    protected String loadValue() {
+                        return getPhotosTitle().block(BLOCKING_TIMEOUT);
+                    }
+                };
                 Map<String, Object> model = new HashMap<>();
-                model.put("groups", photoGroups());
+                model.put("groups", groups);
                 model.put("photos", photos);
                 model.put(ModelConst.TEMPLATE_ID, "photos");
-                model.put("title", getPhotosTitle());
+                model.put("title", title);
                 model.put("photoUrl", photoUrl);
                 return ServerResponse.ok().render("photos", model);
             });
@@ -137,48 +160,113 @@ public class PhotoRouter {
     private Mono<ServerResponse> renderDetail(ServerRequest request, PhotoVo photo,
         String group, int page, int size) {
         String photoName = photo.getMetadata().getName();
-        return loadFilteredPhotos(group)
-            .map(filtered -> {
-                int currentIndex = indexOf(filtered, photoName);
-                List<PhotoVo> contextList;
-                int idx;
-                if (currentIndex < 0) {
-                    contextList = List.of(photo);
+        var photoUrl = new PhotoUrlBuilder(request);
+
+        // Cache for the filtered photo context list to avoid duplicate queries
+        AtomicReference<List<PhotoVo>> contextListRef = new AtomicReference<>();
+
+        Supplier<List<PhotoVo>> resolveContextList = () -> {
+            List<PhotoVo> cached = contextListRef.get();
+            if (cached != null) {
+                return cached;
+            }
+            List<PhotoVo> all = loadFilteredPhotos(group).block(BLOCKING_TIMEOUT);
+            int currentIndex = indexOf(all, photoName);
+            if (currentIndex < 0) {
+                cached = List.of(photo);
+            } else {
+                cached = all;
+            }
+            contextListRef.compareAndSet(null, cached);
+            return contextListRef.get();
+        };
+
+        var neighbors = new LazyContextVariable<List<PhotoVo>>() {
+            @Override
+            protected List<PhotoVo> loadValue() {
+                System.out.println("neighbors 进来了吗？");
+                List<PhotoVo> contextList = resolveContextList.get();
+                int idx = indexOf(contextList, photoName);
+                if (idx < 0) {
                     idx = 0;
-                } else {
-                    contextList = filtered;
-                    idx = currentIndex;
                 }
                 int total = contextList.size();
                 int start = windowStart(idx, total, NEIGHBOR_WINDOW_SIZE);
                 int end = Math.min(start + NEIGHBOR_WINDOW_SIZE, total);
-
-                List<PhotoVo> neighbors = new ArrayList<>(end - start);
+                List<PhotoVo> result = new ArrayList<>(end - start);
                 for (int i = start; i < end; i++) {
-                    neighbors.add(contextList.get(i));
+                    result.add(contextList.get(i));
                 }
-                PhotoVo prev = idx > 0 ? contextList.get(idx - 1) : null;
-                PhotoVo next = idx + 1 < total ? contextList.get(idx + 1) : null;
+                return result;
+            }
+        };
 
-                var photoUrl = new PhotoUrlBuilder(request);
+        var prev = new LazyContextVariable<PhotoVo>() {
+            @Override
+            protected PhotoVo loadValue() {
+                List<PhotoVo> contextList = resolveContextList.get();
+                int idx = indexOf(contextList, photoName);
+                if (idx < 0) {
+                    idx = 0;
+                }
+                return idx > 0 ? contextList.get(idx - 1) : null;
+            }
+        };
 
-                Map<String, Object> model = new LinkedHashMap<>();
-                model.put("photo", photo);
-                model.put("neighbors", neighbors);
-                model.put("prev", prev);
-                model.put("next", next);
-                model.put("position", idx + 1);
-                model.put("total", total);
-                model.put("group", group);
-                model.put("page", page);
-                model.put("size", size);
-                model.put("backUrl", photoUrl.list(group, page, size));
-                model.put("title", getDetailTitle(photo));
-                model.put(ModelConst.TEMPLATE_ID, "photo");
-                model.put("photoUrl", photoUrl);
-                return model;
-            })
-            .flatMap(model -> ServerResponse.ok().render("photo", model));
+        var next = new LazyContextVariable<PhotoVo>() {
+            @Override
+            protected PhotoVo loadValue() {
+                List<PhotoVo> contextList = resolveContextList.get();
+                int idx = indexOf(contextList, photoName);
+                if (idx < 0) {
+                    idx = 0;
+                }
+                int total = contextList.size();
+                return idx + 1 < total ? contextList.get(idx + 1) : null;
+            }
+        };
+
+        var position = new LazyContextVariable<Integer>() {
+            @Override
+            protected Integer loadValue() {
+                List<PhotoVo> contextList = resolveContextList.get();
+                int idx = indexOf(contextList, photoName);
+                if (idx < 0) {
+                    idx = 0;
+                }
+                return idx + 1;
+            }
+        };
+
+        var total = new LazyContextVariable<Integer>() {
+            @Override
+            protected Integer loadValue() {
+                return resolveContextList.get().size();
+            }
+        };
+
+        var title = new LazyContextVariable<String>() {
+            @Override
+            protected String loadValue() {
+                return getDetailTitle(photo).block(BLOCKING_TIMEOUT);
+            }
+        };
+
+        Map<String, Object> model = new LinkedHashMap<>();
+        model.put("photo", photo);
+        model.put("neighbors", neighbors);
+        model.put("prev", prev);
+        model.put("next", next);
+        model.put("position", position);
+        model.put("total", total);
+        model.put("group", group);
+        model.put("page", page);
+        model.put("size", size);
+        model.put("backUrl", photoUrl.list(group, page, size));
+        model.put("title", title);
+        model.put(ModelConst.TEMPLATE_ID, "photo");
+        model.put("photoUrl", photoUrl);
+        return ServerResponse.ok().render("photo", model);
     }
 
     private Mono<List<PhotoVo>> loadFilteredPhotos(String group) {
