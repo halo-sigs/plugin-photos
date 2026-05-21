@@ -12,8 +12,14 @@ import lombok.Value;
 @Builder
 public class PhotoTagVo {
 
+    /**
+     * Tag name.
+     */
     String name;
 
+    /**
+     * Number of photos that carry this tag.
+     */
     Integer photoCount;
 
 }

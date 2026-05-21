@@ -9,7 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import run.halo.photos.vo.PhotoVo;
 
 /**
- * Per-request URL helper exposed to theme templates as <code>photoUrl</code>. Lets templates
+ * Per-request URL helper exposed to theme templates as {@code photoUrl}. Lets templates
  * build context-preserving links to the photo list and detail pages without hand-concatenating
  * query strings.
  */
@@ -24,6 +24,11 @@ public class PhotoUrlBuilder {
 
     private final Map<String, String> contextParams;
 
+    /**
+     * Create a builder from the current request's query parameters.
+     *
+     * @param request the incoming server request
+     */
     public PhotoUrlBuilder(ServerRequest request) {
         this(extractContext(request));
     }
@@ -39,10 +44,23 @@ public class PhotoUrlBuilder {
         this.contextParams = filtered;
     }
 
+    /**
+     * Build a detail-page URL for a photo, preserving current context parameters.
+     *
+     * @param photo the photo to link to
+     * @return the detail URL, e.g. {@code /photos/my-photo?group=album}
+     */
     public String detail(PhotoVo photo) {
         return detail(photo, Map.of());
     }
 
+    /**
+     * Build a detail-page URL for a photo, with optional parameter overrides.
+     *
+     * @param photo    the photo to link to
+     * @param overrides parameter overrides; blank values remove the parameter
+     * @return the detail URL
+     */
     public String detail(PhotoVo photo, Map<String, ?> overrides) {
         Map<String, Object> params = new LinkedHashMap<>();
         for (String param : CONTEXT_PARAMS) {
@@ -63,10 +81,21 @@ public class PhotoUrlBuilder {
         return builder.build().toUriString();
     }
 
+    /**
+     * Build a list-page URL with no filters.
+     *
+     * @return {@code /photos}
+     */
     public String list() {
         return "/photos";
     }
 
+    /**
+     * Build a list-page URL filtered by group.
+     *
+     * @param group the group name filter
+     * @return the list URL, e.g. {@code /photos?group=album}
+     */
     public String list(String group) {
         var builder = UriComponentsBuilder.fromPath("/photos");
         if (StringUtils.isNotBlank(group)) {
@@ -75,6 +104,14 @@ public class PhotoUrlBuilder {
         return builder.build().toUriString();
     }
 
+    /**
+     * Build a list-page URL with group, page and size parameters.
+     *
+     * @param group group name filter
+     * @param page  page number
+     * @param size  page size
+     * @return the list URL
+     */
     public String list(String group, int page, int size) {
         var builder = UriComponentsBuilder.fromPath("/photos");
         if (StringUtils.isNotBlank(group)) {

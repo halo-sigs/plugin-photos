@@ -33,13 +33,17 @@ import run.halo.photos.vo.PhotoTagVo;
 import run.halo.photos.vo.PhotoVo;
 
 /**
- * Implementation of {@link PhotoPublicQueryService}.
+ * Implementation of {@link PhotoPublicQueryService}. All photo data is read
+ * through {@link ReactiveExtensionClient}. Tags are cached for 30 minutes.
  */
 @Component
 public class PhotoPublicQueryServiceImpl implements PhotoPublicQueryService {
 
     private final ReactiveExtensionClient client;
 
+    /**
+     * In-memory cache for tag listings, keyed by the name filter string.
+     */
     private final Cache<String, List<PhotoTagVo>> tagCache = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(30))
         .build();

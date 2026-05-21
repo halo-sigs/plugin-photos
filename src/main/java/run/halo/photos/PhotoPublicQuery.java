@@ -15,7 +15,9 @@ import run.halo.app.extension.index.query.Condition;
 import run.halo.app.extension.router.selector.FieldSelector;
 
 /**
- * A query object for public {@link Photo} list.
+ * A query object for public {@link Photo} list requests. Extends
+ * {@link PhotoQuery} and adds the ability to build {@link ListOptions} and
+ * {@link PageRequest} objects suitable for {@code ReactiveExtensionClient}.
  */
 public class PhotoPublicQuery extends PhotoQuery {
 
@@ -24,9 +26,10 @@ public class PhotoPublicQuery extends PhotoQuery {
     }
 
     /**
-     * Build {@link ListOptions} from query params.
+     * Build {@link ListOptions} from query params. Combines keyword, group,
+     * ungrouped, tag and any label/field selectors into a single query condition.
      *
-     * @return a list options.
+     * @return a list options ready for {@code ReactiveExtensionClient}
      */
     public ListOptions toListOptions() {
         var listOptions =
@@ -50,6 +53,11 @@ public class PhotoPublicQuery extends PhotoQuery {
         return listOptions;
     }
 
+    /**
+     * Build a {@link PageRequest} from the parsed page, size and sort.
+     *
+     * @return a page request ready for {@code ReactiveExtensionClient}
+     */
     public PageRequest toPageRequest() {
         return PageRequestImpl.of(getPage(), getSize(), getSort());
     }

@@ -8,7 +8,11 @@ import run.halo.app.extension.AbstractExtension;
 import run.halo.app.extension.GVK;
 
 /**
- * @author ryanwang
+ * Photo group extension resource. Registered as a custom resource under
+ * {@code core.halo.run/v1alpha1} with kind {@code PhotoGroup}.
+ *
+ * <p>Groups let photos be organised into named collections (e.g. albums).
+ * Deleting a group can either cascade-delete its photos or simply ungroup them.
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -16,20 +20,45 @@ import run.halo.app.extension.GVK;
     plural = "photogroups", singular = "photogroup")
 public class PhotoGroup extends AbstractExtension {
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    /**
+     * Group specification containing display name and sort priority.
+     */
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+        description = "Group specification")
     private PhotoGroupSpec spec;
 
-    @Schema
+    /**
+     * Computed status, currently holding the photo count in the group.
+     */
+    @Schema(description = "Computed group status")
     private PhotoGroupStatus status;
 
+    /**
+     * Specification fields for a {@link PhotoGroup}.
+     */
     @Data
+    @Schema(description = "PhotoGroup specification fields")
     public static class PhotoGroupSpec {
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+
+        /**
+         * Human-readable display name of the group.
+         */
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+            description = "Human-readable display name of the group")
         private String displayName;
 
+        /**
+         * Sort priority. Higher values appear first. Defaults to 0 when unset.
+         */
+        @Schema(description = "Sort priority (higher = earlier). Default 0.")
         private Integer priority;
     }
 
+    /**
+     * Returns the current status, creating a default empty one if absent.
+     *
+     * @return non-null status instance
+     */
     @JsonIgnore
     public PhotoGroupStatus getStatusOrDefault() {
         if (this.status == null) {
@@ -38,9 +67,17 @@ public class PhotoGroup extends AbstractExtension {
         return this.status;
     }
 
+    /**
+     * Computed status fields for a {@link PhotoGroup}.
+     */
     @Data
+    @Schema(description = "Computed status fields for PhotoGroup")
     public static class PhotoGroupStatus {
 
+        /**
+         * Number of photos currently assigned to this group.
+         */
+        @Schema(description = "Number of photos in this group")
         public Integer photoCount;
     }
 }

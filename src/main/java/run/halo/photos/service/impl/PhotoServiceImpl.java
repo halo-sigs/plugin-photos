@@ -71,6 +71,13 @@ class PhotoServiceImpl implements PhotoService {
             .distinct();
     }
 
+    /**
+     * Convert a {@link PhotoQuery} into {@link ListOptions} for
+     * {@link ReactiveExtensionClient}.
+     *
+     * @param query the photo query
+     * @return list options with keyword, group, ungrouped and tag filters applied
+     */
     ListOptions toListOptions(PhotoQuery query) {
         var builder = ListOptions.builder(labelAndFieldSelectorToListOptions(
             query.getLabelSelector(), query.getFieldSelector())

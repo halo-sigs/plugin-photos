@@ -14,14 +14,23 @@ import run.halo.app.plugin.PluginContext;
 import run.halo.photos.finders.PhotoPublicQueryService;
 
 /**
+ * Plugin lifecycle manager. Registers {@link Photo} and {@link PhotoGroup}
+ * extension schemes with database indexes on startup, and sets up a watcher
+ * that invalidates the tag cache whenever a photo is added, updated or deleted.
+ *
  * @author ryanwang
  * @since 2.0.0
  */
 @Component
 public class PhotoPlugin extends BasePlugin {
+
     private final SchemeManager schemeManager;
     private final ReactiveExtensionClient client;
     private final PhotoPublicQueryService photoPublicQueryService;
+
+    /**
+     * Watcher that invalidates the tag cache on photo mutations.
+     */
     private Watcher photoWatcher;
 
     public PhotoPlugin(PluginContext pluginContext, SchemeManager schemeManager,

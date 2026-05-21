@@ -16,7 +16,10 @@ import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoGroupVo;
 
 /**
- * Public endpoint for photo group queries.
+ * Public (unauthenticated) endpoint for photo group queries.
+ *
+ * <p>Lists all photo groups sorted by priority under
+ * {@code /apis/api.photo.halo.run/v1alpha1/photogroups}.
  */
 @Component
 @RequiredArgsConstructor

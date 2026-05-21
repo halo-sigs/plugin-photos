@@ -29,7 +29,19 @@ import run.halo.photos.service.PhotoService;
 import run.halo.photos.service.PhotoUploadService;
 
 /**
- * A custom endpoint for {@link Photo}.
+ * Console custom endpoint for photo management.
+ *
+ * <p>Provides CRUD and utility operations for photos under
+ * {@code /apis/console.api.photo.halo.run/v1alpha1/photos}.
+ *
+ * <p>Available operations:
+ * <ul>
+ *   <li>{@code GET /photos} — list photos with filtering and pagination</li>
+ *   <li>{@code DELETE /photos/{name}} — delete a photo</li>
+ *   <li>{@code GET /photos/tags} — list all distinct tags</li>
+ *   <li>{@code POST /photos/upload} — upload a new photo file</li>
+ *   <li>{@code POST /photos/{name}/reextract-exif} — re-extract EXIF from attachment</li>
+ * </ul>
  *
  * @author LIlGG
  * @since 1.0.0
@@ -48,7 +60,7 @@ public class PhotoEndpoint implements CustomEndpoint {
             .GET("photos", this::listPhoto,
                 builder -> {
                     builder.operationId("ListPhotos")
-                        .description("List photos.")
+                        .description("List photos with optional filtering, sorting and pagination.")
                         .tag(tag)
                         .response(responseBuilder().implementation(
                             ListResult.generateGenericClass(Photo.class)));
@@ -63,7 +75,7 @@ public class PhotoEndpoint implements CustomEndpoint {
                     .parameter(parameterBuilder()
                         .name("name")
                         .in(ParameterIn.PATH)
-                        .description("Photo name")
+                        .description("Photo metadata name")
                         .implementation(String.class)
                         .required(true)
                     )
@@ -78,12 +90,12 @@ public class PhotoEndpoint implements CustomEndpoint {
             )
             .GET("photos/tags", this::listTags,
                 builder -> builder.operationId("ListPhotoTags")
-                    .description("List all photo tags.")
+                    .description("List all distinct photo tags.")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .in(ParameterIn.QUERY)
                         .name("name")
-                        .description("Tag name to query")
+                        .description("Tag name to filter by")
                         .required(false)
                         .implementation(String.class))
                     .response(responseBuilder().implementationArray(String.class))
@@ -109,7 +121,7 @@ public class PhotoEndpoint implements CustomEndpoint {
                     .parameter(parameterBuilder()
                         .name("name")
                         .in(ParameterIn.PATH)
-                        .description("Photo name")
+                        .description("Photo metadata name")
                         .implementation(String.class)
                         .required(true)
                     )
@@ -177,6 +189,12 @@ public class PhotoEndpoint implements CustomEndpoint {
             .flatMap(result -> ServerResponse.ok().bodyValue(result));
     }
 
+    /**
+     * Request body schema for {@code POST /photos/upload}.
+     *
+     * @param file  the image file (multipart binary)
+     * @param group optional group name to assign the uploaded photo to
+     */
     @Schema(name = "PhotoUploadRequest")
     record UploadPhotoRequest(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED,

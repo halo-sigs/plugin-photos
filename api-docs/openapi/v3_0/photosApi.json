@@ -5,7 +5,7 @@
     "version" : "2.24.1"
   },
   "servers" : [ {
-    "url" : "http://localhost:51635",
+    "url" : "http://localhost:52820",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -37,7 +37,7 @@
     },
     "/apis/api.photo.halo.run/v1alpha1/photos" : {
       "get" : {
-        "description" : "List photos.",
+        "description" : "List photos with optional filtering and pagination.",
         "operationId" : "queryPhotos",
         "parameters" : [ {
           "description" : "Page number. Default is 0.",
@@ -128,10 +128,10 @@
     },
     "/apis/api.photo.halo.run/v1alpha1/photos/{name}" : {
       "get" : {
-        "description" : "Get a photo by name.",
+        "description" : "Get a single photo by its metadata name.",
         "operationId" : "queryPhotoByName",
         "parameters" : [ {
-          "description" : "Photo name",
+          "description" : "Photo metadata name",
           "in" : "path",
           "name" : "name",
           "required" : true,
@@ -156,10 +156,10 @@
     },
     "/apis/api.photo.halo.run/v1alpha1/tags" : {
       "get" : {
-        "description" : "List photo tags with counts.",
+        "description" : "List all distinct photo tags with their photo counts.",
         "operationId" : "queryPhotoTags",
         "parameters" : [ {
-          "description" : "Tag name filter",
+          "description" : "Optional case-insensitive tag name filter",
           "in" : "query",
           "name" : "name",
           "schema" : {
@@ -208,10 +208,10 @@
     },
     "/apis/console.api.photo.halo.run/v1alpha1/photogroups/{name}" : {
       "delete" : {
-        "description" : "Delete photo group.",
+        "description" : "Delete a photo group by name.",
         "operationId" : "DeletePhotoGroup",
         "parameters" : [ {
-          "description" : "Photo group name",
+          "description" : "Photo group metadata name",
           "in" : "path",
           "name" : "name",
           "required" : true,
@@ -219,7 +219,7 @@
             "type" : "string"
           }
         }, {
-          "description" : "Delete photos in the group; when false, photos become ungrouped",
+          "description" : "Delete photos in the group; when false, photos become ungrouped (their groupName is cleared)",
           "in" : "query",
           "name" : "deletePhotos",
           "schema" : {
@@ -250,7 +250,7 @@
     },
     "/apis/console.api.photo.halo.run/v1alpha1/photos" : {
       "get" : {
-        "description" : "List photos.",
+        "description" : "List photos with optional filtering, sorting and pagination.",
         "operationId" : "ListPhotos",
         "parameters" : [ {
           "description" : "Page number. Default is 0.",
@@ -341,10 +341,10 @@
     },
     "/apis/console.api.photo.halo.run/v1alpha1/photos/tags" : {
       "get" : {
-        "description" : "List all photo tags.",
+        "description" : "List all distinct photo tags.",
         "operationId" : "ListPhotoTags",
         "parameters" : [ {
-          "description" : "Tag name to query",
+          "description" : "Tag name to filter by",
           "in" : "query",
           "name" : "name",
           "schema" : {
@@ -403,7 +403,7 @@
         "description" : "Delete a photo by name, optionally deleting its attachment.",
         "operationId" : "DeletePhoto",
         "parameters" : [ {
-          "description" : "Photo name",
+          "description" : "Photo metadata name",
           "in" : "path",
           "name" : "name",
           "required" : true,
@@ -438,7 +438,7 @@
         "description" : "Re-extract EXIF data from the local attachment file of an existing photo and update the photo's exif field.",
         "operationId" : "ReextractExif",
         "parameters" : [ {
-          "description" : "Photo name",
+          "description" : "Photo metadata name",
           "in" : "path",
           "name" : "name",
           "required" : true,
@@ -1052,21 +1052,26 @@
         "properties" : {
           "dateTimeOriginal" : {
             "type" : "string",
+            "description" : "Original capture time from EXIF DateTimeOriginal",
             "format" : "date-time"
           },
           "exposureMode" : {
             "type" : "integer",
+            "description" : "Exposure mode",
             "format" : "int32"
           },
           "exposureProgram" : {
             "type" : "integer",
+            "description" : "Exposure program",
             "format" : "int32"
           },
           "exposureTime" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Exposure time as a fraction string, e.g. '1/125'"
           },
           "flash" : {
             "type" : "integer",
+            "description" : "Flash firing status (EXIF flash tag value)",
             "format" : "int32"
           },
           "fnumber" : {
@@ -1075,57 +1080,72 @@
           },
           "focalLength" : {
             "type" : "number",
+            "description" : "Focal length in millimetres",
             "format" : "double"
           },
           "focalLengthIn35mm" : {
             "type" : "integer",
+            "description" : "Focal length in 35 mm equivalent",
             "format" : "int32"
           },
           "gpsAltitude" : {
             "type" : "number",
+            "description" : "GPS altitude in metres",
             "format" : "double"
           },
           "gpsLatitude" : {
             "type" : "number",
+            "description" : "GPS latitude in decimal degrees",
             "format" : "double"
           },
           "gpsLongitude" : {
             "type" : "number",
+            "description" : "GPS longitude in decimal degrees",
             "format" : "double"
           },
           "imageHeight" : {
             "type" : "integer",
+            "description" : "Image height in pixels",
             "format" : "int32"
           },
           "imageWidth" : {
             "type" : "integer",
+            "description" : "Image width in pixels",
             "format" : "int32"
           },
           "iso" : {
             "type" : "integer",
+            "description" : "ISO sensitivity value",
             "format" : "int32"
           },
           "lensModel" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Lens model name"
           },
           "make" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Camera manufacturer, e.g. 'Canon'"
           },
           "meteringMode" : {
             "type" : "integer",
+            "description" : "Metering mode",
             "format" : "int32"
           },
           "model" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Camera model name"
           },
           "software" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Software used to process the image"
           },
           "whiteBalance" : {
             "type" : "integer",
+            "description" : "White balance mode",
             "format" : "int32"
           }
-        }
+        },
+        "description" : "EXIF metadata extracted from the image file"
       },
       "PhotoGroup" : {
         "required" : [ "apiVersion", "kind", "metadata", "spec" ],
@@ -1202,22 +1222,27 @@
         "type" : "object",
         "properties" : {
           "displayName" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Human-readable display name of the group"
           },
           "priority" : {
             "type" : "integer",
+            "description" : "Sort priority (higher = earlier). Default 0.",
             "format" : "int32"
           }
-        }
+        },
+        "description" : "PhotoGroup specification fields"
       },
       "PhotoGroupStatus" : {
         "type" : "object",
         "properties" : {
           "photoCount" : {
             "type" : "integer",
+            "description" : "Number of photos in this group",
             "format" : "int32"
           }
-        }
+        },
+        "description" : "Computed status fields for PhotoGroup"
       },
       "PhotoGroupVo" : {
         "type" : "object",
@@ -1293,13 +1318,16 @@
         "type" : "object",
         "properties" : {
           "cover" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Optional thumbnail / cover image URL"
           },
           "description" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Optional description or caption"
           },
           "displayName" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Display name of the photo"
           },
           "groupName" : {
             "type" : "string",
@@ -1307,18 +1335,23 @@
           },
           "priority" : {
             "type" : "integer",
+            "description" : "Sort priority (higher = earlier). Default 0.",
             "format" : "int32"
           },
           "tags" : {
             "type" : "array",
+            "description" : "Optional list of tag strings",
             "items" : {
-              "type" : "string"
+              "type" : "string",
+              "description" : "Optional list of tag strings"
             }
           },
           "url" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Absolute URL of the photo image file"
           }
-        }
+        },
+        "description" : "Photo specification fields"
       },
       "PhotoTagVo" : {
         "type" : "object",

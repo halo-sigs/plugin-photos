@@ -15,19 +15,19 @@
 
 
 /**
- * 
+ * PhotoGroup specification fields
  * @export
  * @interface PhotoGroupSpec
  */
 export interface PhotoGroupSpec {
     /**
-     * 
+     * Human-readable display name of the group
      * @type {string}
      * @memberof PhotoGroupSpec
      */
     'displayName': string;
     /**
-     * 
+     * Sort priority (higher = earlier). Default 0.
      * @type {number}
      * @memberof PhotoGroupSpec
      */

@@ -18,6 +18,9 @@ import run.halo.photos.vo.PhotoGroupVo;
 import run.halo.photos.vo.PhotoVo;
 
 /**
+ * Theme-side finder implementation for photos. Registered under the name
+ * {@code photoFinder} and available in Thymeleaf templates.
+ *
  * @author LIlGG
  */
 @Finder("photoFinder")
@@ -29,17 +32,37 @@ public class PhotoFinderImpl implements PhotoFinder {
         this.photoPublicQueryService = photoPublicQueryService;
     }
 
+    /**
+     * List all photos across all groups, sorted by effective time descending.
+     *
+     * @return a flux of all public photos
+     */
     @Override
     public Flux<PhotoVo> listAll() {
         return photoPublicQueryService.listAllPhotos(ListOptions.builder().build(),
             defaultPhotoSort());
     }
 
+    /**
+     * List photos with pagination, optionally filtered by group.
+     *
+     * @param page page number (1-based)
+     * @param size items per page
+     * @return a mono of paginated photo list
+     */
     @Override
     public Mono<ListResult<PhotoVo>> list(Integer page, Integer size) {
         return list(page, size, null);
     }
 
+    /**
+     * List photos with pagination, optionally filtered by group.
+     *
+     * @param page  page number (1-based)
+     * @param size  items per page
+     * @param group group name filter; null or empty means all groups
+     * @return a mono of paginated photo list
+     */
     @Override
     public Mono<ListResult<PhotoVo>> list(Integer page, Integer size, String group) {
         var options = ListOptions.builder();
@@ -50,6 +73,12 @@ public class PhotoFinderImpl implements PhotoFinder {
             PageRequestImpl.of(page, size, defaultPhotoSort()));
     }
 
+    /**
+     * List all photos in a specific group.
+     *
+     * @param groupName the group name to filter by
+     * @return a flux of photos in the group
+     */
     @Override
     public Flux<PhotoVo> listBy(String groupName) {
         var options = ListOptions.builder()
@@ -58,6 +87,11 @@ public class PhotoFinderImpl implements PhotoFinder {
         return photoPublicQueryService.listAllPhotos(options, defaultPhotoSort());
     }
 
+    /**
+     * List all groups with their photos populated.
+     *
+     * @return a flux of groups, each containing its sorted photo list
+     */
     @Override
     public Flux<PhotoGroupVo> groupBy() {
         return photoPublicQueryService.listGroups()

@@ -30,9 +30,9 @@ import type { PhotoGroup } from '../models';
 export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Delete photo group.
-         * @param {string} name Photo group name
-         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped
+         * Delete a photo group by name.
+         * @param {string} name Photo group metadata name
+         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped (their groupName is cleared)
          * @param {boolean} [withAttachment] Also delete the attachment files of each photo (only effective when deletePhotos is true)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -128,9 +128,9 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp = function(configurat
     const localVarAxiosParamCreator = ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiAxiosParamCreator(configuration)
     return {
         /**
-         * Delete photo group.
-         * @param {string} name Photo group name
-         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped
+         * Delete a photo group by name.
+         * @param {string} name Photo group metadata name
+         * @param {boolean} [deletePhotos] Delete photos in the group; when false, photos become ungrouped (their groupName is cleared)
          * @param {boolean} [withAttachment] Also delete the attachment files of each photo (only effective when deletePhotos is true)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -163,7 +163,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (conf
     const localVarFp = ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFp(configuration)
     return {
         /**
-         * Delete photo group.
+         * Delete a photo group by name.
          * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -189,14 +189,14 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiFactory = function (conf
  */
 export interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequest {
     /**
-     * Photo group name
+     * Photo group metadata name
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
      */
     readonly name: string
 
     /**
-     * Delete photos in the group; when false, photos become ungrouped
+     * Delete photos in the group; when false, photos become ungrouped (their groupName is cleared)
      * @type {boolean}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroup
      */
@@ -218,7 +218,7 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequ
  */
 export class ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApi extends BaseAPI {
     /**
-     * Delete photo group.
+     * Delete a photo group by name.
      * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoGroupApiDeletePhotoGroupRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
