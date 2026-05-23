@@ -16,7 +16,8 @@ import org.springframework.stereotype.Component;
 import run.halo.photos.Photo;
 
 /**
- * Extracts EXIF metadata from image byte arrays.
+ * Extracts EXIF metadata from image byte arrays using
+ * {@code com.drew.metadata} (metadata-extractor).
  */
 @Slf4j
 @Component
@@ -73,7 +74,7 @@ public class ExifExtractor {
     }
 
     /**
-     * Extracted EXIF data wrapper.
+     * Extracted EXIF data wrapper backed by {@link Metadata}.
      */
     public static class ExifData {
         private final Metadata metadata;
@@ -82,30 +83,60 @@ public class ExifExtractor {
             this.metadata = metadata;
         }
 
+        /**
+         * Returns whether any EXIF data was successfully parsed.
+         *
+         * @return true when metadata is non-null
+         */
         public boolean hasData() {
             return metadata != null;
         }
 
+        /**
+         * Camera manufacturer, e.g. "Canon".
+         *
+         * @return make string, or null
+         */
         public String getMake() {
             var dir = getDir(ExifIFD0Directory.class);
             return dir != null ? dir.getString(ExifIFD0Directory.TAG_MAKE) : null;
         }
 
+        /**
+         * Camera model name.
+         *
+         * @return model string, or null
+         */
         public String getModel() {
             var dir = getDir(ExifIFD0Directory.class);
             return dir != null ? dir.getString(ExifIFD0Directory.TAG_MODEL) : null;
         }
 
+        /**
+         * Lens model name.
+         *
+         * @return lens model string, or null
+         */
         public String getLensModel() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getString(ExifSubIFDDirectory.TAG_LENS_MODEL) : null;
         }
 
+        /**
+         * Software used to process the image.
+         *
+         * @return software string, or null
+         */
         public String getSoftware() {
             var dir = getDir(ExifIFD0Directory.class);
             return dir != null ? dir.getString(ExifIFD0Directory.TAG_SOFTWARE) : null;
         }
 
+        /**
+         * Original capture time from EXIF DateTimeOriginal.
+         *
+         * @return instant, or null
+         */
         public Instant getDateTimeOriginal() {
             var dir = getDir(ExifSubIFDDirectory.class);
             if (dir == null) {
@@ -115,11 +146,21 @@ public class ExifExtractor {
             return date != null ? date.toInstant() : null;
         }
 
+        /**
+         * Aperture f-number.
+         *
+         * @return f-number, or null
+         */
         public Double getFNumber() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getDoubleObject(ExifSubIFDDirectory.TAG_FNUMBER) : null;
         }
 
+        /**
+         * Exposure time as a fraction string, e.g. "1/125".
+         *
+         * @return exposure time string, or null
+         */
         public String getExposureTime() {
             var dir = getDir(ExifSubIFDDirectory.class);
             if (dir == null) {
@@ -137,67 +178,132 @@ public class ExifExtractor {
             return (rational.getNumerator() / gcd) + "/" + (rational.getDenominator() / gcd);
         }
 
+        /**
+         * ISO sensitivity value.
+         *
+         * @return ISO value, or null
+         */
         public Integer getIso() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT) : null;
         }
 
+        /**
+         * Focal length in millimetres.
+         *
+         * @return focal length, or null
+         */
         public Double getFocalLength() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getDoubleObject(ExifSubIFDDirectory.TAG_FOCAL_LENGTH) : null;
         }
 
+        /**
+         * Focal length in 35 mm equivalent.
+         *
+         * @return 35 mm equivalent focal length, or null
+         */
         public Integer getFocalLengthIn35mm() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null
                 ? dir.getInteger(ExifSubIFDDirectory.TAG_35MM_FILM_EQUIV_FOCAL_LENGTH) : null;
         }
 
+        /**
+         * Flash firing status.
+         *
+         * @return flash value, or null
+         */
         public Integer getFlash() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_FLASH) : null;
         }
 
+        /**
+         * White balance mode.
+         *
+         * @return white balance value, or null
+         */
         public Integer getWhiteBalance() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_WHITE_BALANCE) : null;
         }
 
+        /**
+         * Exposure mode.
+         *
+         * @return exposure mode value, or null
+         */
         public Integer getExposureMode() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_EXPOSURE_MODE) : null;
         }
 
+        /**
+         * Exposure program.
+         *
+         * @return exposure program value, or null
+         */
         public Integer getExposureProgram() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_EXPOSURE_PROGRAM) : null;
         }
 
+        /**
+         * Metering mode.
+         *
+         * @return metering mode value, or null
+         */
         public Integer getMeteringMode() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_METERING_MODE) : null;
         }
 
+        /**
+         * Image width in pixels.
+         *
+         * @return width, or null
+         */
         public Integer getImageWidth() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_EXIF_IMAGE_WIDTH) : null;
         }
 
+        /**
+         * Image height in pixels.
+         *
+         * @return height, or null
+         */
         public Integer getImageHeight() {
             var dir = getDir(ExifSubIFDDirectory.class);
             return dir != null ? dir.getInteger(ExifSubIFDDirectory.TAG_EXIF_IMAGE_HEIGHT) : null;
         }
 
+        /**
+         * GPS latitude in decimal degrees.
+         *
+         * @return latitude, or null
+         */
         public Double getGpsLatitude() {
             var gps = getGpsLocation();
             return gps != null ? gps.getLatitude() : null;
         }
 
+        /**
+         * GPS longitude in decimal degrees.
+         *
+         * @return longitude, or null
+         */
         public Double getGpsLongitude() {
             var gps = getGpsLocation();
             return gps != null ? gps.getLongitude() : null;
         }
 
+        /**
+         * GPS altitude in metres.
+         *
+         * @return altitude, or null
+         */
         public Double getGpsAltitude() {
             var dir = getDir(GpsDirectory.class);
             return dir != null ? dir.getDoubleObject(GpsDirectory.TAG_ALTITUDE) : null;

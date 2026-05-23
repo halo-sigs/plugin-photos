@@ -20,7 +20,10 @@ import run.halo.photos.vo.PhotoTagVo;
 import run.halo.photos.vo.PhotoVo;
 
 /**
- * Public endpoint for photo queries.
+ * Public (unauthenticated) endpoint for photo queries.
+ *
+ * <p>Provides paginated photo lists, single photo retrieval, and tag listing
+ * under {@code /apis/api.photo.halo.run/v1alpha1/photos}.
  */
 @Component
 @RequiredArgsConstructor
@@ -35,7 +38,7 @@ public class PhotoQueryEndpoint implements CustomEndpoint {
             .GET("photos", this::listPhotos,
                 builder -> {
                     builder.operationId("queryPhotos")
-                        .description("List photos.")
+                        .description("List photos with optional filtering and pagination.")
                         .tag(tag)
                         .response(responseBuilder()
                             .implementation(ListResult.generateGenericClass(PhotoVo.class)));
@@ -44,23 +47,23 @@ public class PhotoQueryEndpoint implements CustomEndpoint {
             )
             .GET("photos/{name}", this::getPhoto,
                 builder -> builder.operationId("queryPhotoByName")
-                    .description("Get a photo by name.")
+                    .description("Get a single photo by its metadata name.")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .in(ParameterIn.PATH)
                         .name("name")
-                        .description("Photo name")
+                        .description("Photo metadata name")
                         .required(true))
                     .response(responseBuilder().implementation(PhotoVo.class))
             )
             .GET("tags", this::listTags,
                 builder -> builder.operationId("queryPhotoTags")
-                    .description("List photo tags with counts.")
+                    .description("List all distinct photo tags with their photo counts.")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .in(ParameterIn.QUERY)
                         .name("name")
-                        .description("Tag name filter")
+                        .description("Optional case-insensitive tag name filter")
                         .required(false)
                         .implementation(String.class))
                     .response(responseBuilder().implementationArray(PhotoTagVo.class))

@@ -12,32 +12,70 @@ import run.halo.app.extension.router.IListRequest;
 import run.halo.app.extension.router.SortableRequest;
 
 /**
- * A query object for {@link Photo} list.
+ * A query object for {@link Photo} list requests. Parses standard list query
+ * parameters ({@code page}, {@code size}, {@code sort}, {@code keyword},
+ * {@code group}, {@code ungrouped}, {@code tag}) from the incoming exchange.
+ *
+ * <p>Default sort order is effective time descending, then creation timestamp
+ * descending, then name ascending.
+ *
+ * <p>The public sort field {@code exif.dateTimeOriginal} is translated to the
+ * internal {@code effectiveTime} index so the database can sort directly.
  *
  * @author LIlGG
  * @since 1.0.0
  */
 public class PhotoQuery extends SortableRequest {
+
+    /**
+     * Public sort field name for EXIF original capture time.
+     */
     public static final String DATE_TIME_ORIGINAL_SORT = "exif.dateTimeOriginal";
+
+    /**
+     * Internal index name used for effective-time sorting (EXIF time when
+     * present, creation timestamp otherwise).
+     */
     public static final String EFFECTIVE_TIME_INDEX = "effectiveTime";
 
     public PhotoQuery(ServerWebExchange exchange) {
         super(exchange);
     }
 
+    /**
+     * Photo group name filter.
+     *
+     * @return group name from the {@code group} query parameter, or null
+     */
     public String getGroup() {
         return queryParams.getFirst("group");
     }
 
+    /**
+     * Whether to return only ungrouped photos.
+     *
+     * @return true when the {@code ungrouped} query parameter is "true"
+     */
     public boolean isUngrouped() {
         return Boolean.parseBoolean(queryParams.getFirst("ungrouped"));
     }
 
+    /**
+     * Keyword filter searched against {@code spec.displayName}.
+     *
+     * @return keyword from the {@code keyword} query parameter, or null
+     */
     @Nullable
     public String getKeyword() {
         return queryParams.getFirst("keyword");
     }
 
+    /**
+     * Tag filter. Matches photos whose {@code spec.tags} list contains this
+     * exact tag.
+     *
+     * @return tag from the {@code tag} query parameter, or null
+     */
     public String getTag() {
         return queryParams.getFirst("tag");
     }
@@ -71,6 +109,11 @@ public class PhotoQuery extends SortableRequest {
         ));
     }
 
+    /**
+     * Register OpenAPI query parameters for the console photo list endpoint.
+     *
+     * @param builder the Springdoc operation builder
+     */
     public static void buildParameters(Builder builder) {
         IListRequest.buildParameters(builder);
         builder.parameter(parameterBuilder()

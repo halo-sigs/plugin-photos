@@ -15,37 +15,37 @@
 
 
 /**
- * 
+ * EXIF metadata extracted from the image file
  * @export
  * @interface PhotoExif
  */
 export interface PhotoExif {
     /**
-     * 
+     * Original capture time from EXIF DateTimeOriginal
      * @type {string}
      * @memberof PhotoExif
      */
     'dateTimeOriginal'?: string;
     /**
-     * 
+     * Exposure mode
      * @type {number}
      * @memberof PhotoExif
      */
     'exposureMode'?: number;
     /**
-     * 
+     * Exposure program
      * @type {number}
      * @memberof PhotoExif
      */
     'exposureProgram'?: number;
     /**
-     * 
+     * Exposure time as a fraction string, e.g. \'1/125\'
      * @type {string}
      * @memberof PhotoExif
      */
     'exposureTime'?: string;
     /**
-     * 
+     * Flash firing status (EXIF flash tag value)
      * @type {number}
      * @memberof PhotoExif
      */
@@ -57,85 +57,85 @@ export interface PhotoExif {
      */
     'fnumber'?: number;
     /**
-     * 
+     * Focal length in millimetres
      * @type {number}
      * @memberof PhotoExif
      */
     'focalLength'?: number;
     /**
-     * 
+     * Focal length in 35 mm equivalent
      * @type {number}
      * @memberof PhotoExif
      */
     'focalLengthIn35mm'?: number;
     /**
-     * 
+     * GPS altitude in metres
      * @type {number}
      * @memberof PhotoExif
      */
     'gpsAltitude'?: number;
     /**
-     * 
+     * GPS latitude in decimal degrees
      * @type {number}
      * @memberof PhotoExif
      */
     'gpsLatitude'?: number;
     /**
-     * 
+     * GPS longitude in decimal degrees
      * @type {number}
      * @memberof PhotoExif
      */
     'gpsLongitude'?: number;
     /**
-     * 
+     * Image height in pixels
      * @type {number}
      * @memberof PhotoExif
      */
     'imageHeight'?: number;
     /**
-     * 
+     * Image width in pixels
      * @type {number}
      * @memberof PhotoExif
      */
     'imageWidth'?: number;
     /**
-     * 
+     * ISO sensitivity value
      * @type {number}
      * @memberof PhotoExif
      */
     'iso'?: number;
     /**
-     * 
+     * Lens model name
      * @type {string}
      * @memberof PhotoExif
      */
     'lensModel'?: string;
     /**
-     * 
+     * Camera manufacturer, e.g. \'Canon\'
      * @type {string}
      * @memberof PhotoExif
      */
     'make'?: string;
     /**
-     * 
+     * Metering mode
      * @type {number}
      * @memberof PhotoExif
      */
     'meteringMode'?: number;
     /**
-     * 
+     * Camera model name
      * @type {string}
      * @memberof PhotoExif
      */
     'model'?: string;
     /**
-     * 
+     * Software used to process the image
      * @type {string}
      * @memberof PhotoExif
      */
     'software'?: string;
     /**
-     * 
+     * White balance mode
      * @type {number}
      * @memberof PhotoExif
      */

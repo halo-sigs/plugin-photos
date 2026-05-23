@@ -15,13 +15,13 @@
 
 
 /**
- * 
+ * Computed status fields for PhotoGroup
  * @export
  * @interface PhotoGroupStatus
  */
 export interface PhotoGroupStatus {
     /**
-     * 
+     * Number of photos in this group
      * @type {number}
      * @memberof PhotoGroupStatus
      */

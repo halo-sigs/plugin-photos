@@ -15,25 +15,25 @@
 
 
 /**
- * 
+ * Photo specification fields
  * @export
  * @interface PhotoSpec
  */
 export interface PhotoSpec {
     /**
-     * 
+     * Optional thumbnail / cover image URL
      * @type {string}
      * @memberof PhotoSpec
      */
     'cover'?: string;
     /**
-     * 
+     * Optional description or caption
      * @type {string}
      * @memberof PhotoSpec
      */
     'description'?: string;
     /**
-     * 
+     * Display name of the photo
      * @type {string}
      * @memberof PhotoSpec
      */
@@ -45,19 +45,19 @@ export interface PhotoSpec {
      */
     'groupName'?: string;
     /**
-     * 
+     * Sort priority (higher = earlier). Default 0.
      * @type {number}
      * @memberof PhotoSpec
      */
     'priority'?: number;
     /**
-     * 
+     * Optional list of tag strings
      * @type {Array<string>}
      * @memberof PhotoSpec
      */
     'tags'?: Array<string>;
     /**
-     * 
+     * Absolute URL of the photo image file
      * @type {string}
      * @memberof PhotoSpec
      */

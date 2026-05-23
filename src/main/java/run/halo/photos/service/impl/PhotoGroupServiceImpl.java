@@ -95,6 +95,12 @@ class PhotoGroupServiceImpl implements PhotoGroupService {
             .thenReturn(photoGroup);
     }
 
+    /**
+     * Count the number of photos in the given group.
+     *
+     * @param photoGroup the group to count photos for
+     * @return the photo count
+     */
     Mono<Integer> fetchPhotoCount(PhotoGroup photoGroup) {
         Assert.notNull(photoGroup, "The photoGroup must not be null.");
         String name = photoGroup.getMetadata().getName();

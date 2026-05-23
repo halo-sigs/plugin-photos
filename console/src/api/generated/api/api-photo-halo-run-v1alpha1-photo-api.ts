@@ -34,8 +34,8 @@ import type { PhotoVoList } from '../models';
 export const ApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Get a photo by name.
-         * @param {string} name Photo name
+         * Get a single photo by its metadata name.
+         * @param {string} name Photo metadata name
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -75,8 +75,8 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function (config
             };
         },
         /**
-         * List photo tags with counts.
-         * @param {string} [name] Tag name filter
+         * List all distinct photo tags with their photo counts.
+         * @param {string} [name] Optional case-insensitive tag name filter
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -117,7 +117,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function (config
             };
         },
         /**
-         * List photos.
+         * List photos with optional filtering and pagination.
          * @param {number} [page] Page number. Default is 0.
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
@@ -209,8 +209,8 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?: Config
     const localVarAxiosParamCreator = ApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator(configuration)
     return {
         /**
-         * Get a photo by name.
-         * @param {string} name Photo name
+         * Get a single photo by its metadata name.
+         * @param {string} name Photo metadata name
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -221,8 +221,8 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?: Config
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List photo tags with counts.
-         * @param {string} [name] Tag name filter
+         * List all distinct photo tags with their photo counts.
+         * @param {string} [name] Optional case-insensitive tag name filter
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -233,7 +233,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?: Config
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List photos.
+         * List photos with optional filtering and pagination.
          * @param {number} [page] Page number. Default is 0.
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
@@ -263,7 +263,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configuration?: 
     const localVarFp = ApiPhotoHaloRunV1alpha1PhotoApiFp(configuration)
     return {
         /**
-         * Get a photo by name.
+         * Get a single photo by its metadata name.
          * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoByNameRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -272,7 +272,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configuration?: 
             return localVarFp.queryPhotoByName(requestParameters.name, options).then((request) => request(axios, basePath));
         },
         /**
-         * List photo tags with counts.
+         * List all distinct photo tags with their photo counts.
          * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoTagsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -281,7 +281,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configuration?: 
             return localVarFp.queryPhotoTags(requestParameters.name, options).then((request) => request(axios, basePath));
         },
         /**
-         * List photos.
+         * List photos with optional filtering and pagination.
          * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotosRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -299,7 +299,7 @@ export const ApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configuration?: 
  */
 export interface ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoByNameRequest {
     /**
-     * Photo name
+     * Photo metadata name
      * @type {string}
      * @memberof ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoByName
      */
@@ -313,7 +313,7 @@ export interface ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoByNameRequest {
  */
 export interface ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoTagsRequest {
     /**
-     * Tag name filter
+     * Optional case-insensitive tag name filter
      * @type {string}
      * @memberof ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoTags
      */
@@ -398,7 +398,7 @@ export interface ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotosRequest {
  */
 export class ApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     /**
-     * Get a photo by name.
+     * Get a single photo by its metadata name.
      * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoByNameRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -409,7 +409,7 @@ export class ApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     }
 
     /**
-     * List photo tags with counts.
+     * List all distinct photo tags with their photo counts.
      * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotoTagsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -420,7 +420,7 @@ export class ApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     }
 
     /**
-     * List photos.
+     * List photos with optional filtering and pagination.
      * @param {ApiPhotoHaloRunV1alpha1PhotoApiQueryPhotosRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

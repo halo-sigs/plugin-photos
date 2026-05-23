@@ -33,7 +33,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
     return {
         /**
          * Delete a photo by name, optionally deleting its attachment.
-         * @param {string} name Photo name
+         * @param {string} name Photo metadata name
          * @param {boolean} [withAttachment] Also delete the attachment file associated with this photo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -78,8 +78,8 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             };
         },
         /**
-         * List all photo tags.
-         * @param {string} [name] Tag name to query
+         * List all distinct photo tags.
+         * @param {string} [name] Tag name to filter by
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -120,7 +120,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
             };
         },
         /**
-         * List photos.
+         * List photos with optional filtering, sorting and pagination.
          * @param {number} [page] Page number. Default is 0.
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
@@ -203,7 +203,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiAxiosParamCreator = function 
         },
         /**
          * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
-         * @param {string} name Photo name
+         * @param {string} name Photo metadata name
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -307,7 +307,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
     return {
         /**
          * Delete a photo by name, optionally deleting its attachment.
-         * @param {string} name Photo name
+         * @param {string} name Photo metadata name
          * @param {boolean} [withAttachment] Also delete the attachment file associated with this photo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -319,8 +319,8 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List all photo tags.
-         * @param {string} [name] Tag name to query
+         * List all distinct photo tags.
+         * @param {string} [name] Tag name to filter by
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -331,7 +331,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List photos.
+         * List photos with optional filtering, sorting and pagination.
          * @param {number} [page] Page number. Default is 0.
          * @param {number} [size] Size number. Default is 0.
          * @param {Array<string>} [labelSelector] Label selector. e.g.: hidden!&#x3D;true
@@ -352,7 +352,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFp = function(configuration?:
         },
         /**
          * Re-extract EXIF data from the local attachment file of an existing photo and update the photo\'s exif field.
-         * @param {string} name Photo name
+         * @param {string} name Photo metadata name
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -395,7 +395,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
             return localVarFp.deletePhoto(requestParameters.name, requestParameters.withAttachment, options).then((request) => request(axios, basePath));
         },
         /**
-         * List all photo tags.
+         * List all distinct photo tags.
          * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTagsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -404,7 +404,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
             return localVarFp.listPhotoTags(requestParameters.name, options).then((request) => request(axios, basePath));
         },
         /**
-         * List photos.
+         * List photos with optional filtering, sorting and pagination.
          * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -440,7 +440,7 @@ export const ConsoleApiPhotoHaloRunV1alpha1PhotoApiFactory = function (configura
  */
 export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest {
     /**
-     * Photo name
+     * Photo metadata name
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhoto
      */
@@ -461,7 +461,7 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiDeletePhotoRequest {
  */
 export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTagsRequest {
     /**
-     * Tag name to query
+     * Tag name to filter by
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTags
      */
@@ -545,7 +545,7 @@ export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest {
  */
 export interface ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExifRequest {
     /**
-     * Photo name
+     * Photo metadata name
      * @type {string}
      * @memberof ConsoleApiPhotoHaloRunV1alpha1PhotoApiReextractExif
      */
@@ -592,7 +592,7 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     }
 
     /**
-     * List all photo tags.
+     * List all distinct photo tags.
      * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotoTagsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -603,7 +603,7 @@ export class ConsoleApiPhotoHaloRunV1alpha1PhotoApi extends BaseAPI {
     }
 
     /**
-     * List photos.
+     * List photos with optional filtering, sorting and pagination.
      * @param {ConsoleApiPhotoHaloRunV1alpha1PhotoApiListPhotosRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

@@ -23,6 +23,9 @@ import run.halo.photos.service.PhotoUploadService;
 /**
  * Implementation of {@link PhotoUploadService}.
  *
+ * <p>Uploads an image file to Halo attachment storage, extracts EXIF metadata,
+ * and creates a {@link Photo} extension resource.
+ *
  * @author ryanwang
  * @since 1.0.0
  */
@@ -31,6 +34,9 @@ import run.halo.photos.service.PhotoUploadService;
 @RequiredArgsConstructor
 public class PhotoUploadServiceImpl implements PhotoUploadService {
 
+    /**
+     * Maximum allowed image file size: 50 MB.
+     */
     private static final long MAX_FILE_SIZE = 50L * 1024 * 1024;
 
     private final AttachmentService attachmentService;

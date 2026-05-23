@@ -16,7 +16,16 @@ import run.halo.app.extension.GroupVersion;
 import run.halo.photos.service.PhotoGroupService;
 
 /**
- * A custom endpoint for {@link Photo}.
+ * Console custom endpoint for photo group management.
+ *
+ * <p>Provides group listing and deletion under
+ * {@code /apis/console.api.photo.halo.run/v1alpha1/photogroups}.
+ *
+ * <p>Available operations:
+ * <ul>
+ *   <li>{@code GET /photogroups} — list all groups sorted by priority</li>
+ *   <li>{@code DELETE /photogroups/{name}} — delete a group</li>
+ * </ul>
  *
  * @author LIlGG
  * @since 1.0.0
@@ -39,12 +48,12 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
             )
             .DELETE("photogroups/{name}", this::deletePhotoGroup,
                 builder -> builder.operationId("DeletePhotoGroup")
-                    .description("Delete photo group.")
+                    .description("Delete a photo group by name.")
                     .tag(tag)
                     .parameter(parameterBuilder()
                         .name("name")
                         .in(ParameterIn.PATH)
-                        .description("Photo group name")
+                        .description("Photo group metadata name")
                         .implementation(String.class)
                         .required(true)
                     )
@@ -52,7 +61,7 @@ public class PhotoGroupEndpoint implements CustomEndpoint {
                         .name("deletePhotos")
                         .in(ParameterIn.QUERY)
                         .description("Delete photos in the group; when false, photos become "
-                            + "ungrouped")
+                            + "ungrouped (their groupName is cleared)")
                         .required(false)
                         .implementation(Boolean.class)
                     )

@@ -7,20 +7,43 @@ import run.halo.app.theme.finders.vo.ExtensionVoOperator;
 import run.halo.photos.Photo;
 
 /**
+ * Value object exposed to themes for a single photo. GPS fields are stripped
+ * from the EXIF data for privacy.
+ *
  * @author LIlGG
  */
 @Value
 @Builder
 public class PhotoVo implements ExtensionVoOperator {
 
+    /**
+     * Photo metadata (name, creationTimestamp, annotations, etc.).
+     */
     MetadataOperator metadata;
 
+    /**
+     * Photo specification (displayName, url, cover, groupName, tags, etc.).
+     */
     Photo.PhotoSpec spec;
 
+    /**
+     * EXIF metadata with GPS fields removed. May be null if the source image
+     * had no EXIF data.
+     */
     Photo.PhotoExif exif;
 
+    /**
+     * Permalink to the photo detail page, e.g. {@code /photos/my-photo-name}.
+     */
     String permalink;
 
+    /**
+     * Build a {@link PhotoVo} from a {@link Photo}. GPS latitude, longitude and
+     * altitude are intentionally cleared for privacy.
+     *
+     * @param photo the source photo
+     * @return a value object safe for public theme consumption
+     */
     public static PhotoVo from(Photo photo) {
         return PhotoVo.builder()
             .metadata(photo.getMetadata())

@@ -5,13 +5,20 @@ import java.util.Comparator;
 import run.halo.app.extension.MetadataOperator;
 
 /**
- * Shared photo sorting helpers.
+ * Shared photo and group sorting helpers.
  */
 public final class PhotoSortUtils {
 
     private PhotoSortUtils() {
     }
 
+    /**
+     * Comparator for photos that orders by effective time (EXIF dateTimeOriginal
+     * or creation timestamp), then creation timestamp, then metadata name.
+     *
+     * @param ascending true for ascending order, false for descending
+     * @return a comparator for {@link Photo}
+     */
     public static Comparator<Photo> effectiveTimeComparator(boolean ascending) {
         return Comparator
             .comparing(PhotoSortUtils::effectiveTime, instantComparator(ascending))
@@ -23,6 +30,9 @@ public final class PhotoSortUtils {
     /**
      * Compute the effective-time index value for a photo. Uses EXIF shoot time when present,
      * falling back to the creation timestamp. Returns an empty string when neither is set.
+     *
+     * @param photo the photo to compute the index for
+     * @return the effective time as an ISO-8601 string, or empty string
      */
     public static String computeEffectiveTimeIndex(Photo photo) {
         Instant dt = photo.getExif() == null ? null : photo.getExif().getDateTimeOriginal();
@@ -61,6 +71,12 @@ public final class PhotoSortUtils {
         return Comparator.nullsLast(comparator);
     }
 
+    /**
+     * Comparator for photo groups: priority descending, then creation timestamp
+     * descending, then name ascending.
+     *
+     * @return a comparator for {@link PhotoGroup}
+     */
     public static Comparator<PhotoGroup> groupComparator() {
         return (g1, g2) -> {
             int p1 = g1.getSpec() != null && g1.getSpec().getPriority() != null
