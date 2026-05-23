@@ -81,7 +81,6 @@ public class PhotoRouter {
                 var photos = new LazyContextVariable<UrlContextListResult<PhotoVo>>() {
                     @Override
                     protected UrlContextListResult<PhotoVo> loadValue() {
-                        System.out.println("进来了吗？");
                         return photoPublicQueryService.listPhotos(
                                 buildListOptions(group),
                                 PageRequestImpl.of(page, size, defaultPhotoSort()))
@@ -184,7 +183,6 @@ public class PhotoRouter {
         var neighbors = new LazyContextVariable<List<PhotoVo>>() {
             @Override
             protected List<PhotoVo> loadValue() {
-                System.out.println("neighbors 进来了吗？");
                 List<PhotoVo> contextList = resolveContextList.get();
                 int idx = indexOf(contextList, photoName);
                 if (idx < 0) {
