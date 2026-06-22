@@ -77,37 +77,34 @@ public class PhotoRouter {
             var photoUrl = new PhotoUrlBuilder(request);
             String group = queryParam(request, GROUP_PARAM);
             int page = positiveInt(queryParam(request, PAGE_PARAM), 1);
-            return resolvePageSize(queryParam(request, SIZE_PARAM)).flatMap(size -> {
-                var photos = new LazyContextVariable<UrlContextListResult<PhotoVo>>() {
-                    @Override
-                    protected UrlContextListResult<PhotoVo> loadValue() {
-                        return photoPublicQueryService.listPhotos(
-                                buildListOptions(group),
-                                PageRequestImpl.of(page, size, defaultPhotoSort()))
-                            .map(list -> buildListContextResult(list, group, page, size))
-                            .block(BLOCKING_TIMEOUT);
-                    }
-                };
-                var groups = new LazyContextVariable<List<PhotoGroupVo>>() {
-                    @Override
-                    protected List<PhotoGroupVo> loadValue() {
-                        return photoGroups().block(BLOCKING_TIMEOUT);
-                    }
-                };
-                var title = new LazyContextVariable<String>() {
-                    @Override
-                    protected String loadValue() {
-                        return getPhotosTitle().block(BLOCKING_TIMEOUT);
-                    }
-                };
-                Map<String, Object> model = new HashMap<>();
-                model.put("groups", groups);
-                model.put("photos", photos);
-                model.put(ModelConst.TEMPLATE_ID, "photos");
-                model.put("title", title);
-                model.put("photoUrl", photoUrl);
-                return ServerResponse.ok().render("photos", model);
-            });
+            return Mono.zip(resolvePageSize(queryParam(request, SIZE_PARAM)), getPhotosTitle())
+                .flatMap(tuple -> {
+                    int size = tuple.getT1();
+                    String title = tuple.getT2();
+                    var photos = new LazyContextVariable<UrlContextListResult<PhotoVo>>() {
+                        @Override
+                        protected UrlContextListResult<PhotoVo> loadValue() {
+                            return photoPublicQueryService.listPhotos(
+                                    buildListOptions(group),
+                                    PageRequestImpl.of(page, size, defaultPhotoSort()))
+                                .map(list -> buildListContextResult(list, group, page, size))
+                                .block(BLOCKING_TIMEOUT);
+                        }
+                    };
+                    var groups = new LazyContextVariable<List<PhotoGroupVo>>() {
+                        @Override
+                        protected List<PhotoGroupVo> loadValue() {
+                            return photoGroups().block(BLOCKING_TIMEOUT);
+                        }
+                    };
+                    Map<String, Object> model = new HashMap<>();
+                    model.put("groups", groups);
+                    model.put("photos", photos);
+                    model.put(ModelConst.TEMPLATE_ID, "photos");
+                    model.put("title", title);
+                    model.put("photoUrl", photoUrl);
+                    return ServerResponse.ok().render("photos", model);
+                });
         };
     }
 
@@ -158,6 +155,12 @@ public class PhotoRouter {
 
     private Mono<ServerResponse> renderDetail(ServerRequest request, PhotoVo photo,
         String group, int page, int size) {
+        return getDetailTitle(photo)
+            .flatMap(title -> renderDetail(request, photo, group, page, size, title));
+    }
+
+    private Mono<ServerResponse> renderDetail(ServerRequest request, PhotoVo photo,
+        String group, int page, int size, String title) {
         String photoName = photo.getMetadata().getName();
         var photoUrl = new PhotoUrlBuilder(request);
 
@@ -240,13 +243,6 @@ public class PhotoRouter {
             @Override
             protected Integer loadValue() {
                 return resolveContextList.get().size();
-            }
-        };
-
-        var title = new LazyContextVariable<String>() {
-            @Override
-            protected String loadValue() {
-                return getDetailTitle(photo).block(BLOCKING_TIMEOUT);
             }
         };
 
