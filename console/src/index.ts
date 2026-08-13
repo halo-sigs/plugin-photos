@@ -1,6 +1,5 @@
 import type { Extension } from "@halo-dev/api-client";
 import { definePlugin, type CommentSubjectRefResult } from "@halo-dev/ui-shared";
-import "uno.css";
 import { markRaw } from "vue";
 import RiImage2Line from "~icons/ri/image-2-line";
 import type { Photo } from "./api/generated";

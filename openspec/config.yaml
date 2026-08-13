@@ -5,7 +5,7 @@ context: |
 
   Tech stack:
   - Backend: Java 17, Gradle, Spring WebFlux (reactive), Lombok
-  - Frontend: Vue 3, TypeScript, Rsbuild, UnoCSS, pnpm
+  - Frontend: Vue 3, TypeScript, Vite, UnoCSS, pnpm
 
   Key dependencies:
   - @halo-dev/ui-shared, @halo-dev/components, @halo-dev/api-client

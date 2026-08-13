@@ -1,4 +1,6 @@
-import { defineConfig, presetWind3, transformerCompileClass } from "unocss";
+import { presetWind3 } from "@unocss/preset-wind3";
+import transformerCompileClass from "@unocss/transformer-compile-class";
+import { defineConfig } from "@unocss/vite";
 
 export default defineConfig({
   presets: [presetWind3()],
