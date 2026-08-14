@@ -18,9 +18,9 @@
     "useTabs": false
   },
   "dependencies": {
-    "@halo-dev/api-client": "^2.24.0",
-    "@halo-dev/components": "^2.24.0",
-    "@halo-dev/ui-shared": "^2.24.0",
+    "@halo-dev/api-client": "^2.26.0",
+    "@halo-dev/components": "^2.26.0",
+    "@halo-dev/ui-shared": "^2.26.0",
     "@tanstack/vue-query": "^4.44.0",
     "@vueuse/core": "^10.11.1",
     "@vueuse/router": "^10.11.1",
@@ -29,7 +29,7 @@
     "vue": "^3.5.33"
   },
   "devDependencies": {
-    "@halo-dev/ui-plugin-bundler-kit": "https://pkg.pr.new/@halo-dev/ui-plugin-bundler-kit@10232",
+    "@halo-dev/ui-plugin-bundler-kit": "^2.26.0",
     "@iconify-json/ri": "^1.2.10",
     "@types/node": "^24.12.2",
     "@unocss/eslint-config": "^66.6.8",
