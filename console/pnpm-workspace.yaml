@@ -1,3 +1,12 @@
+packageExtensions:
+  # This project uses only the Vite export; do not auto-install the unused Rsbuild peers.
+  "@halo-dev/ui-plugin-bundler-kit@*":
+    peerDependenciesMeta:
+      "@rsbuild/core":
+        optional: true
+      "@rsbuild/plugin-vue":
+        optional: true
+
 onlyBuiltDependencies:
   - core-js
   - esbuild

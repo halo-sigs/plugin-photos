@@ -12,7 +12,7 @@ This is a Halo 2.0 plugin for photo gallery management. It provides:
 ## Tech Stack
 
 - **Backend**: Java 17, Gradle, Spring WebFlux (reactive), Lombok, Halo plugin framework
-- **Frontend**: Vue 3, TypeScript, Rsbuild, UnoCSS, pnpm
+- **Frontend**: Vue 3, TypeScript, Vite, UnoCSS, pnpm
 - **Key dependencies**: `@halo-dev/ui-shared`, `@halo-dev/components`, `@tanstack/vue-query`, `@halo-dev/api-client`
 
 ## Common Commands
@@ -64,7 +64,7 @@ All data access uses `ReactiveExtensionClient` with reactive types (`Mono`, `Flu
 ### Frontend (Vue 3 / Console)
 
 - **Entry point**: `console/src/index.ts` uses `definePlugin()` from `@halo-dev/ui-shared` to register a route at `/photos` with permission `plugin:photos:view`.
-- **Build system**: Uses `@halo-dev/ui-plugin-bundler-kit` which wraps Rsbuild. Production output goes to `src/main/resources/console`; dev output goes to `build/resources/main/console`.
+- **Build system**: Uses `@halo-dev/ui-plugin-bundler-kit` with Vite. Production output goes to `src/main/resources/console`; dev output goes to `build/resources/main/console`.
 - **Styling**: UnoCSS with `presetWind3` and `transformerCompileClass`. Utility classes use the `:uno:` prefix in templates (e.g., `:uno: flex gap-2`).
 - **State/data fetching**: Uses `@tanstack/vue-query` (`useQuery`) for server state. `axiosInstance` from `@halo-dev/api-client` is used for HTTP.
 - **Generated API client**: TypeScript clients under `console/src/api/generated/` are produced from the backend OpenAPI spec via `./gradlew generateApiClient` (configured in `build.gradle` under `haloPlugin.openApi`). Run this task whenever backend endpoints or fields (DTOs, Extension specs) change, then import the regenerated APIs/models in the console code. Never edit the generated files by hand.

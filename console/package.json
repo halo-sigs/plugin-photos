@@ -1,8 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "build": "rsbuild build",
-    "dev": "rsbuild build --env-mode development --watch",
+    "build": "vite build",
+    "dev": "vite build --mode development --watch",
     "lint": "eslint . --fix",
     "prettier": "prettier --write .",
     "type-check": "vue-tsc --noEmit -p tsconfig.json --composite false",
@@ -18,9 +18,9 @@
     "useTabs": false
   },
   "dependencies": {
-    "@halo-dev/api-client": "^2.24.0",
-    "@halo-dev/components": "^2.24.0",
-    "@halo-dev/ui-shared": "^2.24.0",
+    "@halo-dev/api-client": "^2.26.0",
+    "@halo-dev/components": "^2.26.0",
+    "@halo-dev/ui-shared": "^2.26.0",
     "@tanstack/vue-query": "^4.44.0",
     "@vueuse/core": "^10.11.1",
     "@vueuse/router": "^10.11.1",
@@ -29,12 +29,11 @@
     "vue": "^3.5.33"
   },
   "devDependencies": {
-    "@halo-dev/ui-plugin-bundler-kit": "^2.24.0",
+    "@halo-dev/ui-plugin-bundler-kit": "^2.26.0",
     "@iconify-json/ri": "^1.2.10",
-    "@rsbuild/core": "^2.0.3",
     "@types/node": "^24.12.2",
     "@unocss/eslint-config": "^66.6.8",
-    "@unocss/webpack": "^66.6.8",
+    "@vitejs/plugin-vue": "^6.0.8",
     "@vue/compiler-sfc": "^3.5.33",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
@@ -44,8 +43,9 @@
     "prettier": "^3.8.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "~5.9.3",
-    "unocss": "^66.6.8",
+    "unocss": "^66.7.5",
     "unplugin-icons": "^23.0.1",
+    "vite": "^8.2.1",
     "vue-tsc": "^3.2.7"
   },
   "packageManager": "pnpm@10.33.2"
