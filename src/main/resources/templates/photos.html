@@ -1,0 +1,165 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+    <th:block th:fragment="head">
+        <title th:text="|${title} - ${site.title}|">图库</title>
+        <style>
+            :where(.photos-groups) {
+                margin: 1.5rem 0;
+            }
+
+            :where(.photos-groups__list, .photos-grid, .photos-card__tags) {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            :where(.photos-groups__list, .photos-card__tags) {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            :where(.photos-group__link) {
+                display: inline-flex;
+                gap: 0.25rem;
+                align-items: baseline;
+            }
+
+            :where(.photos-group.is-active .photos-group__link) {
+                font-weight: 600;
+            }
+
+            :where(.photos-grid) {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+                gap: 1.25rem;
+            }
+
+            :where(.photos-card__image) {
+                display: block;
+                width: 100%;
+                aspect-ratio: 4 / 3;
+                object-fit: cover;
+                border-radius: 0.5rem;
+            }
+
+            :where(.photos-card__title) {
+                margin: 0.75rem 0 0.25rem;
+                font-size: 1rem;
+            }
+
+            :where(.photos-card__description, .photos-card__tags) {
+                margin-top: 0.5rem;
+            }
+
+            :where(.photos-card__tags) {
+                gap: 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            :where(.photos-pagination) {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+        </style>
+    </th:block>
+
+    <th:block th:fragment="content">
+        <section
+            class="photos-page"
+            th:attr="data-template-id=${_templateId},data-group=${group},data-page=${photos.page},data-size=${photos.size},data-total=${photos.total}"
+        >
+            <header class="photos-header">
+                <h1 class="photos-header__title" th:text="${title}">图库</h1>
+            </header>
+
+            <nav class="photos-groups" aria-label="照片分组">
+                <ul class="photos-groups__list">
+                    <li class="photos-group" th:classappend="${#strings.isEmpty(group)} ? 'is-active' : ''">
+                        <a
+                            class="photos-group__link"
+                            th:href="${photoUrl.list()}"
+                            th:attr="aria-current=${#strings.isEmpty(group) ? 'page' : null}"
+                            >全部</a
+                        >
+                    </li>
+                    <li
+                        class="photos-group"
+                        th:each="photoGroup : ${groups}"
+                        th:classappend="${group == photoGroup.metadata.name} ? 'is-active' : ''"
+                        th:attr="data-group=${photoGroup.metadata.name}"
+                    >
+                        <a
+                            class="photos-group__link"
+                            th:href="${photoUrl.list(photoGroup.metadata.name)}"
+                            th:attr="aria-current=${group == photoGroup.metadata.name ? 'page' : null}"
+                        >
+                            <span class="photos-group__name" th:text="${photoGroup.spec.displayName}">分组</span>
+                            <span
+                                class="photos-group__count"
+                                th:if="${photoGroup.status != null && photoGroup.status.photoCount != null}"
+                                th:text="|(${photoGroup.status.photoCount})|"
+                            ></span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <ul class="photos-grid" th:if="${!#lists.isEmpty(photos.items)}">
+                <li
+                    class="photos-grid__item"
+                    th:each="photo : ${photos.items}"
+                    th:attr="data-photo-name=${photo.metadata.name},data-group=${photo.spec.groupName},data-priority=${photo.spec.priority}"
+                >
+                    <article class="photos-card">
+                        <a class="photos-card__media" th:href="${photoUrl.detail(photo)}">
+                            <img
+                                class="photos-card__image"
+                                th:src="${#strings.isEmpty(photo.spec.cover) ? photo.spec.url : photo.spec.cover}"
+                                th:alt="${photo.spec.displayName}"
+                                loading="lazy"
+                            />
+                        </a>
+                        <div class="photos-card__content">
+                            <h2 class="photos-card__title">
+                                <a
+                                    class="photos-card__title-link"
+                                    th:href="${photoUrl.detail(photo)}"
+                                    th:text="${photo.spec.displayName}"
+                                    >照片</a
+                                >
+                            </h2>
+                            <p
+                                class="photos-card__description"
+                                th:if="${!#strings.isEmpty(photo.spec.description)}"
+                                th:text="${photo.spec.description}"
+                            ></p>
+                            <ul
+                                class="photos-card__tags"
+                                th:if="${!#lists.isEmpty(photo.spec.tags)}"
+                                aria-label="照片标签"
+                            >
+                                <li class="photos-card__tag" th:each="tag : ${photo.spec.tags}" th:text="${tag}"></li>
+                            </ul>
+                        </div>
+                    </article>
+                </li>
+            </ul>
+            <p class="photos-empty" th:if="${#lists.isEmpty(photos.items)}" role="status">暂无照片</p>
+
+            <nav class="photos-pagination" th:if="${photos.hasPrevious() || photos.hasNext()}" aria-label="分页">
+                <a class="photos-pagination__previous" th:if="${photos.hasPrevious()}" th:href="${photos.prevUrl}"
+                    >上一页</a
+                >
+                <span class="photos-pagination__status">
+                    第 <strong th:text="${photos.page}">1</strong> 页，共
+                    <strong th:text="${photos.totalPages}">1</strong> 页
+                </span>
+                <a class="photos-pagination__next" th:if="${photos.hasNext()}" th:href="${photos.nextUrl}">下一页</a>
+            </nav>
+        </section>
+    </th:block>
+</html>

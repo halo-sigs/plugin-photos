@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import tools.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.plugin.ReactiveSettingFetcher;
+import run.halo.app.theme.TemplateNameResolver;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.finders.PhotoPublicQueryService;
 import run.halo.photos.vo.PhotoVo;
@@ -45,11 +47,14 @@ class PhotoRouterTest {
 
     private final ReactiveSettingFetcher settingFetcher = mock(ReactiveSettingFetcher.class);
 
+    private final TemplateNameResolver templateNameResolver = mock(TemplateNameResolver.class);
+
     private WebTestClient webTestClient;
 
     @BeforeEach
     void setUp() {
-        var router = new PhotoRouter(photoFinder, photoPublicQueryService, settingFetcher);
+        var router = new PhotoRouter(photoFinder, photoPublicQueryService, settingFetcher,
+            templateNameResolver);
         var strategies = HandlerStrategies.builder()
             .viewResolver(new StubViewResolver())
             .build();
@@ -63,6 +68,10 @@ class PhotoRouterTest {
         baseSetting.put("pageSize", 10);
         baseSetting.put("title", "图库");
         lenient().when(settingFetcher.getSettingValue(eq("base"))).thenReturn(Mono.just(baseSetting));
+        lenient().when(templateNameResolver.resolveTemplateNameOrDefault(any(), eq("photos")))
+            .thenReturn(Mono.just("photos"));
+        lenient().when(templateNameResolver.resolveTemplateNameOrDefault(any(), eq("photo")))
+            .thenReturn(Mono.just("photo"));
     }
 
     @ParameterizedTest(name = "windowStart(idx={0}, total={1}) -> {2}")
@@ -134,6 +143,17 @@ class PhotoRouterTest {
         webTestClient.get().uri("/photos/abc?group=trips&page=1&size=10")
             .exchange()
             .expectStatus().is2xxSuccessful();
+
+        verify(templateNameResolver).resolveTemplateNameOrDefault(any(), eq("photo"));
+    }
+
+    @Test
+    void listUsesResolvedTemplate() {
+        webTestClient.get().uri("/photos")
+            .exchange()
+            .expectStatus().is2xxSuccessful();
+
+        verify(templateNameResolver).resolveTemplateNameOrDefault(any(), eq("photos"));
     }
 
     @Test
