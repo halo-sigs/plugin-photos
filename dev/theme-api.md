@@ -32,6 +32,7 @@
 | ---- | ---- | ---- |
 | `groups` | `List<PhotoGroupVo>` | 所有分组列表 |
 | `photos` | `UrlContextListResult<PhotoVo>` | 当前页图片分页结果 |
+| `group` | `String \| null` | 当前分组筛选，对应 URL 的 `group` 查询参数 |
 | `photoUrl` | `PhotoUrlBuilder` | URL 构造器 |
 | `title` | `String` | 页面标题 |
 
@@ -88,7 +89,7 @@
 - 模板路径：`/templates/photo.html`
 - 访问路径：`/photos/{metadata.name}`
 
-> 注意：未提供 `photo.html` 模板的主题，访问 `/photos/{name}` 会落到 Halo 默认的"模板未找到"行为；插件本身不会返回兜底页面，由主题作者决定如何处理。
+插件内置了基于页面布局契约的默认模板；主题仍可提供同名模板覆盖默认实现。
 
 #### 路由可选参数
 

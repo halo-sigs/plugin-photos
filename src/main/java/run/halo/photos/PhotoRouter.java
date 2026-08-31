@@ -31,6 +31,7 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.index.query.Queries;
 import run.halo.app.plugin.ReactiveSettingFetcher;
+import run.halo.app.theme.TemplateNameResolver;
 import run.halo.app.theme.router.UrlContextListResult;
 import run.halo.photos.finders.PhotoFinder;
 import run.halo.photos.finders.PhotoPublicQueryService;
@@ -57,6 +58,7 @@ public class PhotoRouter {
     private final PhotoFinder photoFinder;
     private final PhotoPublicQueryService photoPublicQueryService;
     private final ReactiveSettingFetcher settingFetcher;
+    private final TemplateNameResolver templateNameResolver;
 
     /**
      * Routes for the photo theme pages.
@@ -100,10 +102,13 @@ public class PhotoRouter {
                     Map<String, Object> model = new HashMap<>();
                     model.put("groups", groups);
                     model.put("photos", photos);
+                    model.put("group", group);
                     model.put(ModelConst.TEMPLATE_ID, "photos");
                     model.put("title", title);
                     model.put("photoUrl", photoUrl);
-                    return ServerResponse.ok().render("photos", model);
+                    return templateNameResolver
+                        .resolveTemplateNameOrDefault(request.exchange(), "photos")
+                        .flatMap(templateName -> ServerResponse.ok().render(templateName, model));
                 });
         };
     }
@@ -260,7 +265,9 @@ public class PhotoRouter {
         model.put("title", title);
         model.put(ModelConst.TEMPLATE_ID, "photo");
         model.put("photoUrl", photoUrl);
-        return ServerResponse.ok().render("photo", model);
+        return templateNameResolver
+            .resolveTemplateNameOrDefault(request.exchange(), "photo")
+            .flatMap(templateName -> ServerResponse.ok().render(templateName, model));
     }
 
     private Mono<List<PhotoVo>> loadFilteredPhotos(String group) {
