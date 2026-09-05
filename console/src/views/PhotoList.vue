@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { photosCoreApiClient, photosConsoleApiClient } from "@/api";
+import { photosConsoleApiClient, photosCoreApiClient } from "@/api";
 import type { Photo } from "@/api/generated";
 import AddButton from "@/components/AddButton.vue";
 import GroupFilter from "@/components/GroupFilter.vue";
@@ -8,6 +8,7 @@ import PhotoTable from "@/components/PhotoTable.vue";
 import { useBatchOperations } from "@/composables/useBatchOperations";
 import { ALL_GROUPS, UNGROUPED, useGroupSelection } from "@/composables/useGroupSelection";
 import { QK_PHOTO_GROUPS, useGroupsFetch } from "@/composables/useGroupsFetch";
+import { usePhotoPreferences } from "@/composables/usePhotoPreferences";
 import { usePhotoSelection } from "@/composables/usePhotoSelection";
 import { QK_PHOTOS, usePhotosFetch } from "@/composables/usePhotosFetch";
 import { QK_PHOTO_TAGS, usePhotoTags } from "@/composables/usePhotoTags";
@@ -44,6 +45,7 @@ const queryClient = useQueryClient();
 // Modals are heavy and only render when their `v-if` flag flips on,
 // so lazy-load them to keep the initial bundle small.
 const PhotoEditingModal = defineAsyncComponent(() => import("@/components/PhotoEditingModal.vue"));
+const PhotoPreviewModal = defineAsyncComponent(() => import("@/components/PhotoPreviewModal.vue"));
 const PhotoUploadModal = defineAsyncComponent(() => import("@/components/PhotoUploadModal.vue"));
 
 // ==================== Group selection (sentinel-aware) ====================
@@ -65,6 +67,8 @@ const viewModes = [
 ];
 
 const viewMode = useLocalStorage<string>("plugin:photos:viewMode", "grid");
+const { informationOnly } = usePhotoPreferences();
+const showTable = computed(() => informationOnly.value || viewMode.value === "list");
 
 // ==================== Tags ====================
 const { tagOptions } = usePhotoTags();
@@ -86,6 +90,7 @@ const selectedSort = useRouteQuery<string | undefined>("sort", undefined);
 
 // ==================== Modals & dialogs ====================
 const selectedPhoto = shallowRef<Photo | undefined>();
+const previewPhoto = shallowRef<Photo>();
 const editingModal = shallowRef(false);
 const uploadModal = shallowRef(false);
 
@@ -342,12 +347,8 @@ function onUploadModalClose() {
                 <VDropdown>
                   <VButton type="danger" :disabled="isBatchOperating"> 删除 </VButton>
                   <template #popper>
-                    <VDropdownItem type="danger" @click="handleDeleteInBatch(false)">
-                      仅删除图片
-                    </VDropdownItem>
-                    <VDropdownItem type="danger" @click="handleDeleteInBatch(true)">
-                      删除图片及附件
-                    </VDropdownItem>
+                    <VDropdownItem type="danger" @click="handleDeleteInBatch(false)"> 仅删除图片 </VDropdownItem>
+                    <VDropdownItem type="danger" @click="handleDeleteInBatch(true)"> 删除图片及附件 </VDropdownItem>
                   </template>
                 </VDropdown>
                 <VDropdown>
@@ -384,9 +385,7 @@ function onUploadModalClose() {
                     </div>
                   </template>
                 </VDropdown>
-                <VButton :disabled="isBatchOperating" @click="handleBatchReextractExif">
-                  重新读取 EXIF
-                </VButton>
+                <VButton :disabled="isBatchOperating" @click="handleBatchReextractExif"> 重新读取 EXIF </VButton>
                 <VButton :disabled="isBatchOperating" @click="clear()"> 取消选择 </VButton>
               </VSpace>
             </div>
@@ -403,7 +402,18 @@ function onUploadModalClose() {
                 ]"
               />
               <FilterDropdown v-model="selectedSort" label="排序" :items="sortOptions" />
-              <div class=":uno: flex flex-row gap-2">
+              <label
+                v-tooltip="'不自动加载图片，点击预览时加载'"
+                class=":uno: flex cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-gray-600"
+              >
+                <input
+                  v-model="informationOnly"
+                  type="checkbox"
+                  class=":uno: h-4 w-4 cursor-pointer border-gray-300 rounded"
+                />
+                仅显示信息
+              </label>
+              <div v-if="!informationOnly" class=":uno: flex flex-row gap-2">
                 <div
                   v-for="(item, index) in viewModes"
                   :key="index"
@@ -462,9 +472,9 @@ function onUploadModalClose() {
         </div>
       </Transition>
 
-      <div v-else class=":uno: p-4" :class="viewMode === 'list' ? ':uno: !p-0' : ''">
+      <div v-else class=":uno: p-4" :class="showTable ? ':uno: !p-0' : ''">
         <div
-          v-if="viewMode === 'grid'"
+          v-if="!showTable"
           class=":uno: grid grid-cols-2 gap-3 2xl:grid-cols-7 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 xl:grid-cols-6"
         >
           <PhotoGridItem
@@ -479,19 +489,33 @@ function onUploadModalClose() {
         </div>
 
         <PhotoTable
-          v-else-if="viewMode === 'list'"
+          v-else
           :photos="photos.items"
           :is-selected="isSelected"
+          :information-only="informationOnly"
           @toggle-select="toggle"
           @open-edit="handleOpenEditingModal"
+          @preview="previewPhoto = $event"
         />
       </div>
 
       <template #footer>
-        <VPagination v-model:page="page" v-model:size="size" :total="photos?.total || 0" :size-options="[30, 60, 120, 240]" />
+        <VPagination
+          v-model:page="page"
+          v-model:size="size"
+          :total="photos?.total || 0"
+          :size-options="[30, 60, 120, 240]"
+        />
       </template>
     </VCard>
   </div>
+
+  <PhotoPreviewModal
+    v-if="previewPhoto"
+    :url="previewPhoto.spec.url"
+    :title="previewPhoto.spec.displayName"
+    @close="previewPhoto = undefined"
+  />
 
   <PhotoEditingModal v-if="editingModal && selectedPhoto" :photo="selectedPhoto" @close="onEditingModalClose">
     <template #append-actions>
