@@ -11,11 +11,13 @@ import { computed } from "vue";
 defineProps<{
   photos: Photo[];
   isSelected: (photo: Photo) => boolean;
+  informationOnly: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "toggleSelect", photo: Photo, checked: boolean): void;
   (e: "openEdit", photo: Photo): void;
+  (e: "preview", photo: Photo): void;
 }>();
 
 const queryClient = useQueryClient();
@@ -54,12 +56,13 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
       <thead class=":uno: bg-gray-50 text-left text-xs text-gray-500 font-medium tracking-normal uppercase">
         <tr>
           <th v-if="utils.permission.has(['plugin:photos:manage'])" class=":uno: w-11 px-3 py-3"></th>
-          <th class=":uno: w-20 px-3 py-3">缩略图</th>
+          <th class=":uno: w-20 px-3 py-3">{{ informationOnly ? "预览" : "缩略图" }}</th>
           <th class=":uno: w-[28%] px-3 py-3">名称</th>
           <th class=":uno: w-36 px-3 py-3">分组</th>
           <th class=":uno: w-40 px-3 py-3">拍摄时间</th>
           <th class=":uno: w-36 px-3 py-3">相机</th>
           <th class=":uno: w-[22%] px-3 py-3">标签</th>
+          <th class=":uno: w-20 px-3 py-3">操作</th>
         </tr>
       </thead>
       <tbody class=":uno: divide-y divide-gray-100">
@@ -67,6 +70,7 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
           v-for="photo in photos"
           :key="photo.metadata.name"
           v-memo="[
+            informationOnly,
             isSelected(photo),
             !!photo.metadata.deletionTimestamp,
             editingCell?.photoName === photo.metadata.name ? editingCell.field : null,
@@ -96,9 +100,18 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
             />
           </td>
 
-          <!-- Thumbnail -->
+          <!-- Thumbnail / on-demand preview -->
           <td class=":uno: px-3 py-2 align-middle">
+            <button
+              v-if="informationOnly"
+              type="button"
+              class=":uno: text-primary hover:bg-primary/10 rounded px-1.5 py-0.5 text-sm"
+              @click="emit('preview', photo)"
+            >
+              预览
+            </button>
             <div
+              v-else
               class=":uno: h-11 w-16 cursor-pointer overflow-hidden border border-gray-200 rounded-md bg-gray-100"
               @click="emit('openEdit', photo)"
             >
@@ -236,6 +249,15 @@ const { editingCell, editingValue, editingTags, start, commit, cancel } = useInl
               </span>
               <span v-if="!photo.spec.tags?.length" class=":uno: text-gray-300">-</span>
             </div>
+          </td>
+          <td class=":uno: px-3 py-2 align-middle">
+            <button
+              type="button"
+              class=":uno: text-primary hover:bg-primary/10 rounded px-1.5 py-0.5 text-sm"
+              @click="emit('openEdit', photo)"
+            >
+              {{ utils.permission.has(["plugin:photos:manage"]) ? "编辑" : "查看" }}
+            </button>
           </td>
         </tr>
       </tbody>

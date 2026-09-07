@@ -6,7 +6,7 @@
     "lint": "eslint . --fix",
     "prettier": "prettier --write .",
     "type-check": "vue-tsc --noEmit -p tsconfig.json --composite false",
-    "test:unit": "echo 'No unit tests yet'"
+    "test:unit": "vitest run"
   },
   "prettier": {
     "endOfLine": "lf",
@@ -29,6 +29,7 @@
     "vue": "^3.5.33"
   },
   "devDependencies": {
+    "@formkit/vue": "^2.1.2",
     "@halo-dev/ui-plugin-bundler-kit": "^2.26.0",
     "@iconify-json/ri": "^1.2.10",
     "@types/node": "^24.12.2",
@@ -37,15 +38,19 @@
     "@vue/compiler-sfc": "^3.5.33",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
+    "@vue/test-utils": "^2.5.0",
     "@vue/tsconfig": "^0.8.1",
     "eslint": "^9.39.4",
     "eslint-plugin-vue": "~10.0.1",
+    "jsdom": "^27.4.0",
     "prettier": "^3.8.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "~5.9.3",
     "unocss": "^66.7.5",
     "unplugin-icons": "^23.0.1",
     "vite": "^8.2.1",
+    "vitest": "^4.1.11",
+    "vue-router": "5.2.0",
     "vue-tsc": "^3.2.7"
   },
   "packageManager": "pnpm@10.33.2"

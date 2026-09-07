@@ -4,8 +4,9 @@ import { usePhotoTags } from "@/composables/usePhotoTags";
 import type { PhotoFormState } from "@/types";
 import { utils } from "@halo-dev/ui-shared";
 import { computed, nextTick, ref } from "vue";
+import PhotoUrlInput from "./PhotoUrlInput.vue";
 
- defineProps<{
+defineProps<{
   name?: string;
   formState?: PhotoFormState;
 }>();
@@ -62,16 +63,7 @@ async function onSubmit(data: PhotoFormState) {
         </div>
       </div>
       <div class=":uno: md:col-span-3">
-        <FormKit
-          name="url"
-          label="图片地址"
-          type="attachment"
-          width="50%"
-          aspect-ratio="16/9"
-          :accepts="['image/*']"
-          validation="required"
-          :value="formState?.url"
-        ></FormKit>
+        <PhotoUrlInput :value="formState?.url" />
         <FormKit
           name="displayName"
           label="名称"

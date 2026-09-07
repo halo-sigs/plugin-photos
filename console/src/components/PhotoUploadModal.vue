@@ -20,7 +20,7 @@ const modal = useTemplateRef<InstanceType<typeof VModal>>("modal");
 
 const { data: config, isLoading } = useConfigFetch();
 
-const { data: groups, refetch } = useGroupsFetch();
+const { data: groups } = useGroupsFetch();
 
 const groupOptions = computed(() => [
   { label: "未分组", value: "" },
